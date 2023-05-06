@@ -1,6 +1,6 @@
 :root {
   --dark: #1E1E1E;
-  --light: #ffffff;
+  --light: #E9E9E9;
   --yellow: #E3B505;
 }
 
@@ -13,6 +13,9 @@ body {
   font-size: 18;
   color: #E9E9E9;
   margin: 0;
+}
+.no-transition * {
+  transition: none !important;
 }
 .wrapper {
   max-width: 1200px;
@@ -31,24 +34,39 @@ nav ul {
   display: flex;
   margin: 0;
 }
-nav ul li, .resume {
+nav ul li a, .resume a{
   border-style: solid;
-  border-color: #E9E9E9;
+  border-color: var(--light);
   border-width: 0.2em;
-}
-nav ul li:nth-child(n+2) {
-  margin-left: -0.2em;
-}
-nav ul li a, .resume a {
-  margin: 0.5em 1em;
+
+  padding: 0.5em 1em;
   display: flex;
   align-items: center;
   gap: 1em;
   text-decoration: none;
+  /* transition: margin 1000ms ease-in-out,
+              background-color 1000ms ease-in-out,
+              border-color 1000ms ease-in-out; */
+  transition: 1000ms ease-in-out;;
 }
-nav ul li:hover {
+nav ul li:nth-child(n+2) a {
+   border-left: 0em;
+}
+nav ul li a:hover, .resume:hover {
   background-color: var(--light);
-  transition: 200ms;
+  border-color: var(--dark);
+  /* border-width: 0.2em; */
+}
+nav ul li a:hover {
+  margin: 0em 0.2em;
+}
+nav ul li:hover a svg .color_change, .resume:hover a svg .color_change {
+  fill: var(--dark);
+  transition: 300ms ease-in-out;
+}
+nav ul li:hover a span, .resume:hover a span{
+  color: var(--dark);
+  transition: 300ms ease-in-out;
 }
 
 nav ul li a img, .resume a img {
