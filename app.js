@@ -1,17 +1,22 @@
+Array.prototype.sample = function () {
+  return this[Math.floor(Math.random() * this.length)];
+};
+var dataset = ["bigfoot_sightings.csv", "ufo_sightings.csv"].sample();
+
 document.addEventListener("DOMContentLoaded", function () {
-  d3.csv("bigfoot_sightings.csv").then(function (data) {
+  d3.csv(dataset).then(function (data) {
     // Create SVG and padding for the chart
     const svg = d3
       .select("#chart")
       .append("svg")
       .attr("height", 300)
-      .attr("width", 1000);
+      .attr("width", 1400);
     // .attr("viewBox", `0 0 ${widthValue} ${heightValue}`);
     const margin = {
       top: 0,
       bottom: 50,
-      left: 50,
-      right: 50,
+      left: 101,
+      right: 102,
     };
     const chart = svg
       .append("g")
@@ -26,7 +31,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const yScale = d3
       .scaleLinear()
       .range([height, 0])
-      .domain([0, d3.max(data, (dataPoint) => parseInt(dataPoint.count))]);
+      .domain([
+        0,
+        d3.max(data, (dataPoint) => parseInt(dataPoint.count)), //TODO: Change 1.09 to fit grid
+      ]);
     const xScale = d3
       .scaleLinear()
       .range([0, width])
@@ -35,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const line = d3
       .line()
       .x((dataPoint) => xScale(dataPoint.year))
-      .y((dataPoint) => yScale(dataPoint.count));
+      .y((dataPoint) => yScale(dataPoint.count) - 2);
 
     // Add path
     const path = grp
@@ -62,18 +70,20 @@ document.addEventListener("DOMContentLoaded", function () {
       .append("g")
       .attr("transform", `translate(0,${height})`)
       .attr("class", "axisOffWhite")
-      .attr("stroke-width", 3)
+      .attr("stroke-width", 2)
       .style("font-size", 18)
       .call(d3.axisBottom(xScale).ticks(10).tickFormat(d3.format("d")));
 
     // Add the Y Axis
+    const maxCount = d3.max(data, (dataPoint) => parseInt(dataPoint.count));
+    var maxTick = Math.floor((maxCount * 0.95) / 100) * 100;
     chart
       .append("g")
       .attr("transform", `translate(0, 0)`)
       .attr("class", "axisOffWhite")
       .attr("stroke-width", 2)
       .style("font-size", 18)
-      .call(d3.axisLeft(yScale).ticks(1));
+      .call(d3.axisLeft(yScale).ticks(2).tickValues([0, maxTick]));
   });
 });
 

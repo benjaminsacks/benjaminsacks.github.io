@@ -1,84 +1,109 @@
+/* Full page */
 :root {
   --dark: #1E1E1E;
+  --gray: #333333;
   --light: #E9E9E9;
   --yellow: #E3B505;
 }
-
 html {
   font-size: 62.5%;
 }
 body {
-  background-color: #1E1E1E;
+  background-color: var(--dark);
   font-family: "Playfair Display";
   font-size: 18;
   color: #E9E9E9;
   margin: 0;
 }
 .wrapper {
-  max-width: 1200px;
+  background-size: 100px 100px;
+  background-image:
+    linear-gradient(to right, var(--gray) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--gray) 1px, transparent 1px);
+  max-width: 1201px;
   margin: 0 auto;
 }
+
+
+/* Nav Bar */
 header {
   display: flex;
+  margin: 3em 0em 0em;
+  padding: 2em 0em 3.9em;
   justify-content: space-between;
   align-items: center;
-}
-nav {
-  margin: 4em;
 }
 nav ul {
   list-style-type: none;
   display: flex;
   margin: 0;
+  padding: 0;
 }
-
 nav ul li a, .resume a{
   border-style: solid;
   border-color: var(--light);
   border-width: 0.2em;
-
   padding: 0.5em 1em;
+
+  height: 2.8em;
   display: flex;
   align-items: center;
   gap: 1em;
   text-decoration: none;
-  /* transition: margin 1000ms ease-in-out,
-              background-color 1000ms ease-in-out,
-              border-color 1000ms ease-in-out; */
-  transition: 300ms ease-in-out;;
-}
-nav ul li:nth-child(n+2) a {
-   border-left: 0em;
+  transition: 300ms ease-in-out;
 }
 nav ul li a:hover, .resume:hover {
   background-color: var(--light);
-  border-color: var(--dark);
-  /* border-width: 0.2em; */
+  /* border-color: var(--dark); */
 }
-nav ul li a:hover {
-  margin: 0em 0.2em;
+nav ul li:nth-child(n+2) a {
+  border-left: 0em;
 }
 nav ul li:hover a svg .color_change, .resume:hover a svg .color_change {
   fill: var(--dark);
   transition: 300ms ease-in-out;
+}
+nav ul li a span, .resume a span{
+  color: var(--light);
+  font-size: 2em;
 }
 nav ul li:hover a span, .resume:hover a span{
   color: var(--dark);
   transition: 300ms ease-in-out;
 }
 
-nav ul li a img, .resume a img {
-  height: 2.8em;
+
+/* Hero Section */
+.hero {
+  font-size: 6.2em;
+  text-align: center;
+  vertical-align: middle;
+  justify-content: center;
+  height: 100px;
+  margin: 0em auto;
 }
-nav ul li a span, .resume a span {
-  color: #E9E9E9;
-  font-size: 2em;
+.subtitle {
+  font-size: 3.6em;
+  text-align: center;
+  max-width: 534px;
+  height: 100%;
+  margin: 1.25em auto 1.54em;
+}
+.yellow {
+  color: var(--yellow);
+}
+.italic {
+  font-style: italic;
+}
+.mono {
+  font-family: "Space Mono";
+  font-kerning: normal;
 }
 
+
+/* Chart */
 #chart {
-  /* text-align: center; */
-  position: relative;
-  margin: 50;
+  transform: translateX(-9.9em);
 }
 .chartLine {
   stroke: var(--yellow);
@@ -99,4 +124,10 @@ nav ul li a span, .resume a span {
   #chart {
     display: none;
   }
+}
+
+
+/* Whitespace */
+.whitespace {
+  margin: 50em auto;
 }
