@@ -34,6 +34,7 @@ nav ul {
   display: flex;
   margin: 0;
 }
+
 nav ul li a, .resume a{
   border-style: solid;
   border-color: var(--light);
