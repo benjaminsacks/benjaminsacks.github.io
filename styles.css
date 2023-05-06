@@ -14,9 +14,6 @@ body {
   color: #E9E9E9;
   margin: 0;
 }
-.no-transition * {
-  transition: none !important;
-}
 .wrapper {
   max-width: 1200px;
   margin: 0 auto;
@@ -48,7 +45,7 @@ nav ul li a, .resume a{
   /* transition: margin 1000ms ease-in-out,
               background-color 1000ms ease-in-out,
               border-color 1000ms ease-in-out; */
-  transition: 1000ms ease-in-out;;
+  transition: 300ms ease-in-out;;
 }
 nav ul li:nth-child(n+2) a {
    border-left: 0em;
