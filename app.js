@@ -1,23 +1,23 @@
 document.addEventListener("DOMContentLoaded", function () {
   d3.csv("bigfoot_sightings.csv").then(function (data) {
     // Create SVG and padding for the chart
-    const heightValue = 300;
-    const widthValue = 1000;
     const svg = d3
       .select("#chart")
       .append("svg")
-      .attr("viewBox", `0 0 ${widthValue} ${heightValue}`);
+      .attr("height", 300)
+      .attr("width", 1000);
+    // .attr("viewBox", `0 0 ${widthValue} ${heightValue}`);
     const margin = {
       top: 0,
       bottom: 50,
-      left: 70,
-      right: 70,
+      left: 50,
+      right: 50,
     };
     const chart = svg
       .append("g")
       .attr("transform", `translate(${margin.left},0)`);
-    const width = widthValue - margin.left - margin.right;
-    const height = heightValue - margin.top - margin.bottom;
+    const width = +svg.attr("width") - margin.left - margin.right;
+    const height = +svg.attr("height") - margin.top - margin.bottom;
     const grp = chart
       .append("g")
       .attr("transform", `translate(-${margin.left},-${margin.top})`);
@@ -37,17 +37,13 @@ document.addEventListener("DOMContentLoaded", function () {
       .x((dataPoint) => xScale(dataPoint.year))
       .y((dataPoint) => yScale(dataPoint.count));
 
-    const scaleFactor = widthValue / window.innerWidth;
-    console.log("window.innerWidth:\t" + window.innerWidth);
-    console.log("scaleFactor:\t\t" + scaleFactor);
-
     // Add path
     const path = grp
       .append("path")
       .attr("transform", `translate(${margin.left},0)`)
       .datum(data)
       .attr("class", "chartLine")
-      .attr("stroke-width", 3 * scaleFactor)
+      .attr("stroke-width", 3)
       .attr("d", line);
 
     const pathLength = path.node().getTotalLength();
@@ -66,17 +62,17 @@ document.addEventListener("DOMContentLoaded", function () {
       .append("g")
       .attr("transform", `translate(0,${height})`)
       .attr("class", "axisOffWhite")
-      .attr("stroke-width", 3 * scaleFactor)
-      .style("font-size", 18 * scaleFactor)
-      .call(d3.axisBottom(xScale).ticks(10 / scaleFactor));
+      .attr("stroke-width", 3)
+      .style("font-size", 18)
+      .call(d3.axisBottom(xScale).ticks(10).tickFormat(d3.format("d")));
 
     // Add the Y Axis
     chart
       .append("g")
       .attr("transform", `translate(0, 0)`)
       .attr("class", "axisOffWhite")
-      .attr("stroke-width", 2 * scaleFactor)
-      .style("font-size", 18 * scaleFactor)
+      .attr("stroke-width", 2)
+      .style("font-size", 18)
       .call(d3.axisLeft(yScale).ticks(1));
   });
 });

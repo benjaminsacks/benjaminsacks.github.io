@@ -1,53 +1,86 @@
+:root {
+  --dark: #1E1E1E;
+  --light: #ffffff;
+  --yellow: #E3B505;
+}
+
+html {
+  font-size: 62.5%;
+}
 body {
   background-color: #1E1E1E;
+  font-family: "Playfair Display";
+  font-size: 18;
+  color: #E9E9E9;
   margin: 0;
 }
+.wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+nav {
+  margin: 4em;
+}
+nav ul {
+  list-style-type: none;
+  display: flex;
+  margin: 0;
+}
+nav ul li, .resume {
+  border-style: solid;
+  border-color: #E9E9E9;
+  border-width: 0.2em;
+}
+nav ul li:nth-child(n+2) {
+  margin-left: -0.2em;
+}
+nav ul li a, .resume a {
+  margin: 0.5em 1em;
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  text-decoration: none;
+}
+nav ul li:hover {
+  background-color: var(--light);
+  transition: 200ms;
+}
+
+nav ul li a img, .resume a img {
+  height: 2.8em;
+}
+nav ul li a span, .resume a span {
+  color: #E9E9E9;
+  font-size: 2em;
+}
+
 #chart {
-  /* background-color: #1E1E1E; */
-  text-align: center;
-  margin-top: 4em;
-  margin-left: 10em;
-  margin-right: 10em;
+  /* text-align: center; */
+  position: relative;
+  margin: 50;
 }
 .chartLine {
-  stroke: #E3B505;
+  stroke: var(--yellow);
   fill: none;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 .axisOffWhite path,
 .axisOffWhite line {
-  stroke: #E9E9E9;
+  stroke: var(--light);
 }
 .axisOffWhite text {
-  fill: #E9E9E9;
+  fill: var(--light);
   font-family: "Playfair Display";
 }
 
-@media (max-width: 1000px) {
-  body {
-    background-color: #1E1E1E;
-    margin: 0;
-  }
+@media (max-width: 800px) {
   #chart {
-    /* background-color: #1E1E1E; */
-    text-align: center;
-    margin-top: 4em;
-    margin-left: 5em;
-    margin-right: 5em;
-  }
-  .chartLine {
-    stroke: #E3B505;
-    fill: none;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-  }
-  .axisOffWhite path,
-  .axisOffWhite line {
-    stroke: #E9E9E9;
-  }
-  .axisOffWhite text {
-    fill: #E9E9E9;
-    font-family: "Playfair Display";
+    display: none;
   }
 }

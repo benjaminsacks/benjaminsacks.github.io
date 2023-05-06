@@ -5,14 +5,55 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test Chart</title>
+  <title>ben_sacks</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,900&family=Space+Mono:wght@700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="app.js"></script>
 </head>
 
 <body>
-  <div id="chart"></div>
+  <div class="wrapper">
+    <header>
+      <nav>
+        <ul>
+          <li><a href="#">
+              <img src="../assets/icons/cases-icon.svg">
+              <span>case studies</span>
+            </a></li>
+          <li><a href="#">
+              <img src="../assets/icons/camera-icon.svg">
+              <span>photography</span>
+            </a></li>
+          <li><a href="#">
+              <img src="../assets/icons/neutral-icon.svg">
+              <span>about me</span>
+            </a></li>
+        </ul>
+      </nav>
+
+      <div class="resume">
+        <a href="#">
+          <img src="../assets/icons/doc-icon.svg">
+          <span>resume</span>
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <h1 class="hero">ben_sacks</h1>
+      <h2 class="subtitle">hi. i'm a <strong>data scientist</strong> and <strong>designer</strong> based out of san
+        diego
+      </h2>
+      <div id="chart"></div>
+    </main>
+  </div>
 </body>
 
 </html>
