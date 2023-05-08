@@ -4,7 +4,7 @@ Array.prototype.sample = function () {
 var dataset = ["bigfoot_sightings.csv", "ufo_sightings.csv"].sample();
 
 document.addEventListener("DOMContentLoaded", function () {
-  d3.csv(dataset).then(function (data) {
+  d3.csv("datasets//" + dataset).then(function (data) {
     // Create SVG and padding for the chart
     const svg = d3
       .select("#chart")
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const line = d3
       .line()
       .x((dataPoint) => xScale(dataPoint.year))
-      .y((dataPoint) => yScale(dataPoint.count) - 2);
+      .y((dataPoint) => yScale(dataPoint.count - 2));
 
     // Add path
     const path = grp
@@ -84,9 +84,19 @@ document.addEventListener("DOMContentLoaded", function () {
       .attr("stroke-width", 2)
       .style("font-size", 18)
       .call(d3.axisLeft(yScale).ticks(2).tickValues([0, maxTick]));
+
+    chart
+      .append("text")
+      .attr("class", "ylabel")
+      .attr("text-anchor", "center")
+      .attr("y", -50)
+      .attr("dx", "-12em")
+      .attr("transform", "rotate(-90)")
+      .style("font-size", 18)
+      .text(dataset);
   });
 });
 
-window.onresize = function () {
-  location.reload();
-};
+// window.onresize = function () {
+//   location.reload();
+// };

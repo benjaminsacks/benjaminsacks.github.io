@@ -43,29 +43,45 @@ nav ul li a, .resume a{
   border-style: solid;
   border-color: var(--light);
   border-width: 0.2em;
-  padding: 0.5em 1em;
+  padding: 0.7em 0.7em;
 
   height: 2.8em;
-  display: flex;
+  display: inline-flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 1em;
+  overflow: hidden;
+  width: auto;
   text-decoration: none;
   transition: 300ms ease-in-out;
 }
+nav ul li a {
+  max-width: 2.8em;
+}
 nav ul li a:hover, .resume:hover {
   background-color: var(--light);
-  /* border-color: var(--dark); */
+}
+nav ul li a:hover {
+  max-width: 30em;
 }
 nav ul li:nth-child(n+2) a {
   border-left: 0em;
+}
+nav ul li a svg, .resume a svg {
+  flex-basis: 2.8em;
+	flex-grow: 0;
+	flex-shrink: 0;
+  width: 2.8em;
 }
 nav ul li:hover a svg .color_change, .resume:hover a svg .color_change {
   fill: var(--dark);
   transition: 300ms ease-in-out;
 }
 nav ul li a span, .resume a span{
+  /* display: none; */
   color: var(--light);
   font-size: 2em;
+  white-space: nowrap;
 }
 nav ul li:hover a span, .resume:hover a span{
   color: var(--dark);
@@ -118,6 +134,12 @@ nav ul li:hover a span, .resume:hover a span{
 .axisOffWhite text {
   fill: var(--light);
   font-family: "Playfair Display";
+}
+.ylabel {
+  fill: var(--yellow);
+  font-family: "Playfair Display";
+  font-style: italic;
+  letter-spacing: 1px;
 }
 
 @media (max-width: 800px) {
