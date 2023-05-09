@@ -153,3 +153,17 @@ nav ul li:hover a span, .resume:hover a span{
 .whitespace {
   margin: 50em auto;
 }
+
+/* Case Studies */
+h1 {
+  font-size: 18pt;
+}
+h2 {
+  font-size: 16pt;
+}
+h3 {
+  font-size: 14pt;
+}
+p {
+  font-size: 12pt;
+}
