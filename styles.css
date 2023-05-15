@@ -170,12 +170,19 @@ p {
 .header-image {
   width: 100%;
 }
-.background-section {
+.casestudy-section {
   display: flex;
+  align-items: center;
 }
-.problems-section {
-  display: flex;
-}
-.case-study-img {
+.casestudy-img {
+  margin: 2em;
   width: 30%;
+  height: 30%;
+}
+.flowchart {
+  display: flex;
+  justify-content: center;
+}
+.flowchart img {
+  width: 60%;
 }
