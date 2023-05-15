@@ -173,6 +173,9 @@ p {
 .background-section {
   display: flex;
 }
+.problems-section {
+  display: flex;
+}
 .case-study-img {
   width: 30%;
 }
