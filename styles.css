@@ -151,7 +151,7 @@ nav ul li:hover a span, .resume:hover a span{
 
 /* Whitespace */
 .whitespace {
-  margin: 50em auto;
+  margin: 20em auto;
 }
 
 /* Case Studies */
@@ -168,7 +168,12 @@ p {
   font-size: 12pt;
 }
 .header-image {
+  max-height: 5em;
+  overflow: hidden;
+}
+.header-image img {
   width: 100%;
+  transform: translate(0,-70%);
 }
 .casestudy-section {
   display: flex;
@@ -185,4 +190,8 @@ p {
 }
 .flowchart img {
   width: 60%;
+}
+.bold {
+  font-size: 20px;
+  color: var(--yellow);
 }
