@@ -103,7 +103,7 @@ nav ul li:hover a span, .resume:hover a span{
   text-align: center;
   max-width: 534px;
   height: 100%;
-  margin: 1.25em auto 1.54em;
+  margin: 1.25em auto 1.42em;
 }
 .yellow {
   color: var(--yellow);
@@ -166,4 +166,13 @@ h3 {
 }
 p {
   font-size: 12pt;
+}
+.header-image {
+  width: 100%;
+}
+.background-section {
+  display: flex;
+}
+.case-study-img {
+  width: 30%;
 }

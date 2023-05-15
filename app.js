@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
     const chart = svg
       .append("g")
-      .attr("transform", `translate(${margin.left},0)`);
+      .attr("transform", `translate(${margin.left},1)`);
     const width = +svg.attr("width") - margin.left - margin.right;
     const height = +svg.attr("height") - margin.top - margin.bottom;
     const grp = chart
