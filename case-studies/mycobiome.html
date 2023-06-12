@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ben_sacks</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,900&family=Space+Mono:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="app.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <!--Navigation bar-->
+        <div id="nav-placeholder">
+
+        </div>
+
+        <script>
+            $(function () {
+                $("#nav-placeholder").load("assets/nav.html");
+            });
+        </script>
+        <!--end of Navigation bar-->
+        <main>
+            <div class="header-image"><img src="images\microbiome.png" alt="microbiome"></div>
+            <h1>Mycobiome Cancer Analysis</h2>
+                <h3>Background + Context</h3>
+                <div class="casestudy-section">
+                    <div class="casestudy-text">
+                        <p>
+                            As a data scientist, I've always been interested in finding new ways to use data to solve
+                            important
+                            problems. One such problem is cancer detection. Every year, countless people are diagnosed
+                            with
+                            cancer,
+                            and getting an accurate and timely diagnosis can be critical in saving lives. So, when I
+                            heard
+                            about the
+                            idea that mycobiome data could be used to detect cancer, I was intrigued.
+                        </p>
+                        <p>
+                            The mycobiome is the collection of fungal organisms that live within our bodies. The idea
+                            was
+                            that by
+                            analyzing these organisms, we could potentially detect the presence of cancer. A previous
+                            study
+                            had
+                            already analyzed whether mycobiome data could distinguish between multiple common cancer
+                            types
+                            and found
+                            that it could. However, my colleagues and I wanted to take this research further.
+                        </p>
+                        <p>
+                            We had three main ideas. First, we wanted to investigate whether certain microbes were
+                            associated with
+                            late-stage cancer. If we could identify these microbes, we could potentially mute their
+                            effects
+                            to slow
+                            down or prevent cancer progression. Second, we wanted to find out whether certain microbes
+                            were
+                            associated with early-stage cancer or recovery. If we could identify these microbes, we
+                            could
+                            potentially introduce them into the tumor mycobiome to affect its development. Lastly, we
+                            wanted
+                            to see
+                            if mycobiome data could be used to accurately distinguish between cancer stages.
+                        </p>
+                    </div>
+                    <img class="casestudy-img" src="images\human-vs-microbes.png"
+                        alt="Comparing human genes (20,000) with microbial genes (2,000,000)">
+                </div>
+                <h3>Problem Produces an Idea</h3>
+                <div class="casestudy-section">
+                    <img src="images\stages.png" alt="consolidating stages" class="casestudy-img">
+                    <p>
+                        However, we quickly ran into a problem. We discovered that fungal data alone wasn't very useful
+                        for
+                        distinguishing between cancer stages. There were too many cancer substages, and accuracy was too
+                        low.
+                        So, we formulated a hypothesis.
+                        <span class="bold">
+                            If we consolidated cancer substages into the
+                            main four and
+                            reintroduced
+                            certain features from the metadata, we might be able to achieve high accuracy in predicting
+                            cancer
+                            stage.</span>
+                    </p>
+                </div>
+                <h3>Process</h3>
+                <p>
+                    To test our hypothesis, we started by using the same dataset from the original analysis. We
+                    reintroduced
+                    metadata features such as age, sex, and sample type, and consolidated the cancer stages by mapping
+                    all
+                    substages to the parent stage. We also did some exploratory analysis and found that the dataset was
+                    slightly unbalanced, with certain cancer stages more represented than others. So, we subsetted our
+                    data
+                    by disease type and ran our models on each subset before generalizing our model accuracies into a
+                    weighted average.
+                </p>
+                <h3>Methods</h3>
+                <p>
+                    For classification, we made a gradient boosting classifier with stratified 10-folds cross-validation
+                    using scikit-learn. For the gradient boost classifier, we used exponential loss, a learning rate of
+                    0.1,
+                    n-estimators 150, and a max depth of 3. During the project, I primarily worked on preprocessing the
+                    data, which included initial data cleaning and setting up later model analysis.
+                </p>
+                <div class="casestudy-section">
+                    <div class="casestudy-text">
+                        <h3>Results</h3>
+                        <p>
+                            Our results were promising. <span class="bold">We were able to predict cancer stage with
+                                high accuracy for
+                                stages 1 and 4</span>
+
+                            , but stages 2 and 3 were more muddled. We found that many of our metadata features were
+                            one-hot
+                            encoded,
+                            so the most important features in the analysis became each unique value in the metadata.
+                        </p>
+                        <h3>Conclusion</h3>
+                        <p>
+                            While our model accuracy was great, the relatively low scoring importance of the fungal
+                            features
+                            meant
+                            that further analysis would be needed to determine what microbes could be responsible for
+                            cancer
+                            progression. Nonetheless, our findings showed that by introducing creativity and ingenuity
+                            to a
+                            well-studied dataset, novel results were still possible. We hope that other scientists will
+                            see
+                            the work
+                            we've done and build upon it to expand cancer research.
+                        </p>
+                    </div>
+                    <img src="https://github.com/mzh4ng/DSC180B_Q2_Project/blob/main/figures/default-cancer-stage/default-cancer-stage_AUROC.png?raw=true"
+                        alt="Cancer stage classification" class="casestudy-img">
+                </div>
+                <div class="whitespace"></div>
+                &nbsp
+        </main>
+    </div>
+</body>
+
+</html>

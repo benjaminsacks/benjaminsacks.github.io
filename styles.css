@@ -29,7 +29,7 @@ body {
 header {
   display: flex;
   margin: 3em 0em 0em;
-  padding: 2em 0em 3.9em;
+  padding: 0em 0em 5.4em;
   justify-content: space-between;
   align-items: center;
 }
@@ -91,19 +91,21 @@ nav ul li:hover a span, .resume:hover a span{
 
 /* Hero Section */
 .hero {
+  position: relative;
+  margin: 0 auto;
   font-size: 6.2em;
   text-align: center;
   vertical-align: middle;
   justify-content: center;
   height: 100px;
-  margin: 0em auto;
 }
 .subtitle {
+  position: relative;
+  margin: 45px auto 55px;
   font-size: 3.6em;
   text-align: center;
   max-width: 534px;
   height: 100%;
-  margin: 1.25em auto 1.42em;
 }
 .yellow {
   color: var(--yellow);
@@ -119,7 +121,9 @@ nav ul li:hover a span, .resume:hover a span{
 
 /* Chart */
 #chart {
-  transform: translateX(-9.9em);
+  position: absolute;
+  top: 33em;
+  left: 6.8em;
 }
 .chartLine {
   stroke: var(--yellow);
@@ -149,9 +153,43 @@ nav ul li:hover a span, .resume:hover a span{
 }
 
 
+/* Case Study Previews */
+.casestudy-preview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none;
+}
+.casestudy-preview-img {
+  width: 400px;
+  height: 300px;
+  object-fit: cover;
+  -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+  filter: grayscale(100%);
+}
+.casestudy-preview-text {
+  color: var(--light);
+  position: relative;
+  max-width: 700px;
+}
+.align-right {
+  text-align: right;
+}
+.align-left {
+  text-align: left;
+}
+.casestudy-preview-title {
+  font-size: 3.6em;
+}
+
 /* Whitespace */
 .whitespace {
-  margin: 20em auto;
+  position: relative;
+  height: 200px;
+  width: auto;
+  /* border-style: solid;
+  border-color: #E9E9E9;
+  border-width: 1px; */
 }
 
 /* Case Studies */

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ben_sacks</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,900&family=Space+Mono:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="app.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <!--Navigation bar-->
+        <div id="nav-placeholder">
+
+        </div>
+
+        <script>
+            $(function () {
+                $("#nav-placeholder").load("assets/nav.html");
+            });
+        </script>
+        <!--end of Navigation bar-->
+        <main>
+            <div class="header-image"><img
+                    src="https://ar.rdcpix.com/8b247bbd6cf8f0bd5087491871f35d26c-f2653482268od-w480_h360_x2.jpg"
+                    alt="microbiome"></div>
+            <h1>Apartment Bot - How Rejection Can Lead to Creative Problem Solving</h2>
+                <div class="casestudy-section">
+                    <div class="casestudy-test">
+                        <h3>The First of Many No's</h3>
+                        <p>
+                            I remember the summer of 2021 well. After months of planning, I was devastated to hear
+                            that
+                            I
+                            couldn't
+                            study abroad due to changes in my major prerequisites. It was a huge blow, and I felt
+                            like I
+                            had
+                            hit a
+                            dead end. I was faced with the daunting task of finding a place to live off-campus
+                            during a
+                            housing
+                            crisis.
+                        </p>
+                        <h3>At the End of Every Line</h3>
+                        <p>
+                            I teamed up with three of my first-year roommates to find an apartment, but we quickly
+                            found
+                            out
+                            that it
+                            was going to be much harder than we thought. Every day, we called leasing offices and
+                            followed
+                            up on
+                            Zillow and Apartments.com posts, but we were always too late. The properties we were
+                            interested
+                            in were
+                            already gone, or we had to put our names on long waitlists in the hopes that
+                            availability
+                            would
+                            open up.
+                        </p>
+                    </div>
+                    <img src="images\living-in-car.jpg" alt="Reddit post about UCSD student living in car"
+                        class="casestudy-img">
+                </div>
+                <h3>An Opportunity Presents Itself</h3>
+                <p>
+                    But one day, during a call with a leasing agent, I decided to ask for advice. I wanted to know
+                    if
+                    there
+                    was anything we could do to improve our chances of finding a place to live. The leasing agent
+                    told
+                    me
+                    something that would change everything: Zillow and other listing sites usually don't update
+                    until a
+                    day
+                    or two after the apartment's personal website updates. <span class="bold">If we wanted to stay
+                        ahead of the game,
+                        we
+                        would
+                        have to check the availability directly through their site.</span>
+                </p>
+                <h3>Monty Python Makes The Holy Grail</h3>
+                <p>
+                    I knew this was a great tip, but I was lazy and didn't want to spend all day checking each
+                    apartment
+                    complex's website. So, I had an idea. I decided to write a Python script that would do the heavy
+                    lifting
+                    for me. The script would create a WebDriver to go onto the apartment's website, scrape the live
+                    content,
+                    hash the content, save that hash locally to my computer, and then send a text message to me and
+                    my
+                    future roommates if the hash was different from the previous run. I set the script to run every
+                    thirty
+                    minutes, 24 hours a day.
+                </p>
+                <p>
+                    <span class="bold">A few days later, the bot found us an apartment that was close to a bus stop
+                        and well within our
+                        price
+                        range.</span>
+                    We applied and were approved quickly. We couldn't believe our luck! We were thrilled to
+                    have
+                    found a place to live during such a difficult time.
+                </p>
+                <p>
+                    Looking back, I realized that being rejected from studying abroad had led me down a path I never
+                    would
+                    have imagined. It had forced me to be creative and come up with a solution that not only solved
+                    my
+                    problem but also helped my friends.
+                </p>
+                <div class="flowchart">
+                    <img src="images/flowchart.png" alt="Apartment Bot Flow Chart">
+                </div>
+                <div class="whitespace"></div>
+                &nbsp
+        </main>
+    </div>
+</body>
+
+</html>

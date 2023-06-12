@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const svg = d3
       .select("#chart")
       .append("svg")
-      .attr("height", 300)
+      .attr("height", 250)
       .attr("width", 1400);
     // .attr("viewBox", `0 0 ${widthValue} ${heightValue}`);
     const margin = {
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const line = d3
       .line()
       .x((dataPoint) => xScale(dataPoint.year))
-      .y((dataPoint) => yScale(dataPoint.count - 2));
+      .y((dataPoint) => yScale(dataPoint.count));
 
     // Add path
     const path = grp

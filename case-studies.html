@@ -33,218 +33,30 @@
         </script>
         <!--end of Navigation bar-->
         <main>
-            <div class="header-image"><img src="images\microbiome.png" alt="microbiome"></div>
-            <h1>Mycobiome Cancer Analysis</h2>
-                <h3>Background + Context</h3>
-                <div class="casestudy-section">
-                    <div class="casestudy-text">
-                        <p>
-                            As a data scientist, I've always been interested in finding new ways to use data to solve
-                            important
-                            problems. One such problem is cancer detection. Every year, countless people are diagnosed
-                            with
-                            cancer,
-                            and getting an accurate and timely diagnosis can be critical in saving lives. So, when I
-                            heard
-                            about the
-                            idea that mycobiome data could be used to detect cancer, I was intrigued.
-                        </p>
-                        <p>
-                            The mycobiome is the collection of fungal organisms that live within our bodies. The idea
-                            was
-                            that by
-                            analyzing these organisms, we could potentially detect the presence of cancer. A previous
-                            study
-                            had
-                            already analyzed whether mycobiome data could distinguish between multiple common cancer
-                            types
-                            and found
-                            that it could. However, my colleagues and I wanted to take this research further.
-                        </p>
-                        <p>
-                            We had three main ideas. First, we wanted to investigate whether certain microbes were
-                            associated with
-                            late-stage cancer. If we could identify these microbes, we could potentially mute their
-                            effects
-                            to slow
-                            down or prevent cancer progression. Second, we wanted to find out whether certain microbes
-                            were
-                            associated with early-stage cancer or recovery. If we could identify these microbes, we
-                            could
-                            potentially introduce them into the tumor mycobiome to affect its development. Lastly, we
-                            wanted
-                            to see
-                            if mycobiome data could be used to accurately distinguish between cancer stages.
-                        </p>
-                    </div>
-                    <img class="casestudy-img" src="images\human-vs-microbes.png"
-                        alt="Comparing human genes (20,000) with microbial genes (2,000,000)">
+            <a class="casestudy-preview" href="case-studies/mycobiome.html">
+                <img class="casestudy-preview-img"
+                    src="https://www.uab.edu/news/media/k2/items/cache/e84ec87f15dcc0ea491d4bb9e6b133bd_XL.jpg"
+                    alt="Gut Mycobiome Microscope Render">
+                <div class="casestudy-preview-text align-right">
+                    <h2 class="casestudy-preview-title">Mycobiome Cancer Analysis</h2>
+                    <h3 class="casestudy-preview-subtitle">Unveiling the Hidden Power of Fungal Organisms: Exploring the
+                        Potential
+                        of Mycobiome Data in Cancer Detection.</h3>
                 </div>
-                <h3>Problem Produces an Idea</h3>
-                <div class="casestudy-section">
-                    <img src="images\stages.png" alt="consolidating stages" class="casestudy-img">
-                    <p>
-                        However, we quickly ran into a problem. We discovered that fungal data alone wasn't very useful
-                        for
-                        distinguishing between cancer stages. There were too many cancer substages, and accuracy was too
-                        low.
-                        So, we formulated a hypothesis.
-                        <span class="bold">
-                            If we consolidated cancer substages into the
-                            main four and
-                            reintroduced
-                            certain features from the metadata, we might be able to achieve high accuracy in predicting
-                            cancer
-                            stage.</span>
-                    </p>
+            </a>
+            <a class="casestudy-preview" href="case-studies/apartment-bot.html">
+                <div class="casestudy-preview-text align-left">
+                    <h2 class="casestudy-preview-title">Apartment Bot - How Rejection Can Lead to Creative Problem
+                        Solving</h2>
+                    <h3 class="casestudy-preview-subtitle">As I faced the heartbreak of being denied the chance to study
+                        abroad,
+                        little did I know that this rejection would ignite my imagination, leading me to develop an
+                        apartment-finding bot that transformed our housing crisis.</h3>
                 </div>
-                <h3>Process</h3>
-                <p>
-                    To test our hypothesis, we started by using the same dataset from the original analysis. We
-                    reintroduced
-                    metadata features such as age, sex, and sample type, and consolidated the cancer stages by mapping
-                    all
-                    substages to the parent stage. We also did some exploratory analysis and found that the dataset was
-                    slightly unbalanced, with certain cancer stages more represented than others. So, we subsetted our
-                    data
-                    by disease type and ran our models on each subset before generalizing our model accuracies into a
-                    weighted average.
-                </p>
-                <h3>Methods</h3>
-                <p>
-                    For classification, we made a gradient boosting classifier with stratified 10-folds cross-validation
-                    using scikit-learn. For the gradient boost classifier, we used exponential loss, a learning rate of
-                    0.1,
-                    n-estimators 150, and a max depth of 3. During the project, I primarily worked on preprocessing the
-                    data, which included initial data cleaning and setting up later model analysis.
-                </p>
-                <div class="casestudy-section">
-                    <div class="casestudy-text">
-                        <h3>Results</h3>
-                        <p>
-                            Our results were promising. <span class="bold">We were able to predict cancer stage with
-                                high accuracy for
-                                stages 1 and 4</span>
-
-                            , but stages 2 and 3 were more muddled. We found that many of our metadata features were
-                            one-hot
-                            encoded,
-                            so the most important features in the analysis became each unique value in the metadata.
-                        </p>
-                        <h3>Conclusion</h3>
-                        <p>
-                            While our model accuracy was great, the relatively low scoring importance of the fungal
-                            features
-                            meant
-                            that further analysis would be needed to determine what microbes could be responsible for
-                            cancer
-                            progression. Nonetheless, our findings showed that by introducing creativity and ingenuity
-                            to a
-                            well-studied dataset, novel results were still possible. We hope that other scientists will
-                            see
-                            the work
-                            we've done and build upon it to expand cancer research.
-                        </p>
-                    </div>
-                    <img src="https://github.com/mzh4ng/DSC180B_Q2_Project/blob/main/figures/default-cancer-stage/default-cancer-stage_AUROC.png?raw=true"
-                        alt="Cancer stage classification" class="casestudy-img">
-                </div>
-                <div class="whitespace"></div>
-
-                <div class="header-image"><img
-                        src="https://ar.rdcpix.com/8b247bbd6cf8f0bd5087491871f35d26c-f2653482268od-w480_h360_x2.jpg"
-                        alt="microbiome"></div>
-                <h1>Apartment Bot - How Rejection Can Lead to Creative Problem Solving</h2>
-                    <div class="casestudy-section">
-                        <div class="casestudy-test">
-                            <h3>The First of Many No's</h3>
-                            <p>
-                                I remember the summer of 2021 well. After months of planning, I was devastated to hear
-                                that
-                                I
-                                couldn't
-                                study abroad due to changes in my major prerequisites. It was a huge blow, and I felt
-                                like I
-                                had
-                                hit a
-                                dead end. I was faced with the daunting task of finding a place to live off-campus
-                                during a
-                                housing
-                                crisis.
-                            </p>
-                            <h3>At the End of Every Line</h3>
-                            <p>
-                                I teamed up with three of my first-year roommates to find an apartment, but we quickly
-                                found
-                                out
-                                that it
-                                was going to be much harder than we thought. Every day, we called leasing offices and
-                                followed
-                                up on
-                                Zillow and Apartments.com posts, but we were always too late. The properties we were
-                                interested
-                                in were
-                                already gone, or we had to put our names on long waitlists in the hopes that
-                                availability
-                                would
-                                open up.
-                            </p>
-                        </div>
-                        <img src="images\living-in-car.jpg" alt="Reddit post about UCSD student living in car"
-                            class="casestudy-img">
-                    </div>
-                    <h3>An Opportunity Presents Itself</h3>
-                    <p>
-                        But one day, during a call with a leasing agent, I decided to ask for advice. I wanted to know
-                        if
-                        there
-                        was anything we could do to improve our chances of finding a place to live. The leasing agent
-                        told
-                        me
-                        something that would change everything: Zillow and other listing sites usually don't update
-                        until a
-                        day
-                        or two after the apartment's personal website updates. <span class="bold">If we wanted to stay
-                            ahead of the game,
-                            we
-                            would
-                            have to check the availability directly through their site.</span>
-                    </p>
-                    <h3>Monty Python Makes The Holy Grail</h3>
-                    <p>
-                        I knew this was a great tip, but I was lazy and didn't want to spend all day checking each
-                        apartment
-                        complex's website. So, I had an idea. I decided to write a Python script that would do the heavy
-                        lifting
-                        for me. The script would create a WebDriver to go onto the apartment's website, scrape the live
-                        content,
-                        hash the content, save that hash locally to my computer, and then send a text message to me and
-                        my
-                        future roommates if the hash was different from the previous run. I set the script to run every
-                        thirty
-                        minutes, 24 hours a day.
-                    </p>
-                    <p>
-                        <span class="bold">A few days later, the bot found us an apartment that was close to a bus stop
-                            and well within our
-                            price
-                            range.</span>
-                        We applied and were approved quickly. We couldn't believe our luck! We were thrilled to
-                        have
-                        found a place to live during such a difficult time.
-                    </p>
-                    <p>
-                        Looking back, I realized that being rejected from studying abroad had led me down a path I never
-                        would
-                        have imagined. It had forced me to be creative and come up with a solution that not only solved
-                        my
-                        problem but also helped my friends.
-                    </p>
-                    <div class="flowchart">
-                        <img src="images/flowchart.png" alt="Apartment Bot Flow Chart">
-                    </div>
-                    <div class="whitespace"></div>
-                    &nbsp
+                <img class="casestudy-preview-img"
+                    src="https://resource.rentcafe.com/image/upload/x_0,y_0/q_auto,f_auto,c_fill,w_576,h_410,g_auto/s3/2/85119/miranda_26-edit.jpg"
+                    alt="Apartment Complex">
+            </a>
         </main>
     </div>
 </body>
