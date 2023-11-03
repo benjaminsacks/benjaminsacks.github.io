@@ -1,70 +1,54 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ben_sacks</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>ben_sacks</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,900&family=Space+Mono:wght@700&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,900&family=Space+Mono:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-  <script src="app.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="app.js"></script>
 </head>
 
 <body>
-  <div class="wrapper">
-    <!--Navigation bar-->
-    <div id="nav-placeholder">
-
+    <div class="container wrapper">
+        <div class="row text-center">
+            <div class="col-2 border border-primary mt-5 mb-5">
+                This is a col.
+            </div>
+            <div class="col-5 border border-primary mt-4 mb-5">
+                This is a col.
+            </div>
+            <div class="col-5 border border-primary">
+                This is a col.
+            </div>
+            <div class="col-5 border border-primary">
+                This is a col.
+            </div>
+        </div>
     </div>
 
-    <script>
-      $(function () {
-        $("#nav-placeholder").load("assets/nav.html");
-      });
-    </script>
-    <!--end of Navigation bar-->
-
-    <main>
-      <div id="chart"></div>
-      <h1 class="hero">ben<span class="yellow">_</span>sacks</h1>
-      <h2 class="subtitle">hi. i'm a <span class="yellow mono">data</span> <span class="yellow mono">scientist</span>
-        and <span class="yellow italic">designer</span>
-        based out of san
-        diego
-      </h2>
-      <div class="whitespace"></div>
-      <a class="casestudy-preview" href="case-studies/mycobiome.html">
-        <img class="casestudy-preview-img"
-          src="https://www.uab.edu/news/media/k2/items/cache/e84ec87f15dcc0ea491d4bb9e6b133bd_XL.jpg"
-          alt="Gut Mycobiome Microscope Render">
-        <div class="casestudy-preview-text align-right">
-          <h2 class="casestudy-preview-title">Mycobiome Cancer Analysis</h2>
-          <h3 class="casestudy-preview-subtitle">Unveiling the Hidden Power of Fungal Organisms: Exploring the Potential
-            of Mycobiome Data in Cancer Detection.</h3>
-        </div>
-      </a>
-      <a class="casestudy-preview" href="case-studies/apartment-bot.html">
-        <div class="casestudy-preview-text align-left">
-          <h2 class="casestudy-preview-title">Apartment Bot - How Rejection Can Lead to Creative Problem Solving</h2>
-          <h3 class="casestudy-preview-subtitle">As I faced the heartbreak of being denied the chance to study abroad,
-            little did I know that this rejection would ignite my imagination, leading me to develop an
-            apartment-finding bot that transformed our housing crisis.</h3>
-        </div>
-        <img class="casestudy-preview-img"
-          src="https://resource.rentcafe.com/image/upload/x_0,y_0/q_auto,f_auto,c_fill,w_576,h_410,g_auto/s3/2/85119/miranda_26-edit.jpg"
-          alt="Apartment Complex">
-      </a>
-    </main>
-  </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>
