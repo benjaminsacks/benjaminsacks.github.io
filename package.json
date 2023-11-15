@@ -1,9 +1,5 @@
 {
   "dependencies": {
-    "bootstrap": "^5.3.2",
-    "node-sass": "^9.0.0"
-  },
-    "scripts": {
-    "compile-sass": "node-sass styles.scss -o ."
+    "bootstrap": "^4.6.2"
   }
 }

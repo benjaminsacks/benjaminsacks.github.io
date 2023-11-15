@@ -1,7 +1,16 @@
-// Import Bootstrap source files
 @import 'node_modules/bootstrap/scss/bootstrap';
 
-// Add your custom styles below
+$bg: #1E1E1E;
+$grid: #333;
+
 body {
-  background-color: lightgray;
+  background-color: $bg;
+}
+.wrapper {
+  background-size: 100px 100px;
+  background-image:
+    linear-gradient(to right, $grid 1px, transparent 1px),
+    linear-gradient(to bottom, $grid 1px, transparent 1px);
+  max-width: 1201px;
+  margin: 0 auto;
 }
