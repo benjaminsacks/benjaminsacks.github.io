@@ -1,0 +1,62 @@
+// Bootstrap Variables
+$body-bg: #1E1E1E;
+$light: #e9e9e9;
+
+// Custom Variables
+$grid-color: #333;
+$transparent: rgb(0, 0, 0, 0);
+
+@import '../node_modules/bootstrap/scss/bootstrap';
+
+.wrapper {
+  margin: 0 auto;
+  background-size: 100px 100px;
+  background-image:
+    linear-gradient(to right, $grid-color 1px, transparent 1px),
+    linear-gradient(to bottom, $grid-color 1px, transparent 1px);
+  max-width: 1201px;
+}
+@media (max-width: 1200px) { 
+  // Large
+  .wrapper {
+    background-size: 83px 83px;
+    max-width: 997px;
+  }
+}
+@media (max-width: 992px) {
+  // Medium
+  .wrapper {
+    background-size: 96px 96px;
+    max-width: 769px;
+  }
+}
+@media (max-width: 768px) {
+  // Small
+  .wrapper {
+    max-width: 577px;
+  }
+}
+@media (max-width: 576px) {
+  // X-Small
+  .wrapper {
+    background-size: 23vw 23vw;
+    max-width: calc(92vw + 1px);
+  }
+}
+
+.btn-bd-resume {
+  color: $light;
+  border-color: $light;
+  border-radius: 0;
+  border-width: 0.1em;
+}
+
+.btn-bd-resume:hover,
+.btn-bd-resume:active,
+.btn-bd-resume:focus,
+.btn-bd-resume.active {
+  background: $light;
+  color: $body-bg;
+  border-color: $body-bg;
+  
+}
