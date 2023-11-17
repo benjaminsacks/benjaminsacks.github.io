@@ -1,6 +1,7 @@
 // Bootstrap Variables
 $body-bg: #1E1E1E;
 $light: #e9e9e9;
+$font-family-base: "Playfair Display";
 
 // Custom Variables
 $grid-color: #333;
@@ -44,19 +45,41 @@ $transparent: rgb(0, 0, 0, 0);
   }
 }
 
-.btn-bd-resume {
+.btn-bd-nav-icon {
   color: $light;
   border-color: $light;
   border-radius: 0;
   border-width: 0.1em;
 }
 
-.btn-bd-resume:hover,
-.btn-bd-resume:active,
-.btn-bd-resume:focus,
-.btn-bd-resume.active {
+@media (min-width: 576px) {
+  // X-Small
+  .btn-bd-half-btn {
+    border-left: 0;
+  }
+}
+
+.btn-bd-nav-icon:hover,
+.btn-bd-nav-icon:focus,
+.btn-bd-nav-icon.active {
   background: $light;
   color: $body-bg;
-  border-color: $body-bg;
-  
+  font-weight: 500;
+}
+
+.btn-bd-nav-icon:hover .color-change,
+.btn-bd-nav-icon:focus .color-change,
+.btn-bd-nav-icon.active .color-change {
+  fill: $body-bg;
+  transition: $transition-base;
+}
+
+
+.navbar-toggler,
+.navbar-toggler:focus,
+.navbar-toggler:active,
+.navbar-toggler-icon:focus {
+    outline: none;
+    border: none;
+    box-shadow: none;
 }

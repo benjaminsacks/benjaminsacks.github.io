@@ -74,7 +74,7 @@
   --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
-  --bs-body-font-family: var(--bs-font-sans-serif);
+  --bs-body-font-family: "Playfair Display";
   --bs-body-font-size: 1rem;
   --bs-body-font-weight: 400;
   --bs-body-line-height: 1.5;
@@ -5731,7 +5731,7 @@ textarea.form-control-lg {
   z-index: var(--bs-tooltip-zindex);
   display: block;
   margin: var(--bs-tooltip-margin);
-  font-family: var(--bs-font-sans-serif);
+  font-family: "Playfair Display";
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
@@ -5841,7 +5841,7 @@ textarea.form-control-lg {
   z-index: var(--bs-popover-zindex);
   display: block;
   max-width: var(--bs-popover-max-width);
-  font-family: var(--bs-font-sans-serif);
+  font-family: "Playfair Display";
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
@@ -12006,18 +12006,38 @@ textarea.form-control-lg {
     max-width: calc(92vw + 1px);
   }
 }
-.btn-bd-resume {
+.btn-bd-nav-icon {
   color: #e9e9e9;
   border-color: #e9e9e9;
   border-radius: 0;
   border-width: 0.1em;
 }
 
-.btn-bd-resume:hover,
-.btn-bd-resume:active,
-.btn-bd-resume:focus,
-.btn-bd-resume.active {
+@media (min-width: 576px) {
+  .btn-bd-half-btn {
+    border-left: 0;
+  }
+}
+.btn-bd-nav-icon:hover,
+.btn-bd-nav-icon:focus,
+.btn-bd-nav-icon.active {
   background: #e9e9e9;
   color: #1E1E1E;
-  border-color: #1E1E1E;
+  font-weight: 500;
+}
+
+.btn-bd-nav-icon:hover .color-change,
+.btn-bd-nav-icon:focus .color-change,
+.btn-bd-nav-icon.active .color-change {
+  fill: #1E1E1E;
+  transition: all 0.2s ease-in-out;
+}
+
+.navbar-toggler,
+.navbar-toggler:focus,
+.navbar-toggler:active,
+.navbar-toggler-icon:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
 }/*# sourceMappingURL=styles.css.map */
