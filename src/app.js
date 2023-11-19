@@ -4,23 +4,73 @@ Array.prototype.sample = function () {
 var dataset = ["bigfoot_sightings.csv", "ufo_sightings.csv"].sample();
 
 document.addEventListener("DOMContentLoaded", function () {
+  // const rem = getComputedStyle(document.body).getPropertyValue("font-size");
+  const vw = Math.max(
+    document.documentElement.clientWidth || 0,
+    window.innerWidth || 0
+  );
+  var chartWidth = vw;
+  var chartHeight = chartWidth * 0.5;
+  var margin = {
+    top: chartWidth * 0.1,
+    bottom: chartWidth * 0.1,
+    left: chartWidth * 0.125 + 0.04*vw,
+    right: chartWidth * 0.125 + 0.04*vw,
+  };
+  var numTicks = 2;
+
+  if (vw > 1200) {
+    chartWidth = 100 * 12;
+    chartHeight = 100 * 3 + 76;
+    margin = {
+      top: 76,
+      bottom: 100,
+      left: 100,
+      right: 100,
+    };
+    numTicks = 10;
+  } else if (vw > 992) {
+    chartWidth = 83 * 12;
+    chartHeight = 83 * 4 + 8;
+    margin = {
+      top: 32 + 8,
+      bottom: 83,
+      left: 83,
+      right: 83,
+    };
+    numTicks = 10;
+  } else if (vw > 768) {
+    chartWidth = 96 * 8;
+    chartHeight = 96 * 3 + 60;
+    margin = {
+      top: 60,
+      bottom: 96,
+      left: 96,
+      right: 96,
+    };
+    numTicks = 10;
+  } else if (vw > 576) {
+    chartWidth = 96 * 6;
+    chartHeight = 96 * 3 + 60;
+    margin = {
+      top: 60,
+      bottom: 96,
+      left: 96,
+      right: 96,
+    };
+    numTicks = 10;
+  }
+
   d3.csv("datasets//" + dataset).then(function (data) {
     // Create SVG and padding for the chart
     const svg = d3
       .select("#chart")
       .append("svg")
-      .attr("height", 250)
-      .attr("width", 1400);
-    // .attr("viewBox", `0 0 ${widthValue} ${heightValue}`);
-    const margin = {
-      top: 0,
-      bottom: 50,
-      left: 101,
-      right: 102,
-    };
+      .attr("height", chartHeight)
+      .attr("width", chartWidth);
     const chart = svg
       .append("g")
-      .attr("transform", `translate(${margin.left},1)`);
+      .attr("transform", `translate(${margin.left},${margin.top})`);
     const width = +svg.attr("width") - margin.left - margin.right;
     const height = +svg.attr("height") - margin.top - margin.bottom;
     const grp = chart
@@ -31,10 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const yScale = d3
       .scaleLinear()
       .range([height, 0])
-      .domain([
-        0,
-        d3.max(data, (dataPoint) => parseInt(dataPoint.count)), //TODO: Change 1.09 to fit grid
-      ]);
+      .domain([0, d3.max(data, (dataPoint) => parseInt(dataPoint.count))]);
     const xScale = d3
       .scaleLinear()
       .range([0, width])
@@ -43,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const line = d3
       .line()
       .x((dataPoint) => xScale(dataPoint.year))
-      .y((dataPoint) => yScale(dataPoint.count));
+      .y((dataPoint) => yScale(dataPoint.count) + margin.top);
 
     // Add path
     const path = grp
@@ -69,10 +116,9 @@ document.addEventListener("DOMContentLoaded", function () {
     chart
       .append("g")
       .attr("transform", `translate(0,${height})`)
-      .attr("class", "axisOffWhite")
-      .attr("stroke-width", 2)
-      .style("font-size", 18)
-      .call(d3.axisBottom(xScale).ticks(10).tickFormat(d3.format("d")));
+      .attr("class", "chart-axis")
+      .style("font-size", "1rem")
+      .call(d3.axisBottom(xScale).ticks(numTicks).tickFormat(d3.format("d")));
 
     // Add the Y Axis
     const maxCount = d3.max(data, (dataPoint) => parseInt(dataPoint.count));
@@ -80,19 +126,18 @@ document.addEventListener("DOMContentLoaded", function () {
     chart
       .append("g")
       .attr("transform", `translate(0, 0)`)
-      .attr("class", "axisOffWhite")
-      .attr("stroke-width", 2)
-      .style("font-size", 18)
+      .attr("class", "chart-axis")
+      .style("font-size", "1rem")
       .call(d3.axisLeft(yScale).ticks(2).tickValues([0, maxTick]));
 
     chart
       .append("text")
       .attr("class", "ylabel")
-      .attr("text-anchor", "center")
-      .attr("y", -50)
-      .attr("dx", "-12em")
-      .attr("transform", "rotate(-90)")
-      .style("font-size", 18)
+      .attr("text-anchor", "end")
+      .attr("y", "-1em")
+      .attr("x", chartWidth - 2 * margin.right)
+      // .attr("transform", "rotate(90)")
+      // .style("font-size", 18)
       .text(dataset);
   });
 });

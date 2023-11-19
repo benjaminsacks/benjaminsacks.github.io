@@ -10,6 +10,8 @@ $accent_color: #e3b505;
 
 @import "../node_modules/bootstrap/scss/bootstrap";
 
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Space+Mono:wght@700&display=swap");
+
 // Grid
 .wrapper {
   margin: 0 auto;
@@ -117,4 +119,33 @@ $accent_color: #e3b505;
 .mono {
   font-family: "Space Mono";
   font-kerning: normal;
+}
+
+/* Chart */
+@media (max-width: 576px) {
+  // X-Small
+  #chart {
+    margin-left: -4vw;
+  }
+}
+.chartLine {
+  stroke: $accent_color;
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.chart-axis path,
+.chart-axis line {
+  stroke-width: 2;
+  stroke: $body-color;
+}
+.chart-axis text {
+  fill: $body-color;
+  font-family: "Playfair Display";
+}
+.ylabel {
+  fill: $accent_color;
+  font-family: "Playfair Display";
+  font-style: italic;
+  // letter-spacing: 1px;
 }

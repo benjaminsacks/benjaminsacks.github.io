@@ -4,6 +4,7 @@
  * Copyright 2011-2023 The Bootstrap Authors
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Space+Mono:wght@700&display=swap");
 :root,
 [data-bs-theme=light] {
   --bs-blue: #0d6efd;
@@ -12073,4 +12074,34 @@ textarea.form-control-lg {
 .mono {
   font-family: "Space Mono";
   font-kerning: normal;
+}
+
+/* Chart */
+@media (max-width: 576px) {
+  #chart {
+    margin-left: -4vw;
+  }
+}
+.chartLine {
+  stroke: #e3b505;
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart-axis path,
+.chart-axis line {
+  stroke-width: 2;
+  stroke: #e9e9e9;
+}
+
+.chart-axis text {
+  fill: #e9e9e9;
+  font-family: "Playfair Display";
+}
+
+.ylabel {
+  fill: #e3b505;
+  font-family: "Playfair Display";
+  font-style: italic;
 }/*# sourceMappingURL=styles.css.map */
