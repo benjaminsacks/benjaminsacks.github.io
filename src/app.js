@@ -9,54 +9,59 @@ document.addEventListener("DOMContentLoaded", function () {
     document.documentElement.clientWidth || 0,
     window.innerWidth || 0
   );
+  var gridUnit = 0.92 * 0.25 * vw;
   var chartWidth = vw;
   var chartHeight = chartWidth * 0.5;
   var margin = {
     top: chartWidth * 0.1,
     bottom: chartWidth * 0.1,
-    left: chartWidth * 0.125 + 0.04*vw,
-    right: chartWidth * 0.125 + 0.04*vw,
+    left: chartWidth * 0.125 + 0.04 * vw,
+    right: chartWidth * 0.125 + 0.03 * vw,
   };
   var numTicks = 2;
 
   if (vw > 1200) {
-    chartWidth = 100 * 12;
-    chartHeight = 100 * 3 + 76;
+    gridUnit = 100;
+    chartWidth = gridUnit * 12;
+    chartHeight = gridUnit * 3 + 76;
     margin = {
       top: 76,
-      bottom: 100,
-      left: 100,
-      right: 100,
+      bottom: gridUnit,
+      left: gridUnit,
+      right: gridUnit,
     };
     numTicks = 10;
   } else if (vw > 992) {
-    chartWidth = 83 * 12;
-    chartHeight = 83 * 4 + 8;
+    gridUnit = 83;
+    chartWidth = gridUnit * 12;
+    chartHeight = gridUnit * 4 + 8;
     margin = {
       top: 32 + 8,
-      bottom: 83,
-      left: 83,
-      right: 83,
+      bottom: gridUnit,
+      left: gridUnit,
+      right: gridUnit,
     };
     numTicks = 10;
   } else if (vw > 768) {
-    chartWidth = 96 * 8;
-    chartHeight = 96 * 3 + 60;
+    gridUnit = 96;
+    chartWidth = gridUnit * 8;
+    chartHeight = gridUnit * 3 + 60;
     margin = {
       top: 60,
-      bottom: 96,
-      left: 96,
-      right: 96,
+      bottom: gridUnit,
+      left: gridUnit,
+      right: gridUnit,
     };
     numTicks = 10;
   } else if (vw > 576) {
-    chartWidth = 96 * 6;
-    chartHeight = 96 * 3 + 60;
+    gridUnit = 96;
+    chartWidth = gridUnit * 6;
+    chartHeight = gridUnit * 3 + 60;
     margin = {
       top: 60,
-      bottom: 96,
-      left: 96,
-      right: 96,
+      bottom: gridUnit,
+      left: gridUnit,
+      right: gridUnit,
     };
     numTicks = 10;
   }
@@ -140,8 +145,16 @@ document.addEventListener("DOMContentLoaded", function () {
       // .style("font-size", 18)
       .text(dataset);
   });
+
+  var projectPreviews = document.getElementById("project-previews");
+  var projectPreviewsRect = projectPreviews.getBoundingClientRect();
+  var wrapperRect = document.getElementById("wrapper").getBoundingClientRect();
+
+  var offset =
+    (projectPreviewsRect.top + chartHeight - wrapperRect.top - 5) % gridUnit;
+  projectPreviews.style.marginTop = (gridUnit - offset - 5).toString() + "px";
 });
 
-// window.onresize = function () {
-//   location.reload();
-// };
+window.onresize = function () {
+  location.reload();
+};
