@@ -1,0 +1,19 @@
+// Bootstrap Variables
+$body-bg: #1e1e1e;
+$body-color: #e9e9e9;
+$font-family-base: "Playfair Display";
+
+// Custom Variables
+$grid-color: #333;
+$transparent: rgb(0, 0, 0, 0);
+$accent_color: #e3b505;
+
+// External imports
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Space+Mono:wght@700&display=swap");
+@import "../../node_modules/bootstrap/scss/bootstrap"; //TODO: change to non-local import
+
+// Custom styles
+@import "../scss/bs-grid";
+@import "../scss/bs-navbar";
+@import "../scss/bs-hero";
+@import "../scss/bs-chart";

@@ -1,0 +1,26 @@
+@media (max-width: 576px) {
+  // X-Small
+  #chart {
+    margin-left: -4vw;
+  }
+}
+.chartLine {
+  stroke: $accent_color;
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.chart-axis path,
+.chart-axis line {
+  stroke-width: 2;
+  stroke: $body-color;
+}
+.chart-axis text {
+  fill: $body-color;
+  font-family: "Playfair Display";
+}
+.ylabel {
+  fill: $accent_color;
+  font-family: "Playfair Display";
+  font-style: italic;
+}

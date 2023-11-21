@@ -1,0 +1,32 @@
+.hero {
+  font-size: 4rem;
+  font-weight: bold;
+}
+@media (max-width: 350px) {
+  // X-Small
+  .hero {
+    font-size: 18vw;
+  }
+}
+
+.subtitle {
+  font-size: 2.3rem;
+  font-weight: bold;
+}
+@media (max-width: 576px) {
+  // X-Small
+  .subtitle {
+    font-size: 6vw;
+  }
+}
+
+.italic {
+  font-style: italic;
+}
+.accent_color {
+  color: $accent_color;
+}
+.mono {
+  font-family: "Space Mono";
+  font-kerning: normal;
+}
