@@ -13,10 +13,12 @@
 </head>
 
 <body>
+  <div class="top-whitespace fixed-top"></div>
   <div class="wrapper" id="wrapper">
-    <div class="row g-0 mt-3">
+    <div class="wrapper nav-grid-rect mt-3"></div>
+    <div class="nav-wrapper row g-0 mt-3 fixed-top">
       <div class="col pe-0">
-        <nav class="navbar navbar-expand-sm navbar-dark bg-transparent pt-0">
+        <nav class="navbar navbar-expand-sm navbar-dark bg-transparent py-0">
           <button class="navbar-toggler p-0" type="button" data-toggle="collapse" data-target="#navbarLeft"
             aria-controls="navbarLeft" aria-expanded="false" aria-label="Toggle navigation">
             <img src="src/icons/menu-icon.svg"></img>
@@ -24,25 +26,25 @@
 
 
           <div class="collapse navbar-collapse" id="navbarLeft">
-            <ul class="navbar-nav mr-auto">
+            <ul class="navbar-nav me-auto">
               <li class="nav-item active">
                 <a class="btn btn-bd-nav-icon my-1 my-sm-0 p-2 d-flex justify-content-start align-items-center"
                   href="#">
-                  <img src="src/icons/cases-icon.svg"></img>
+                  <div id="cases-icon"></div>
                   <span class="d-sm-none ps-2">Projects</span>
                 </a>
               </li>
               <li class="nav-item">
                 <a class="btn btn-bd-nav-icon btn-bd-half-btn p-2 d-flex justify-content-start align-items-center"
                   href="#">
-                  <img src="src/icons/camera-icon.svg"></img>
+                  <div id="camera-icon"></div>
                   <span class="d-sm-none ps-2">Photography</span>
                 </a>
               </li>
               <li class="nav-item">
                 <a class="btn btn-bd-nav-icon btn-bd-half-btn my-1 my-sm-0 p-2 d-flex justify-content-start align-items-center"
                   href="#">
-                  <img src="src/icons/smile-icon.svg"></img>
+                  <div id="smile-icon"></div>
                   <span class="d-sm-none ps-2">About Me</span>
                 </a>
               </li>
@@ -52,21 +54,15 @@
       </div>
       <div class="col ps-0">
         <a class="btn btn-bd-nav-icon float-end p-2 d-flex justify-content-start align-items-center" href="#">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9.30417 20.7083H18.6958V18.9583H9.30417V20.7083ZM9.30417 15.75H18.6958V14H9.30417V15.75Z"
-              fill="#E3B505" />
-            <path d="M18.6958 20.7083H9.30417V18.9583H18.6958V20.7083Z" fill="#E3B505" />
-            <path d="M18.6958 15.75H9.30417V14H18.6958V15.75Z" fill="#E3B505" />
-            <path class="color-change"
-              d="M6.41666 25.6666C5.94999 25.6666 5.54166 25.4916 5.19166 25.1416C4.84166 24.7916 4.66666 24.3833 4.66666 23.9166V4.08331C4.66666 3.61665 4.84166 3.20831 5.19166 2.85831C5.54166 2.50831 5.94999 2.33331 6.41666 2.33331H16.9458L23.3333 8.72081V23.9166C23.3333 24.3833 23.1583 24.7916 22.8083 25.1416C22.4583 25.4916 22.05 25.6666 21.5833 25.6666H6.41666ZM16.0708 9.50831V4.08331H6.41666V23.9166H21.5833V9.50831H16.0708Z"
-              fill="#E9E9E9" />
-          </svg>
+          <div id="doc-icon"></div>
           <span class="d-none d-sm-inline ps-2">Resume</span>
         </a>
       </div>
     </div>
-    <div class="row justify-content-center">
-      <h1 class="hero text-center my-5">ben<span class="accent_color">_</span>sacks</h1>
+    <div class="he-row wrapper row sticky-top align-items-center">
+      <h1 class="hero text-center">ben<span class="accent_color">_</span>sacks</h1>
+    </div>
+    <div class="row justify-content-center mt-4 mt-lg-4 mt-xl-5">
       <h2 class="subtitle text-center col-md-9 col-lg-7 col-xl-6">
         hi. i'm a
         <span class="accent_color mono">data</span> <span class="accent_color mono">scientist</span>

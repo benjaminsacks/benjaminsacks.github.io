@@ -1,33 +1,71 @@
+.top-whitespace {
+  height: calc($spacer + 1px);
+  background-image: linear-gradient(
+    to bottom,
+    $body-bg $spacer,
+    $grid-color 1px
+  );
+}
+.nav-grid-rect {
+  top: $spacer;
+  height: 100px;
+}
 .wrapper {
-  margin: 0 auto;
   background-size: 100px 100px;
   background-image: linear-gradient(to right, $grid-color 1px, transparent 1px),
-    linear-gradient(to bottom, $grid-color 1px, transparent 1px);
+    linear-gradient(to bottom, $grid-color 1px, $body-bg 1px);
+}
+.wrapper,
+.top-whitespace,
+.nav-wrapper {
+  margin: 0 auto;
   max-width: 1201px;
 }
+
 @media (max-width: 1200px) {
   // Large
-  .wrapper {
+  .nav-grid-rect {
+    height: 83px;
+  }
+  .wrapper,
+  .top-whitespace,
+  .nav-wrapper {
     background-size: 83px 83px;
     max-width: 997px;
   }
 }
 @media (max-width: 992px) {
   // Medium
-  .wrapper {
+  .nav-grid-rect {
+    height: 96px;
+  }
+  .wrapper,
+  .top-whitespace,
+  .nav-wrapper {
     background-size: 96px 96px;
     max-width: 769px;
   }
 }
 @media (max-width: 768px) {
   // Small
-  .wrapper {
+  .nav-grid-rect {
+    height: 96px;
+  }
+  .wrapper,
+  .top-whitespace,
+  .nav-wrapper {
+    background-size: 96px 96px;
     max-width: 577px;
   }
 }
 @media (max-width: 576px) {
   // X-Small
-  .wrapper {
+  .nav-grid-rect {
+    height: 23vw;
+  }
+  .wrapper,
+  .top-whitespace,
+  .nav-wrapper {
     background-size: 23vw 23vw;
     max-width: calc(92vw + 1px);
   }

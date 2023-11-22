@@ -1,3 +1,17 @@
+.he-row {
+  height: 101px;
+  top: $spacer;
+  overflow: hidden;
+}
+/* prettier-ignore */
+@media (max-width: 1200px) { .he-row { height: 84px; } }
+/* prettier-ignore */
+@media (max-width: 992px) { .he-row { height: 97px; } }
+/* prettier-ignore */
+@media (max-width: 768px) { .he-row { height: 97px; } }
+/* prettier-ignore */
+@media (max-width: 576px) { .he-row { height: calc(23vw + 1px); } }
+
 .hero {
   font-size: 4rem;
   font-weight: bold;
