@@ -16,6 +16,7 @@ importHTML("camera-icon");
 importHTML("smile-icon");
 importHTML("doc-icon");
 
+// TODO: modularize this b
 const hero = document.getElementById("hero");
 
 function handleScroll() {
