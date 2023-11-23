@@ -1,7 +1,8 @@
 .he-row {
   height: 101px;
-  top: $spacer;
+  top: calc($spacer - 2.5rem);
   overflow: hidden;
+  border-color: #333;
 }
 /* prettier-ignore */
 @media (max-width: 1200px) { .he-row { height: 84px; } }
@@ -13,8 +14,10 @@
 @media (max-width: 576px) { .he-row { height: calc(23vw + 1px); } }
 
 .hero {
+  color: $body-color;
   font-size: 4rem;
   font-weight: bold;
+  margin-top: 4px;
 }
 @media (max-width: 350px) {
   // X-Small
