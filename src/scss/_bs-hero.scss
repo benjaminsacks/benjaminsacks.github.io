@@ -1,8 +1,8 @@
 .he-row {
-  height: 101px;
-  top: calc($spacer - 2.5rem);
+  // height: 101px;
+  // top: calc($spacer - 2.5rem);
+  top: $spacer;
   overflow: hidden;
-  border-color: #333;
 }
 /* prettier-ignore */
 @media (max-width: 1200px) { .he-row { height: 84px; } }
