@@ -1,78 +1,51 @@
+.page-width {
+  margin: 0 auto;
+  max-width: 1201px;
+}
 .top-whitespace {
+  @extend .page-width;
   height: calc($spacer + 1px);
   background-image: linear-gradient(
     to bottom,
     $body-bg $spacer,
-    $grid-color 1px
+    $secondary 1px
   );
 }
-.grid-row-rect {
-  top: $spacer;
+.grid-row {
   height: 100px;
 }
 .wrapper {
+  @extend .page-width;
+  top: $spacer;
   background-size: 100px 100px;
-  background-image: linear-gradient(to right, $grid-color 1px, transparent 1px),
-    linear-gradient(to bottom, $grid-color 1px, $body-bg 1px);
+  background-image: linear-gradient(to right, $secondary 1px, transparent 1px),
+    linear-gradient(to bottom, $secondary 1px, $body-bg 1px);
 }
-// TODO: make this work on all screen sizes
-.hero-wrapper {
-  background-size: 100px;
-  background-image: linear-gradient(to right, $grid-color 1px, $body-bg 1px);
-}
-.wrapper,
-.hero-wrapper,
-.top-whitespace,
-.nav-wrapper {
-  margin: 0 auto;
-  max-width: 1201px;
-}
-
 @media (max-width: 1200px) {
   // Large
-  .grid-row-rect {
-    height: 83px;
-  }
-  .wrapper,
-  .top-whitespace,
-  .nav-wrapper {
-    background-size: 83px 83px;
-    max-width: 997px;
+  .page-width {
+    max-width: 1001px;
   }
 }
 @media (max-width: 992px) {
   // Medium
-  .grid-row-rect {
-    height: 96px;
-  }
-  .wrapper,
-  .top-whitespace,
-  .nav-wrapper {
-    background-size: 96px 96px;
-    max-width: 769px;
+  .page-width {
+    max-width: 801px;
   }
 }
 @media (max-width: 768px) {
   // Small
-  .grid-row-rect {
-    height: 96px;
-  }
-  .wrapper,
-  .top-whitespace,
-  .nav-wrapper {
-    background-size: 96px 96px;
-    max-width: 577px;
+  .page-width {
+    max-width: 601px;
   }
 }
 @media (max-width: 576px) {
   // X-Small
-  .grid-row-rect {
-    height: 23vw;
+  .page-width {
+    max-width: calc(92vw + 1px);
   }
   .wrapper,
-  .top-whitespace,
-  .nav-wrapper {
+  .top-whitespace {
     background-size: 23vw 23vw;
-    max-width: calc(92vw + 1px);
   }
 }

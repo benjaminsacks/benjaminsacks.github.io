@@ -1,26 +1,33 @@
-.he-row {
-  // height: 101px;
-  // top: calc($spacer - 2.5rem);
-  top: $spacer;
-  overflow: hidden;
-}
-/* prettier-ignore */
-@media (max-width: 1200px) { .he-row { height: 84px; } }
-/* prettier-ignore */
-@media (max-width: 992px) { .he-row { height: 97px; } }
-/* prettier-ignore */
-@media (max-width: 768px) { .he-row { height: 97px; } }
-/* prettier-ignore */
-@media (max-width: 576px) { .he-row { height: calc(23vw + 1px); } }
+// .hero {
+//   top: $spacer;
+//   overflow: hidden;
+// }
+// /* prettier-ignore */
+// @media (max-width: 1200px) { .hero { height: 84px; } }
+// /* prettier-ignore */
+// @media (max-width: 992px) { .hero { height: 97px; } }
+// /* prettier-ignore */
+// @media (max-width: 768px) { .hero { height: 97px; } }
+// /* prettier-ignore */
+// @media (max-width: 576px) { .hero { height: calc(23vw + 1px); } }
 
+// TODO: Try again at fixing the sticky-top
+// TODO: Growing border?
 .hero {
+  font-size: 0;
+  padding-top: calc(100px - 1.5 * 4rem);
+}
+.hero span {
   color: $body-color;
   font-size: 4rem;
   font-weight: bold;
 }
+// TODO: Fix for small screens
+/* prettier-ignore */
+@media (max-width: 576px) { .hero { padding-top: calc(23vw - 1.5 * 4rem); } }
 @media (max-width: 350px) {
   // X-Small
-  .hero {
+  .hero span {
     font-size: 18vw;
   }
 }
@@ -36,12 +43,6 @@
   }
 }
 
-.italic {
-  font-style: italic;
-}
-.accent_color {
-  color: $accent_color;
-}
 .mono {
   font-family: "Space Mono";
   font-kerning: normal;

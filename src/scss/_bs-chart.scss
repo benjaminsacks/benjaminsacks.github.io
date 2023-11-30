@@ -5,7 +5,7 @@
   }
 }
 .chartLine {
-  stroke: $accent_color;
+  stroke: $primary;
   fill: none;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -20,7 +20,7 @@
   font-family: "Playfair Display";
 }
 .ylabel {
-  fill: $accent_color;
+  fill: $primary;
   font-family: "Playfair Display";
   font-style: italic;
 }

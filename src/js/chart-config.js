@@ -13,6 +13,7 @@ var margin = {
 };
 var numTicks = 2;
 
+// TODO: Fix Chart config
 if (vw > 1200) {
   gridUnit = 100;
   chartWidth = gridUnit * 12;

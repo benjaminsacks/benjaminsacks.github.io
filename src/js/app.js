@@ -1,10 +1,10 @@
-import { shrinkHero } from "./shrink-hero.js";
+// import { shrinkHero } from "./shrink-hero.js";
 import { heroChart } from "./chart.js";
 import { offsetPreviews } from "./offset-previews.js";
 import { importHTML } from "./import-html.js";
 
 document.addEventListener("DOMContentLoaded", function () {
-  shrinkHero();
+  // shrinkHero();
   heroChart();
   offsetPreviews();
 });
@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
 window.onresize = function () {
   location.reload();
 };
-window.onscroll = shrinkHero;
+// window.onscroll = shrinkHero;
 
 importHTML("cases-icon");
 importHTML("camera-icon");
