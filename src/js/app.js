@@ -9,9 +9,9 @@ document.addEventListener("DOMContentLoaded", function () {
   offsetPreviews();
 });
 
-window.onresize = function () {
-  location.reload();
-};
+// window.onresize = function () {
+//   location.reload();
+// };
 // window.onscroll = shrinkHero;
 
 importHTML("cases-icon");
