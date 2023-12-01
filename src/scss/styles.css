@@ -12016,6 +12016,9 @@ textarea.form-control-lg {
   .page-width, .top-whitespace, .wrapper {
     max-width: calc(92vw + 1px);
   }
+  .grid-row {
+    height: 23vw;
+  }
   .wrapper,
   .top-whitespace {
     background-size: 23vw 23vw;
@@ -12069,15 +12072,12 @@ textarea.form-control-lg {
   font-weight: bold;
 }
 
-/* prettier-ignore */
 @media (max-width: 576px) {
   .hero {
-    padding-top: calc(23vw - 6rem);
+    padding-top: 5vw;
   }
-}
-@media (max-width: 350px) {
   .hero span {
-    font-size: 18vw;
+    font-size: 12vw;
   }
 }
 .subtitle {

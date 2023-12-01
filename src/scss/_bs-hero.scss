@@ -23,14 +23,21 @@
   font-weight: bold;
 }
 // TODO: Fix for small screens
-/* prettier-ignore */
-@media (max-width: 576px) { .hero { padding-top: calc(23vw - 1.5 * 4rem); } }
-@media (max-width: 350px) {
-  // X-Small
+
+@media (max-width: 576px) {
+  .hero {
+    padding-top: calc(23vw - 1.5 * 12vw);
+  }
   .hero span {
-    font-size: 18vw;
+    font-size: 12vw;
   }
 }
+// @media (max-width: 350px) {
+//   // X-Small
+//   .hero span {
+//     font-size: 18vw;
+//   }
+// }
 
 .subtitle {
   font-size: 2.3rem;
