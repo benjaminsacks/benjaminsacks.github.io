@@ -12122,4 +12122,8 @@ textarea.form-control-lg {
   fill: #e3b505;
   font-family: "Playfair Display";
   font-style: italic;
+}
+
+#project-previews img {
+  filter: grayscale(100%);
 }/*# sourceMappingURL=styles.css.map */
