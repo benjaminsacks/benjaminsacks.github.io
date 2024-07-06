@@ -14,12 +14,12 @@
 // TODO: Try again at fixing the sticky-top
 // TODO: Growing border?
 .hero {
-  font-size: 0;
+  // font-size: 0;
   padding-top: calc(100px - 1.5 * 4rem);
 }
 .hero span {
   color: $body-color;
-  font-size: 4rem;
+  // font-size: 4rem;
   font-weight: bold;
 }
 // TODO: Fix for small screens
