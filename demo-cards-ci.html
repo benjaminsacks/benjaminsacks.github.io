@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ben_sacks | Interactive Sampling Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <style>
+    /* Demo specific styles */
+    .card-grid {
+      display: grid;
+      gap: 1px;
+      /* Default 10 columns */
+      grid-template-columns: repeat(10, 1fr);
+      background-color: var(--grid);
+      border-top: 1px solid var(--grid);
+      border-bottom: 1px solid var(--grid);
+      border-left: 1px solid var(--grid);
+      width: 100%;
+      margin: 0;
+    }
+
+    .card-tile {
+      background-color: var(--bg);
+      aspect-ratio: 1 / 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      color: var(--text);
+      font-size: 1.25rem;
+      transition: border-color 0.2s, background-color 0.2s;
+      border: 1px solid transparent;
+      user-select: none;
+      position: relative;
+    }
+
+    .card-tile.highlight-spade {
+      border: 1px solid var(--accent);
+      z-index: 10;
+    }
+
+    /* 4-column site layout mode implies narrow screen (sm and below) */
+    @media (max-width: 639px) {
+      .card-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+
+    .demo-controls button {
+      border: 1px solid var(--grid);
+      background: rgba(30, 30, 30, 0.5);
+      padding: 0.5rem 1rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      color: var(--text);
+    }
+
+    .demo-controls button:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .demo-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .demo-controls button.primary {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .demo-controls button.primary:hover:not(:disabled) {
+      background: rgba(227, 181, 5, 0.1);
+    }
+
+    /* Style for the top Draw Cards button */
+    .top-draw-btn {
+      padding: 0.5rem 1rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      background: rgba(30, 30, 30, 0.5);
+    }
+
+    .top-draw-btn:hover:not(:disabled) {
+      background: rgba(227, 181, 5, 0.1);
+    }
+
+    .top-draw-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    input[type="range"] {
+      accent-color: var(--accent);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="outer-container" id="outerContainer">
+    <div class="grid-viewport" id="viewport">
+
+      <div class="content-wrapper">
+
+        <!-- Header -->
+        <header class="flex flex-col justify-end px-4 md:px-8 pt-8 pb-4">
+          <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl tracking-tight font-bold mb-4">
+            Confidence Intervals for a <span class="italic text-accent">Single Proportion</span>
+          </h1>
+          <p class="text-sm md:text-base w-full leading-relaxed text-[#a0a0a0] font-mono-accent">
+            Simulate 50 randomly selected cards with replacement (duplicate cards may appear).
+          </p>
+        </header>
+
+        <main class="flex-1 mb-16">
+          <!-- Top Row Controls -->
+          <div class="flex justify-between items-end mb-4 px-4 md:px-8">
+            <button id="btn-draw-top" class="top-draw-btn">Draw Cards</button>
+            <div class="font-mono-accent text-[0.85rem] tracking-widest text-[#a0a0a0]" id="stats-tally">
+              Spades: -- / 50 &nbsp;|&nbsp; p̂ = NaN
+            </div>
+          </div>
+
+          <!-- 50 Tile Grid -->
+          <div id="card-grid" class="card-grid shadow-xl border-r-0">
+            <!-- Tiles injected by JS -->
+          </div>
+
+          <!-- Controls -->
+          <div
+            class="demo-controls flex flex-wrap gap-4 items-end my-6 bg-[#232323] border border-grid p-4 mx-4 md:mx-8">
+            <button id="btn-draw" class="primary">Draw Cards</button>
+            <button id="btn-add-50">Add 50 Random Samples</button>
+
+            <div class="flex items-center gap-2 lg:ml-auto mt-2 lg:mt-0">
+              <input type="checkbox" id="toggle-true-p" class="w-4 h-4 accent-[var(--accent)]">
+              <label for="toggle-true-p"
+                class="font-mono-accent text-xs tracking-wider text-[#a0a0a0] select-none cursor-pointer">Show true
+                p</label>
+            </div>
+
+            <div class="flex flex-col gap-2 w-full sm:w-auto mt-2 lg:mt-0 lg:ml-4 border-l border-grid lg:pl-4">
+              <label for="slider-conf" class="font-mono-accent text-xs tracking-wider text-accent"
+                id="label-conf">Confidence level: 95%</label>
+              <input type="range" id="slider-conf" min="80" max="99" step="1" value="95" class="w-full sm:w-48">
+            </div>
+          </div>
+
+          <!-- Chart Area -->
+          <div class="mt-6 px-4 md:px-8">
+            <h3
+              class="font-mono-accent text-xs tracking-widest text-[#a0a0a0] mb-4 uppercase inline-block border-b border-grid pb-2">
+              Confidence Intervals (n=50)</h3>
+            <div id="chart-container"
+              class="w-full h-[550px] border border-grid bg-[#1a1a1a] relative shadow-inner overflow-hidden">
+              <!-- D3 SVG injected here -->
+            </div>
+
+            <div class="mt-6 demo-controls">
+              <button id="btn-clear">Clear Samples</button>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/demo-cards-ci.js" defer></script>
+</body>
+
+</html>
