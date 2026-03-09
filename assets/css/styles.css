@@ -1,0 +1,324 @@
+:root {
+  --bg: #1e1e1e;
+  --text: #e9e9e9;
+  --accent: #e3b505;
+  --grid: #333333;
+  --cell-size: 100px;
+  /* calculated by JS */
+  --grid-width: 100%;
+  /* calculated by JS */
+  --bg-y: 0px;
+  /* calculated by JS for parallax */
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Playfair Display', serif;
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Stop page-level scrolling */
+}
+
+/* Keep Tailwind classes from conflicting with default fonts */
+.font-sans,
+.font-serif,
+.font-mono {
+  font-family: inherit;
+}
+
+.font-mono-accent {
+  font-family: 'Space Mono', monospace;
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.border-grid {
+  border-color: var(--grid);
+}
+
+/* The outer container provides padding around the grid */
+.outer-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 2vh 4vw;
+  /* Margin around the grid: noticeable on L/R, smaller on T/B */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* The viewport where content lives */
+.grid-viewport {
+  position: relative;
+  width: var(--grid-width);
+  height: 100%;
+  border-right: 1px solid var(--grid);
+  border-bottom: 1px solid var(--grid);
+  border-top: 0;
+  border-left: 0;
+  overflow-y: auto;
+  /* Internal scrolling */
+  overflow-x: hidden;
+
+  /* Grid background */
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: var(--cell-size) var(--cell-size);
+  background-position: 0 var(--bg-y);
+
+  /* Hide scrollbar for a cleaner blueprint layout */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+
+.grid-viewport::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+
+/* Content wrapper to allow proper internal scrolling on top of background */
+.content-wrapper {
+  position: relative;
+  z-index: 10;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navigation pinned inside the grid */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--grid);
+  border-top: 1px solid var(--grid);
+  border-left: 1px solid var(--grid);
+}
+
+.nav-link {
+  transition: color 0.2s, opacity 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--accent);
+}
+
+.nav-link:hover svg {
+  opacity: 1;
+  stroke: var(--accent);
+}
+
+/* Section padding relative to cell size for alignment aesthetics */
+.hero-pad {
+  padding-top: calc(var(--cell-size) * 1.5);
+  padding-bottom: calc(var(--cell-size) * 1.5);
+}
+
+/* Project layout alignment based on grid modes */
+.project-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: calc(var(--cell-size) * 1.5);
+}
+
+.project-row.image-left {
+  align-items: flex-start;
+}
+
+.project-row.image-right {
+  align-items: flex-end;
+}
+
+.project-text {
+  padding: 0 1.5rem;
+  /* mobile padding so text doesn't touch outer edges */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.project-gap {
+  display: none;
+}
+
+.project-image {
+  background-color: #232323;
+  /* slightly lighter than bg */
+  border-left: 1px solid var(--grid);
+  border-top: 1px solid var(--grid);
+  border-bottom: 1px solid var(--grid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  /* 4-col base sizes */
+  width: calc(var(--cell-size) * 2);
+  height: calc(var(--cell-size) * 2);
+  margin-bottom: calc(var(--cell-size) * 0.5);
+  /* Mobile only spacing between stacked img/text */
+}
+
+.project-row.image-right .project-image {
+  width: calc(var(--cell-size) * 2 - 1px);
+}
+
+@media (min-width: 640px) {
+
+  /* 8-col */
+  .project-row {
+    flex-direction: row;
+  }
+
+  .project-row.image-right {
+    flex-direction: row-reverse;
+  }
+
+  .project-row.image-left,
+  .project-row.image-right {
+    align-items: center;
+    /* Vertically center in rows */
+  }
+
+  .project-text {
+    padding: 0;
+    /* Flush to inner edge on desktop */
+  }
+
+  .project-image {
+    width: calc(var(--cell-size) * 3);
+    height: calc(var(--cell-size) * 2);
+    margin-bottom: 0;
+  }
+
+  .project-row.image-right .project-image {
+    width: calc(var(--cell-size) * 3 - 1px);
+  }
+
+  .project-gap {
+    display: block;
+    width: calc(var(--cell-size) * 1);
+    flex-shrink: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+
+  /* 12-col */
+  .project-image {
+    width: calc(var(--cell-size) * 4);
+    height: calc(var(--cell-size) * 3);
+  }
+
+  .project-row.image-right .project-image {
+    width: calc(var(--cell-size) * 4 - 1px);
+  }
+}
+
+@media (min-width: 1280px) {
+
+  /* 16-col */
+  .project-image {
+    width: calc(var(--cell-size) * 6);
+    height: calc(var(--cell-size) * 4);
+  }
+
+  .project-row.image-right .project-image {
+    width: calc(var(--cell-size) * 6 - 1px);
+  }
+}
+
+.project-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, transparent 40%, rgba(227, 181, 5, 0.05) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.project-image:hover::before {
+  transform: translateX(100%);
+}
+
+/* Teaching Demo Grid */
+.demo-grid {
+  display: grid;
+  --demo-gap: calc(var(--cell-size) * 0.5);
+  gap: var(--demo-gap);
+  padding-left: calc(var(--demo-gap) / 2);
+  padding-right: calc(var(--demo-gap) / 2);
+}
+
+/* Teaching Demo Cards */
+.demo-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+}
+
+.demo-image {
+  background-color: #232323;
+  border: 1px solid var(--grid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.demo-image::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, transparent 40%, rgba(227, 181, 5, 0.05) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.demo-card:hover .demo-image::before {
+  transform: translateX(100%);
+}
+
+.demo-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  color: #a0a0a0;
+  transition: color 0.2s;
+}
+
+.demo-card:hover .demo-title {
+  color: var(--accent);
+}
+
+.demo-image-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.demo-card:hover .demo-image-label {
+  color: var(--accent);
+}
