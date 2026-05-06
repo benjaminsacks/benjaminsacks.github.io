@@ -2,19 +2,22 @@
   'use strict';
 
   // ─── Objective function ────────────────────────────────────────────────────
+  // f(x,y) = −exp(−(√(x²+y²) − 2)² + x)
+  // Global minimum at approximately (2.5, 0), f ≈ −9.49
   function f([x, y]) {
-    return (x - 1) ** 2 + 0.7 * (y + 1) ** 2;
+    const r = Math.sqrt(x * x + y * y);
+    return -Math.exp(-((r - 2) ** 2) + x);
   }
 
   // ─── Algorithm parameters ──────────────────────────────────────────────────
-  const ALPHA = 1;   // reflection
-  const GAMMA = 2;   // expansion
-  const RHO   = 0.5; // contraction
-  const SIGMA = 0.5; // shrink
+  const ALPHA = 1;   // reflection  (r = 2c − w)
+  const GAMMA = 2;   // expansion   (e = c + 2(r − c))
+  const SIGMA = 0.5; // shrink      (p ← u + 0.5(p − u))
+  // Contraction: p₁ = midpoint(w,c), p₂ = midpoint(c,r) — no RHO needed
 
-  // Fixed initial simplex — distinct f-values, spans the domain, gives ~10-15 interesting iterations
-  // f(-3,1)=18.8, f(4,-1)=9, f(0,3)=12.2  → all distinct, no degeneracy
-  const INITIAL_SIMPLEX = [[-3, 1], [4, -1], [0, 3]];
+  // Fixed initial simplex — distinct f-values, spans interesting region
+  // f(-1,2)≈−0.348, f(4,3)≈−0.0067, f(2,-3)≈−0.561
+  const INITIAL_SIMPLEX = [[-1, 2], [4, 3], [2, -3]];
 
   // ─── Pseudocode lines (indices 0–18) ──────────────────────────────────────
   const PSEUDOCODE = [
@@ -22,19 +25,19 @@
     { indent: 0, text: 'Evaluate f at each vertex' },
     { indent: 0, text: 'Sort: f(u) ≤ f(v) ≤ f(w)' },
     { indent: 0, text: 'Compute centroid c = (u + v) / 2' },
-    { indent: 0, text: 'Reflect: r = c + α(c − w),  α = 1' },
+    { indent: 0, text: 'Reflect: r = 2c − w' },
     { indent: 0, text: 'Evaluate f(r)' },
     { indent: 1, text: 'If f(u) ≤ f(r) < f(v):  replace w ← r' },
     { indent: 1, text: 'Else if f(r) < f(u):' },
-    { indent: 2, text: 'Expand: e = c + γ(r − c),  γ = 2' },
+    { indent: 2, text: 'Expand: e = c + 2(r − c)' },
     { indent: 2, text: 'Evaluate f(e)' },
     { indent: 2, text: 'If f(e) < f(r):  replace w ← e' },
     { indent: 2, text: 'Else:  replace w ← r' },
     { indent: 1, text: 'Else (f(r) ≥ f(v)):' },
-    { indent: 2, text: 'Contract: p = c + ρ(w − c),  ρ = 0.5' },
-    { indent: 2, text: 'Evaluate f(p)' },
-    { indent: 2, text: 'If f(p) < f(w):  replace w ← p' },
-    { indent: 2, text: 'Else: shrink all toward u,  σ = 0.5' },
+    { indent: 2, text: 'p₁ = (w + c) / 2  and  p₂ = (c + r) / 2' },
+    { indent: 2, text: 'Evaluate f(p₁) and f(p₂)' },
+    { indent: 2, text: 'If min(f(p₁), f(p₂)) < f(v):  w ← best of p₁, p₂' },
+    { indent: 2, text: 'Else: shrink — p ← u + 0.5(p − u) for all p' },
     { indent: 0, text: 'Check convergence' },
     { indent: 0, text: 'Repeat ↑' },
   ];
@@ -102,7 +105,7 @@
         phase: 'reflect', lineIndex: 4,
         simplex: snap(pts), labels: { u, v, w }, centroid: [...c],
         proposal: { type: 'reflect', point: [...r] },
-        message: `Reflecting w through c: r = (${r[0].toFixed(3)}, ${r[1].toFixed(3)}).`,
+        message: `Reflecting w through c: r = 2c − w = (${r[0].toFixed(3)}, ${r[1].toFixed(3)}).`,
         iteration: iter, converged: false,
       });
 
@@ -175,42 +178,48 @@
         }
 
       } else {
-        // f(r) >= f(v) — contraction
+        // f(r) >= f(v) — dual contraction
         steps.push({
           phase: 'try-contract', lineIndex: 12,
           simplex: snap(pts), labels: { u, v, w }, centroid: [...c],
           proposal: { type: 'reflect', point: [...r] },
-          message: `f(r) = ${fr.toFixed(4)} ≥ f(v) = ${fv.toFixed(4)}: reflection is not an improvement. Trying contraction.`,
+          message: `f(r) = ${fr.toFixed(4)} ≥ f(v) = ${fv.toFixed(4)}: reflection not helpful. Trying contraction.`,
           iteration: iter, converged: false,
         });
 
-        // Use inside contraction (toward w from c)
-        const cp = [c[0] + RHO * (w[0] - c[0]), c[1] + RHO * (w[1] - c[1])];
-        const fcp = f(cp);
+        // p₁ = midpoint(w, c)  [inside contraction, ¼ of the way from w to r]
+        // p₂ = midpoint(c, r)  [outside contraction, ¾ of the way from w to r]
+        const p1 = [(w[0] + c[0]) / 2, (w[1] + c[1]) / 2];
+        const p2 = [(c[0] + r[0]) / 2, (c[1] + r[1]) / 2];
+        const fp1 = f(p1), fp2 = f(p2);
 
         steps.push({
           phase: 'contract', lineIndex: 13,
           simplex: snap(pts), labels: { u, v, w }, centroid: [...c],
-          proposal: { type: 'contract', point: [...cp] },
-          message: `Contraction point p = c + ρ(w − c) = (${cp[0].toFixed(3)}, ${cp[1].toFixed(3)}).`,
+          proposal: { type: 'contract', p1: [...p1], p2: [...p2] },
+          message: `p₁ = (w+c)/2 = (${p1[0].toFixed(3)}, ${p1[1].toFixed(3)});  p₂ = (c+r)/2 = (${p2[0].toFixed(3)}, ${p2[1].toFixed(3)}).`,
           iteration: iter, converged: false,
         });
 
         steps.push({
           phase: 'evaluate-contract', lineIndex: 14,
           simplex: snap(pts), labels: { u, v, w }, centroid: [...c],
-          proposal: { type: 'contract', point: [...cp], value: fcp },
-          message: `f(p) = ${fcp.toFixed(4)},  f(w) = ${fw.toFixed(4)}.`,
+          proposal: { type: 'contract', p1: [...p1], p2: [...p2], fp1, fp2 },
+          message: `f(p₁) = ${fp1.toFixed(4)},  f(p₂) = ${fp2.toFixed(4)},  f(v) = ${fv.toFixed(4)}.`,
           iteration: iter, converged: false,
         });
 
-        if (fcp < fw) {
-          pts = [u, v, [...cp]];
+        const bestFp = Math.min(fp1, fp2);
+        if (bestFp < fv) {
+          const usep1 = fp1 <= fp2;
+          const best  = usep1 ? p1 : p2;
+          const bName = usep1 ? 'p₁' : 'p₂';
+          pts = [u, v, [...best]];
           steps.push({
             phase: 'accept-contract', lineIndex: 15,
-            simplex: snap(pts), labels: { u, v, w: cp }, centroid: [...c],
-            proposal: { type: 'contract', point: [...cp], accepted: true },
-            message: `f(p) < f(w): contraction improves the worst vertex. Replacing w ← p.`,
+            simplex: snap(pts), labels: { u, v, w: best }, centroid: [...c],
+            proposal: { type: 'contract', p1: [...p1], p2: [...p2], fp1, fp2, accepted: bName },
+            message: `min(f(p₁), f(p₂)) = ${bestFp.toFixed(4)} < f(v): accepting ${bName}. Replacing w ← ${bName}.`,
             iteration: iter, converged: false,
           });
         } else {
@@ -221,7 +230,7 @@
             phase: 'shrink', lineIndex: 16,
             simplex: snap(pts), labels: { u, v: newV, w: newW }, centroid: [...c],
             proposal: null,
-            message: `Contraction did not help. Shrinking all vertices toward u (σ = ${SIGMA}).`,
+            message: `Neither contraction point beats f(v). Shrinking all vertices toward u.`,
             iteration: iter, converged: false,
           });
         }
@@ -377,19 +386,20 @@
       }
     }
 
-    const maxVal = 30;
-    const thresholds = d3.range(0.5, maxVal, 1.5);
+    // f ranges from ≈ −9.49 (global min near (2.5,0)) to ≈ 0 at the domain edges.
+    // Dense thresholds near the minimum, sparser toward 0.
+    const thresholds = [-9, -8, -7, -6, -5, -4, -3, -2, -1.5, -1, -0.75, -0.5, -0.25, -0.1];
 
     const contours = d3.contours().size([N, N]).thresholds(thresholds)(values);
 
-    // Color: gold at low values → very dark at high
+    // Color: warm gold at minimum (most negative) → near-black at 0
     const colorFill = d3.scaleSequential()
-      .domain([0, maxVal])
-      .interpolator(d3.interpolateRgb('#3a2800', '#151515'));
+      .domain([-9.5, 0])
+      .interpolator(d3.interpolateRgb('#3a2800', '#141414'));
 
     const strokeColor = d3.scaleSequential()
-      .domain([0, maxVal])
-      .interpolator(d3.interpolateRgb('rgba(227,181,5,0.55)', 'rgba(227,181,5,0.08)'));
+      .domain([-9.5, 0])
+      .interpolator(d3.interpolateRgb('rgba(227,181,5,0.65)', 'rgba(227,181,5,0.06)'));
 
     const geoTransform = d3.geoTransform({
       point(px, py) {
@@ -452,8 +462,8 @@
       axesGroup.appendChild(lbl);
     }
 
-    // True minimum marker (dashed ring)
-    const mx = xPx(1), my = yPx(-1);
+    // True minimum marker at (2.5, 0) — dashed ring
+    const mx = xPx(2.5), my = yPx(0);
     const minGrp = el('g');
     minGrp.appendChild(el('circle', {
       cx: mx, cy: my, r: 4,
@@ -600,15 +610,26 @@
       }
 
       if (type === 'contract') {
-        if (labels && centroid) drawDashedLine(guideGroup, labels.w, centroid, 'rgba(180,120,50,0.4)');
-        if (accepted) {
-          drawDiamond(markerGroup, point, '#4fc97e', 5);
-          drawLabel(labelGroup, point, 'p ✓', '#4fc97e');
-        } else {
-          drawDiamond(markerGroup, point, '#c08040', 5);
-          const lbl = value !== undefined ? `p=${value.toFixed(2)}` : 'p';
-          drawLabel(labelGroup, point, lbl, '#c08040');
+        const { p1, p2, fp1, fp2, accepted } = proposal;
+        // Dashed guide from w toward c
+        if (labels && centroid) drawDashedLine(guideGroup, labels.w, centroid, 'rgba(180,120,50,0.38)');
+
+        function drawContractPt(pt, fp, name, baseColor) {
+          if (!pt) return;
+          const isWinner = accepted === name;
+          const isLoser  = accepted && !isWinner;
+          if (isWinner) {
+            drawDiamond(markerGroup, pt, '#4fc97e', 5);
+            drawLabel(labelGroup, pt, name + ' ✓', '#4fc97e');
+          } else {
+            const lbl = fp !== undefined ? `${name}=${fp.toFixed(2)}` : name;
+            drawDiamond(markerGroup, pt, isLoser ? 'rgba(192,128,64,0.45)' : baseColor, 5);
+            drawLabel(labelGroup, pt, lbl, isLoser ? 'rgba(192,128,64,0.55)' : baseColor);
+          }
         }
+
+        drawContractPt(p1, fp1, 'p₁', '#c08040');  // inside  — between w and c
+        drawContractPt(p2, fp2, 'p₂', '#d09050');  // outside — between c and r
       }
     }
   }
