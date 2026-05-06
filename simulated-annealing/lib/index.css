@@ -1,0 +1,198 @@
+.section1Title {
+    text-align: center;
+    font-family: 'Raleway', sans-serif;
+    font-size: 48px;
+    color: #000000;
+    margin-bottom: 0;
+}
+
+.section1Subtitle {
+    text-align: center;
+    font-family: "Avenir";
+    font-size: 24px;
+    color: #000000;
+    margin: 0;
+}
+
+.section2Text {
+    width: 50%;
+    margin: 0 auto;
+    font-family: "Avenir";
+    font-size: 20px;
+    line-height: 40px;
+    color: #000000;
+}
+
+.flexContainer {
+    display: flex;
+    align-items: center;
+    margin: 0 auto;
+    font-family: "Avenir";
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
+.frameContainer {
+    margin: 5% auto;
+    width: 100%;
+    height: 700px;
+}
+
+.flexLeft {
+    position: relative;
+    width: 50%;
+    padding-right: 5%;
+}
+
+.flexLefth3 {
+    text-align: center;
+}
+
+.flexLeft iframe {
+    width: 100%;
+}
+
+.flexRight {
+    position: relative;
+    width: 50%;
+    padding-right: 5%;
+}
+
+.graphImg {
+    position: absolute;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+}
+
+.sectionText {
+    line-height: 40px;
+}
+
+.hillClimb {
+    width: 100%;
+}
+
+#hillClimbingControls,
+#hillClimbingGraphContainer {
+    display: none;
+}
+
+.startHillClimbingButton {
+    display: block;
+}
+
+.startButton {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 40px;
+    border: 1px solid black;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+}
+
+.label {
+    margin-bottom: 20px;
+}
+
+#slidecontainer {
+    margin-top: 10px;
+}
+
+.pseudoCode {
+    margin-bottom: 2px;
+}
+.pseudoCode > p {
+    margin: 0;
+    padding: 0;
+}
+.codeTyping {
+    width: 400px; 
+    border:0;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 10px;
+}
+
+.step {
+    margin-left: 10px;
+}
+
+.controlButtons {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.controlButton {
+    width: 100%;
+    height: 30px;
+    border: 1px solid black;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+#step2 {
+    padding-left: 10px;
+}
+#step3 {
+    padding-left: 10px;
+}
+#step3a {
+    padding-left: 10px;
+}
+#step4{
+    padding-left: 20px;
+}
+#step5 {
+    padding-left: 20px;
+}
+#step5a {
+    padding-left: 20px;
+}
+#step5b {
+    padding-left: 20px;
+}
+#step5c {
+    padding-left: 20px;
+}
+#step6 {
+    padding-left: 30px;
+}
+#step6a{
+    padding-left: 30px;
+}
+#step7 {
+    padding-left: 40px;
+}
+#step8 {
+    padding-left: 40px;
+}
+#step9 {
+    padding-left: 10px;
+}
+
+div.tooltip {   
+    position: absolute;           
+    text-align: center;           
+    width: 60px;                  
+    height: 28px;                 
+    padding: 2px;             
+    font: 12px sans-serif;        
+    background: white;   
+    border: 0px;      
+    border-radius: 8px;           
+    pointer-events: none;         
+}
+
+path:hover {
+    fill-opacity: .7;
+}

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<title>CSE442 FP Prototype</title>
+<style>
+  /*
+  html {
+    display: table;
+    margin: auto;
+  }*/
+  body {
+    margin-left: 5%;
+    margin-right: 5%;
+    text-align: justify;
+    font-family: Avenir, sans-serif;
+  }
+  /*
+  h1 {
+    font-family: Montserrat, Avenir, sans-serif;
+    font-size: 1.5em;
+  }
+  p {
+    font-family: Avenir, sans-serif;
+    font-size: 1.25em;
+  }
+  */
+  p {
+    line-height: 150%;
+  }
+  .leftAlign {
+    text-align: left;
+  }
+
+  .flexContainer {
+    display: flex;
+  }
+  
+  .left {
+    position: relative;
+    order: 1;
+    margin-top: 0px;
+  }
+
+  .right {
+    order: 2;
+    width: 70%;
+    margin-left: 40px;
+  }
+
+  .startButton {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 40px;
+    border: 1px solid black;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+  }
+
+  .label {
+    margin-bottom: 5px;
+  }
+
+  #slidecontainer {
+    margin-top: 0px;
+  }
+
+  .pseudoCode {
+    margin-bottom: 2px;
+  }
+  .pseudoCode > p {
+    margin: 0;
+    padding: 0;
+  }
+  .codeTyping {
+    width: 400px; 
+    border:0;
+    font-family: "Source Code Pro", "Courier New", Courier, monospace;
+    font-size: 12px;
+  }
+
+  .controlButtons {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+
+  }
+
+  .controlButton {
+      width: 100%;
+      max-width: 400px;
+      height: 25px;
+      border: 2px solid #02BEC4;
+      border-radius: 5px;
+      text-align: center;
+      line-height: 25px;
+      cursor: pointer;
+      margin-bottom: 7px;
+  }
+
+  .indicator {
+    color: yellow;
+    opacity: 0;
+  }
+
+  #step2 {
+    padding-left: 5px;
+  }
+  #step3 {
+    padding-left: 5px;
+  }
+  #step3a {
+    padding-left: 15px;
+  }
+  #step4{
+    padding-left: 15px;
+  }
+  #step5 {
+    padding-left: 15px;
+  }
+  #step5a {
+    padding-left: 15px;
+  }
+  #step5b {
+    padding-left: 15px;
+  }
+  #step5c {
+    padding-left: 15px;
+  }
+  #step6 {
+    padding-left: 25px;
+  }
+  #step6a{
+    padding-left: 25px;
+  }
+  #step7 {
+    padding-left: 35px;
+  }
+  #step8 {
+    padding-left: 35px;
+  }
+  #step9 {
+    padding-left: 5px;
+  }
+
+  .instruction {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    background-color: #fff;
+    z-index: 1;
+    display: none;
+  }
+
+  .instruction .closeInstruction {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  .instruction p {
+    position: relative;
+    top: 0;
+    right: 20px;
+    margin: 0;
+    font-size: 20px;
+  }
+
+  .openInstruction {
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+  }
+  .button {
+    background-color: white; /* Green */
+    border: 3px solid #02BEC4;
+    color: black;
+    height: 25px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 25px;
+    width: 100px;
+
+  }
+</style>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+</head>
+
+<body>
+  <div class="flexContainer">
+    <div class="left">
+      <div class="instruction">
+        <div class="closeInstruction" id="closeButton" onclick="closeInstruction()">x</div>
+        <p> We encourage you to explore an actual implementation of simulated annealing. This visualization allows you to change the starting temperature of the algorithm, its cooling rate, and how fast it runs. After you click start, press ‘space’ to run through the algorithm slowly, step by step, to get a feel for its decision strategy. If you want to watch the whole thing play out until the temperature has cooled, click “Auto Step.” You can also pause and reset at any time.
+        </p>
+        <br>
+        <br>
+        <div class="controlButton" id="startButton" onclick="closeInstruction()">Start</div>
+      </div>
+      <div class="button" onclick="openInstruction()">Instructions</div>
+      <div class="label">
+        Temperature
+        <input type="text" id="temp" onchange="updateTempInput()"> </input>
+      </div>
+      <div class="label">
+        Cooling Rate
+        <input type="text" id="coolingRate" onchange="updateCoolingRateInput()"> </input>
+      </div>
+<!--       <div class="label">
+        Step Size
+        <input type="text" id="mapGranularity" onchange="updateMapGranularity()"> </input>
+      </div>
+ --> 
+      <div class="label">
+        <text id="speedLabel">
+          Speed: 5 ms per decision
+        </text>
+        <div id="slidecontainer">
+          <input type="range" min="0" max="500" value="300" class="slider" id="speed" step="50" onchange="updateSpeed()">
+        </div>
+      </div>
+
+
+        <div class="pseudoCode">
+            <input type="text" id="info1" class="codeTyping" style="width:120px" readonly value="Current Solution: "></input>
+            <svg height="11" width="15">
+              <circle cx="5.5" cy="5.5" r="5" fill="#8343BC" />
+            </svg>
+        </div>
+        <div class="pseudoCode">
+            <input type="text" id="info2" class="codeTyping" style="width:65px" readonly value="Neighbor: "></input>
+            <svg height="11" width="15">
+              <polygon points="0,0 6,12 12,0" style="fill: '#262A41';" />
+            </svg>            
+        </div>
+        <br />
+        <div class="pseudoCode step">
+            <p type="text" id="step1" class="codeTyping">while temperature > 1 {</p>
+        </div>
+        <!-- todo make "random move" phrase red, and the lookahead red as well -->
+        <div class="pseudoCode step">
+            <p type="text" id="step2" class="codeTyping"><span class="indicator">&#11044;</span> Choose a new random neighbor</p>
+        </div>
+        <div class="pseudoCode step">
+            <p type="text" id="step3" class="codeTyping"><span class="indicator">&#11044;</span> Is neighbor's height > current solution's?</p>
+        </div>
+
+        <div class="pseudoCode step">
+           <p type="text" id="step3a" class="codeTyping"><span class="indicator">&#11044;</span> (______ > ______) == ______</p>
+        </div>
+
+        <div class="pseudoCode step">
+            <p type="text" id="step4" class="codeTyping"><span class="indicator">&#11044;</span> True? Move to neighbor &amp; decrease temperature</p>
+        </div>
+        <div class="pseudoCode step">
+            <p type="text" id="step5" class="codeTyping"><span class="indicator">&#11044;</span> False? Calculate acceptance probability:</p>
+        </div>
+        <div class="pseudoCode step">
+            <p type="text" id="step5a" class="codeTyping"><span class="indicator">&#11044;</span> 100*e^((new height - old height)/temp)</p>
+        </div>
+        <div class="pseudoCode step">
+            <p type="text" id="step5b" class="codeTyping"><span class="indicator">&#11044;</span> Probability = 100*e^((______ - ______) / ______)</p>
+        </div>
+        <div class="pseudoCode step">
+            <p type="text" id="step5c" class="codeTyping"><span class="indicator">&#11044;</span> Probability = ______</p>
+        </div>
+
+        <div class="pseudoCode step">
+            <p type="text" id="step6" class="codeTyping"><span class="indicator">&#11044;</span> Is acceptance probability > Random[0,100]?</p>
+        </div>
+        <div class="pseudoCode step">
+           <p type="text" id="step6a" class="codeTyping"><span class="indicator">&#11044;</span> (______ > ______) == ______</p>
+        </div>
+
+        <div class="pseudoCode step">
+            <p type="text" id="step7" class="codeTyping"><span class="indicator">&#11044;</span> True? Move to neighbor</p>
+        </div>
+        <div class="pseudoCode step">
+            <p type="text" id="step8" class="codeTyping"><span class="indicator">&#11044;</span> False? Do nothing</p>
+        </div>
+        <div class="pseudoCode step">
+            <p type="text" id="step9" class="codeTyping"><span class="indicator">&#11044;</span> Decrease temperature</p>
+        </div>
+        <div class="pseudoCode step">
+            <p type="text" id="step10" class="codeTyping">}</p>
+        </div>
+        <br>
+      <!-- <div class="startButton" onclick="getAnnealing()">start</div> -->
+      <div class="controlButtons">
+        <div class="controlButton" onclick="stepAuto()">Auto Step</div>      
+        <div class="controlButton" onclick="pauseAuto()">Pause</div>        
+        <div class="controlButton" onclick="reset()">Reset</div>
+
+<!--         <div class="controlButton" onclick="resetMap()">reset</div>       
+        <div class="controlButton" onclick="random()">random</div>
+ -->      
+      </div>
+
+    </div>
+    <div class="right">
+      <svg style="width:100%;height:95%;" id="graph"></svg>
+    </div>
+  </div>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+
+  function closeInstruction() {
+    $(".instruction").hide();
+    $("#startButton").hide();
+    $("#closeButton").show();
+  }
+
+  function openInstruction() {
+    $('.instruction').show();
+  }
+  openInstruction();
+// var inter = 50;
+// document.getElementById("speed").value = inter;
+// function updateSpeed() {
+//   inter = parseInt(document.getElementById("speed").value);
+// }
+var svg = d3.select("#graph"),
+    svgRect = document.getElementById("graph").getBoundingClientRect();
+    margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = svgRect.width - margin.left - margin.right,
+    height = svgRect.height - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var parseTime = d3.timeParse("%d-%b-%y");
+
+var x = d3.scaleLinear()
+    .rangeRound([0, width]);
+
+var y = d3.scaleLinear()
+    .rangeRound([height, 0]);
+
+var line = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.close); });
+var datahold;
+var secondDataHold;
+d3.csv("aapl.csv", function(d) {
+  // d.date = parseTime(d.date);
+  d.date = +d.date;
+  d.close = +d.close;
+  return d;
+}, function(error, data) {
+  if (error) throw error;
+  // datahold = data;
+  datahold = [];
+  // can do some hack where datahold is actually every other 5 pts?
+  for (var i = 0; i < data.length; i+=mapGranularity) {
+    datahold.push(data[i]);
+  }
+  secondDataHold = data;
+
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain(d3.extent(data, function(d) { return d.close; }));
+
+  g.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x).tickValues([]))
+
+  g.append("g")
+      .call(d3.axisLeft(y))
+    .append("text")
+      .attr("fill", "#000")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", "0.71em")
+      .attr("text-anchor", "end")
+      .text("Height");
+
+  g.append("path")
+      .datum(datahold)
+      .attr("fill", "none")
+      .attr("stroke", "#02BEC4")
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-linecap", "round")
+      .attr("stroke-width", 1.5)
+      .attr("d", d3.line()
+           .curve(d3.curveCatmullRom)
+           .x(function(d) { return x(d.date); })
+           .y(function(d) { return y(d.close); })
+       );
+      // .attr("d", line);
+
+  var globalcounter = 0;
+  var globalstart = false;
+  setInterval(function(){
+    if (!globalstart) {
+      globalstart = true;
+      getAnnealing();
+
+    }
+    if ((temp > 1 && spaceBarPress) || (autoStep && temp > 1)) {
+      globalcounter += 1;
+      var localCap = 1;
+      if (autoStep) {
+        localCap = speedCap;
+      }
+      if (globalcounter >= localCap) {
+        if (speedCap > 100) {
+        updateGraph();          
+        } else {
+          updateGraph2();
+        }
+        globalcounter = 0;
+        spaceBarPress = false;
+      }
+    }
+    if (temp <= 1) {
+      $(".codeTyping").css("font-weight", "normal");
+      $("#step9 > .indicator").css("opacity", 0); 
+    }
+  }, 1)
+});
+startAnnealing = false;
+
+// spacebar press capture
+var spaceBarPress = false;
+document.body.onkeydown = function(e){
+    if(e.keyCode == 32){
+      e.preventDefault()
+      e.preventDefault();
+      spaceBarPress = true;
+    }
+}
+// spacebar press capture
+function stepAuto() {
+  autoStep = true;
+}
+function pauseAuto() {
+  autoStep = false;  
+}
+function getAnnealing() {
+  if (startAnnealing) return;
+  startAnnealing = true;
+  // annealingMoves = datahold.slice(0, numToWatch);
+  annealingMoves = [];
+  annealingMoves[0] = datahold[Math.floor(Math.random() * datahold.length)];
+  document.getElementById("temp").value = initialtemp;
+  // annealingMoves[0] =datahold[0];
+  lastindex=annealingMoves[0].date;
+  temp = initialtemp;
+  var removeTriangle = svg.selectAll(".triangle").remove();
+  var removeCircle = svg.selectAll(".circle").remove();
+  for (var i = 1; i < 10; i++) {
+    $("#step" + i + " > .indicator").css("opacity", 0);                      
+  }
+    $("#step3a > .indicator, #step5a > .indicator, #step5b > .indicator, #step5c > .indicator, #step6a > .indicator").css("opacity", 0);
+
+// lastindex=numToWatch;
+// annealingMoves = [];
+currentStep = 0;
+innerStep = 0;
+acceptanceProbability = 0;
+lastRandom = 0;
+acceptanceProbabilityText = "";
+lastRandomText = "";
+
+}
+function reset() {
+  startAnnealing = false;
+  getAnnealing();
+  // pause();
+  pauseAuto();
+}
+function pause() {
+  startAnnealing = !startAnnealing;
+}
+function updateTempInput() {
+  initialtemp = document.getElementById("temp").value;
+  temp = initialtemp;
+}
+function updateCoolingRateInput() {
+  coolingRate = document.getElementById("coolingRate").value;
+}
+function updateNumToWatch() {
+  numToWatch = document.getElementById("numToWatch").value;
+}
+function updateMapGranularity() {
+  mapGranularity = document.getElementById("mapGranularity").value;
+  datahold = [];
+  // can do some hack where datahold is actually every other 5 pts?
+  for (var i = 0; i < secondDataHold.length; i+=parseInt(mapGranularity)) {
+    datahold.push(secondDataHold[i]);
+  }
+  if (annealingMoves.length > 0) {
+    while (annealingMoves[annealingMoves.length - 1].date % mapGranularity != 0) {
+      annealingMoves[annealingMoves.length - 1].date--;
+    }
+    annealingMoves[annealingMoves.length - 1].close = secondDataHold[annealingMoves[annealingMoves.length - 1].date];    
+  }
+
+}
+function updateSpeed() {
+  speedCap = 500-document.getElementById("speed").value;
+  if (speedCap == 0) {
+    speedCap = 1;
+  }
+  document.getElementById("speedLabel").innerHTML = "Auto Step Speed: " + speedCap + " ms per step";
+  if (speedCap <= 100) {
+    var removeTriangle = svg.selectAll(".triangle").remove();
+    $(".indicator").css("opacity", 0);         
+    $(".step > p").css("font-weight", "normal");
+        document.getElementById("step3a").innerHTML = "<span class='indicator'>&#11044;</span> (______ > ______) == ______";                  
+        document.getElementById("step6a").innerHTML = "<span class='indicator'>&#11044;</span> (______ > ______) == ______";                  
+        document.getElementById("step5b").innerHTML = "<span class='indicator'>&#11044;</span> Probability = 100*e^((______ - ______) / ______)";
+        document.getElementById("step5c").innerHTML = "<span class='indicator'>&#11044;</span> Probability = ______";
+
+      // $("#step1", "#step2", "#step3", "#step3a", "#step4", "#step5", "#step5a", "#step5b", "#step5c", "#step6", "#step7", "#step8", "#step9", "#step10").css("font-weight", "normal");
+
+ currentStep = 0;
+ innerStep = 0;
+ acceptanceProbability = 0;
+ lastRandom = 0;
+
+  }
+}
+var speedCap = 200;
+document.getElementById("speedLabel").innerHTML = "Auto Step Speed: " + speedCap + " ms per step";
+var initialtemp = 10000;
+var temp = initialtemp;
+document.getElementById("temp").value = temp;
+var coolingRate = .003;
+document.getElementById("coolingRate").value = coolingRate;
+var numToWatch = 1;
+// document.getElementById("numToWatch").value = numToWatch;
+var mapGranularity = 30;
+// document.getElementById("mapGranularity").value = mapGranularity;
+// alert("Press space to step through the algorithm!");
+var lastindex=numToWatch;
+var annealingMoves = [];
+var currentStep = 0;
+var innerStep = 0;
+var acceptanceProbability = 0;
+var lastRandom = 0;
+var acceptanceProbabilityText = "";
+var lastRandomText = "";
+var autoStep = false;
+
+var nextMove;
+var lookAheadMove = [];
+
+
+function updateGraph2() {
+    // sleep(500);
+    // for (var i = lastindex; i < lastindex + numToWatch; i++) {
+    //   annealingMoves[(i - lastindex)] = {date: i, close: datahold[i].close}
+    // }
+      lastindex++;
+      var lastMove = annealingMoves[annealingMoves.length - 1];
+      var nextMove;
+
+      // get random move from moveset, if at bounds pick only possible move otherwise at random
+      // from right and left
+      // need to do respective coding or set up datahold correctly
+      if (lastMove.date == 0) {
+        nextMove = datahold[lastMove.date/mapGranularity + 1];
+      } else if (lastMove.date >= datahold[datahold.length - 1].date) {
+        nextMove = datahold[lastMove.date/mapGranularity - 1];
+      } else {
+        if (Math.random() < .5) {
+        nextMove = datahold[lastMove.date/mapGranularity + 1];
+
+          // nextMove = datahold[lastMove.date + 1];
+        } else {
+        nextMove = datahold[lastMove.date/mapGranularity - 1];
+
+          // nextMove = datahold[lastMove.date - 1];
+        }
+      }
+
+      // if move is better take it
+      if (lastMove.close < nextMove.close) {
+        // annealingMoves.push({date: datahold[lastindex].date, close: datahold[lastindex].close});        
+        annealingMoves.push(nextMove);             
+      } else {
+        // if move is worse, with some probability, take it
+
+        // calculate probability to take worse move
+        var acceptanceProbability = Math.exp((nextMove.close - lastMove.close) / temp);
+        if (acceptanceProbability > Math.random()) {
+          annealingMoves.push(nextMove);     
+          // annealingMoves.push({date: datahold[lastindex].date, close: datahold[lastindex].close});          
+        }
+
+      }
+      temp *= 1 - coolingRate;
+      document.getElementById("temp").value = Math.floor(temp * 100) / 100;;      
+      // annealingMoves.push({date: datahold[lastindex].date, close: datahold[lastindex].close});
+      if (annealingMoves.length > numToWatch) {
+        while (annealingMoves.length > numToWatch) {
+          annealingMoves.shift();      
+        }
+      }
+
+      var removeCirlce = svg.selectAll("circle").remove();
+      var selectCircle = svg.selectAll(".circle").data(annealingMoves);
+      selectCircle.enter().append("circle")
+      .attr("class", "circle")
+      .attr("r", 5.5)
+      .attr("fill", "#8343BC")
+      .attr("cx", function(d) {
+        return x(d.date)+50;        
+      })
+      .attr("cy", function(d) {
+        return y(d.close)+20;
+      });    
+    // lastindex += numToWatch;
+}
+function updateGraph() {
+      currentStep++;
+
+      lastindex++;
+      var lastMove = annealingMoves[annealingMoves.length - 1];
+
+
+
+
+      if (currentStep == 1) {
+        if (speedCap > 100) {
+
+        }
+        document.getElementById("step1").style.background = "";      
+        document.getElementById("step3a").innerHTML = "<span class='indicator'>&#11044;</span> (______ > ______) == ______";                  
+        document.getElementById("step6a").innerHTML = "<span class='indicator'>&#11044;</span> (______ > ______) == ______";                  
+        document.getElementById("step5b").innerHTML = "<span class='indicator'>&#11044;</span> Probability = 100*e^((______ - ______) / ______)";
+        document.getElementById("step5c").innerHTML = "<span class='indicator'>&#11044;</span> Probability = ______";
+        $(".codeTyping").css("font-weight", "normal");
+        $("#step5 > .indicator, #step6 > .indicator, #step7 > .indicator, #step9 > .indicator").css("opacity", 0);       
+
+        $("#step2 > .indicator").css("opacity", 1).css("color", "#759ABF");
+
+        // get random move from moveset, if at bounds pick only possible move otherwise at random
+        // from right and left
+        // need to do respective coding or set up datahold correctly
+        if (lastMove.date == 0) {
+          nextMove = datahold[lastMove.date/mapGranularity + 1];
+        } else if (lastMove.date >= datahold[datahold.length - 1].date) {
+          nextMove = datahold[lastMove.date/mapGranularity - 1];
+        } else {
+          if (Math.random() < .5) {
+          nextMove = datahold[lastMove.date/mapGranularity + 1];
+
+            // nextMove = datahold[lastMove.date + 1];
+          } else {
+          nextMove = datahold[lastMove.date/mapGranularity - 1];
+
+            // nextMove = datahold[lastMove.date - 1];
+          }
+        }
+        lookAheadMove[0] = nextMove.date;
+        lookAheadMove[1] = nextMove.close;
+      } else if (currentStep == 2) {
+        $("#step2 > .indicator").css("opacity", 0);
+        $("#step3 > .indicator").css("opacity", 1).css("color", "#759ABF");
+        $("#step3").css("font-weight", "bold");
+      } else if (currentStep == 3) {
+        // 3a height update
+        $("#step3 > .indicator").css("opacity", 0);
+        document.getElementById("step3a").innerHTML = "<span class='indicator'>&#11044;</span> ("+nextMove.close+" > " + lastMove.close + ") == _____";
+        $("#step3a > .indicator").css("opacity", 1).css("color", "#759ABF");
+      } else if (currentStep == 4) {
+        var truestring;
+        if (nextMove.close > lastMove.close) {
+        $("#step3a > .indicator").css("opacity", 1).css("color", "#73AB84"); 
+          truestring = "True";
+        } else {
+          $("#step3a > .indicator").css("opacity", 1).css("color", "#C95D63");                    
+
+          truestring = "False";          
+        }
+        document.getElementById("step3a").innerHTML = "<span class='indicator'>&#11044;</span> ("+nextMove.close+" > " + lastMove.close + ") == " + truestring;
+        $("#step3a > .indicator").css("opacity", 1).css("color", "#759ABF");
+
+      } else if (currentStep == 5) {
+        // if move is better take it
+        if (lastMove.close < nextMove.close) {
+          // annealingMoves.push({date: datahold[lastindex].date, close: datahold[lastindex].close}); 
+          $("#step3a > .indicator").css("opacity", 0);       
+          $("#step4 > .indicator").css("opacity", 1).css("color", "#73AB84");
+          $("#step4").css("font-weight", "bold");         
+          annealingMoves.push(nextMove);            
+        } else {
+          // if move is worse, with some probability, take it
+          if(innerStep == 0) {
+            acceptanceProbability = Math.exp((nextMove.close - lastMove.close) / temp);
+            acceptanceProbabilityText = Math.floor(acceptanceProbability * 100 * 100) / 100;
+            $("#step3a > .indicator").css("opacity", 0);
+            $("#step5 > .indicator").css("opacity", 1).css("color", "#C95D63");
+            $("#step5, #step5a").css("font-weight", "bold");
+
+            currentStep--;            
+          } else if (innerStep == 1) {
+            document.getElementById("step5b").innerHTML = "<span class='indicator'>&#11044;</span> Probability = 100*e^((" + nextMove.close + " - " + lastMove.close + ") / " + document.getElementById("temp").value + ")";
+            $("#step5 > .indicator").css("opacity", 0);
+            $("#step5a").css("font-weight", "normal");
+            $("#step5b > .indicator").css("opacity", 1).css("color", "#759ABF");
+
+            currentStep--;
+          } else if (innerStep == 2) {           
+            document.getElementById("step5c").innerHTML = "<span class='indicator'>&#11044;</span> Probability = " + acceptanceProbabilityText +"%";
+            $("#step5b > .indicator").css("opacity", 0);
+            $("#step5c > .indicator").css("opacity", 1).css("color", "#759ABF"); 
+            currentStep--;
+          } else if (innerStep == 3) {
+            $("#step5c > .indicator").css("opacity", 0);
+            $("#step6 > .indicator").css("opacity", 1).css("color", "#759ABF");
+            $("#step6").css("font-weight", "bold");
+            currentStep--;
+          } else if (innerStep == 4) {
+            // calculate probability to take worse move
+            lastRandom = Math.random();
+            lastRandomText = Math.floor(lastRandom * 100 * 100) / 100;
+            document.getElementById("step6a").innerHTML = "<span class='indicator'>&#11044;</span> ("+acceptanceProbabilityText+" > " + lastRandomText + ") == ______";
+            $("#step6 > .indicator").css("opacity", 0);
+            $("#step6a > .indicator").css("opacity", 1).css("color", "#759ABF");
+
+
+            currentStep--;
+          } else if (innerStep == 5) {
+            var truestring,
+                dotColor;
+            if (acceptanceProbability > lastRandom) {
+              dotColor = "#73AB84";
+              truestring = "True";
+            } else {
+              dotColor = "#C95D63";
+              truestring = "False";          
+            }        
+
+            document.getElementById("step6a").innerHTML = "<span class='indicator'>&#11044;</span> ("+acceptanceProbabilityText+" > " + lastRandomText + ") == " + truestring;
+            $("#step6a > .indicator").css("opacity", 1).css("color", dotColor);
+            currentStep--;
+          } else if (innerStep == 6) {
+            $("#step6a > .indicator").css("opacity", 0);
+            if (acceptanceProbability > lastRandom) {
+              annealingMoves.push(nextMove);     
+              // annealingMoves.push({date: datahold[lastindex].date, close: datahold[lastindex].close});        
+              $("#step7 > .indicator").css("opacity", 1).css("color", "#73AB84" );
+              $("#step7").css("font-weight", "bold");
+            } else {
+              $("#step8 > .indicator").css("opacity", 1).css("color", "#C95D63");
+              $("#step8").css("font-weight", "bold");
+
+            }
+
+          }
+          innerStep++;
+
+
+        }
+
+      } else if (currentStep == 6) {
+
+        $("#step3 > .indicator, #step3a > .indicator, #step4 > .indicator, #step5 > .indicator, #step5b > .indicator, #step5c > .indicator").css("opacity", 0);
+        $("#step6 > .indicator, #step6a > .indicator, #step7 > .indicator, #step8 > .indicator").css("opacity", 0);
+
+        $(".codeTyping").css("font-weight", "normal");
+        $("#step9 > .indicator").css("opacity", 1).css("color", "#759ABF");                            
+        temp *= 1 - coolingRate;
+        document.getElementById("temp").value = Math.floor(temp * 100) / 100;      
+        // annealingMoves.push({date: datahold[lastindex].date, close: datahold[lastindex].close});
+        lookAheadMove[0] = -9999;
+        innerStep = 0;
+        currentStep = 0;
+      } else {
+        innerStep = 0;        
+        currentStep = 0;
+      }
+
+
+
+        if (annealingMoves.length > numToWatch) {
+          while (annealingMoves.length > numToWatch) {
+            annealingMoves.shift();      
+          }
+        }
+
+      if (lookAheadMove[0] != -9999) {
+        var triangle = d3.symbol()
+                        .type(d3.symbolTriangle)
+                        .size(80);
+        svg.append("path")
+                    .attr("class", "triangle")
+                    .attr("d", triangle)
+                    .attr("fill", "#262A41")
+                    .attr("transform", function(d) { return "translate(" + (x(lookAheadMove[0])+50) + "," + (y(lookAheadMove[1])+20) + ") rotate(-180)"; })
+      } else {
+        var removeTriangle = svg.selectAll(".triangle").remove();
+
+      }
+
+
+      var removeCircle = svg.selectAll("circle").remove();
+      var selectCircle = svg.selectAll(".circle").data(annealingMoves);
+      selectCircle.enter().append("circle")
+      .attr("class", "circle")
+      .attr("r", 7.5)
+      .attr("fill", "#8343BC")
+      .attr("cx", function(d) {
+        return x(d.date)+50;        
+      })
+      .attr("cy", function(d) {
+        return y(d.close)+20;
+      });    
+}
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}  
+/*
+notes
+msybe invisible line first then reveal at end
+display acceptance probability or newcoin by slider bar rolling
+
+i think heatmapping the climber's position over time would produce interesting results
+  would work but problems are what to scale it to and should it be scaled over time
+  also it would basically just be the original map again
+
+considerations and thoughts
+  would we want rabbit and frog on same graph
+    well itd be hard to see the difference in how they go about algo unless we did some extra stuff
+    would also just spawn another of these side by side
+*/
+
+/**
+This is currently a black box representation of how simulated annealing applied to hill climbing would make decisions throughout the landscape depending on the time elapsed. 
+The user can set the variables and quickly see how different runs of the algorithm with different temperature and cooling settings affect the behavior of the hill climber. With the adjustable speed and many hills the user can see how at the end of the algorithm when the temperatuer cools, the climber tends to stick to the same hill and not venture down as much. Although sometimes with bad settings, the climber might not arrive at the global maximum height, that is representative of the behavior of the algorithm. This mile high view of the algorithm allows less worrying about the nitty gritty, and rather helps in understanding the large scale behavior and how simulated annealing may be applied to other problems.
+
+The different adjustable fields are starting temperature; where the temperature cools over time by the cooling rate, and the current temperature at a given time will affect the likelihood of taking a bad move voluntarily. The speed slider is for speeding up or slowing down how fast the algorithm runs on the screen for the user to examine the algorithm both at a glance for the whole scheme, as well as individual decisions. In the future, showing more steps of the algorithm decision process for when the user slows down the algorithm, maybe with a different layout completely would make sense, where the acceptance probability can be shown for the move at hand in relation to the current temperature, as well as which random move from the moveset was selected.
+*/
+
+</script>
+</body>

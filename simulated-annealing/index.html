@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>    
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="lib/jquery.fullpage.min.js"></script>
+    <link rel="stylesheet" href="lib/jquery.fullpage.min.css">
+    <link rel="stylesheet" href="lib/index.css">
+    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+</head>
+<body>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#fullpage').fullpage({
+                menu: '#menu',
+                lockAnchors: false,
+                navigation: true,
+                navigationPosition: 'right',
+                showActiveTooltip: false,
+                slidesNavigation: true,
+                slidesNavPosition: 'bottom',
+// verticalCentered:false                
+            });
+        });
+    </script>
+    <!--
+
+
+
+
+
+
+
+    -->
+
+    <div id="fullpage">
+        <div class="section">
+            <h1 class="section1Title">Visualizing Simulated Annealing</h1>
+            <p class="section1Subtitle">Anmol Anubhai, Gabriel Hughes, Daphne Liang, Thomas Nguyen
+            </br>
+            <p class="section1Subtitle">CSE 442 Fall 2017 Final Project</p>
+        </div>
+        <div class="section">
+            <h1 align='center' style="font-size:30; font-family: Raleway">What is Simulated Annealing?</h1>
+            <p class="section2Text">Simulated annealing is an algorithm used to find <strong> good (but not necessarily always perfect) solutions to optimization problems.</strong> It's main strength over other optimization algorithms such as hill climbing, genetic algorithms, and gradient descent is that it has a way of avoiding getting stuck at local optima (minima or maxima). The way simple optimization algorithms, like hill climbing, work is that the algorithm chooses a neighboring solution and if it is better than the current solution, it chooses that one. The downside of this behavior is that if the algorithm finds itself at a local optimum, it will never choose a worse solution even if worse solutions are the only way to arrive at the global optimum.<p>
+        </div>
+        <div class="section">
+            <div class="flexContainer">
+                <div class="flexLeft">
+                    <img class="hillClimb" src="resources/HillClimbingAlgorithms_Comparison.png">
+                </div>
+                <div class="flexRight">
+                    <h1 style="font-size:30; font-family: Raleway">Simulated Annealing vs its Siblings</h1>
+                    <p class="sectionText">This plot represents the general basic behavior of simple hill climbing algorithms compared against the behavior of simulated annealing. We see that hill climbing results in the algorithm getting stuck at a local optimum because it cannot move downhill. On the other hand, <strong>simulated annealing has the ability to go downhill and escape that local optimum, eventually climbing up again to reach the global optimum.</strong> So what about simulated annealing allows this behavior?
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <div class="flexContainer">
+                <div class="flexLeft">
+                    <h1 align='center' style="font-size:30; font-family: Raleway">The Acceptance Probability</h1>
+                     <p>The key differentiating factor between simulated annealing and other optimization algorithms is a variable called <strong>temperature</strong>, which is borrowed from the process of annealing in metalwork, from which the algorithm takes its name. In (non-simulated) annealing, metal is heated and cooled in order to change its physical properties. As the metal cools, its altered internal structure gradually becomes fixed until it takes on an entirely new shape. In simulated annealing, <strong>temperature determines the probability that the algorithm will choose a worse solution (or move downhill)</strong>, knowing that there is a possibility that worse solution will eventually lead to a better one. When the <strong>temperature is high, the algorithm is more likely to choose a worse solution</strong>, i.e., its behavior is more varied, much like the atoms in heated metal. As the <strong>temperature cools, the algorithm is less likely to choose worse solutions</strong>, eventually choosing more and more good solutions (and fewer worse) in order to arrive at the nearest optimal solution.</br></br>
+
+                    The plot to the right shows the equation for the acceptance probability and how temperature influences it. The probability is essentially <i>e<sup>-x</sup></i>, where x is equal to the difference in cost between the algorithm's old solution (c<sub>old</sub>) and its new neighboring solution (c<sub>new</sub>) divided by temperature. Because the difference in cost is always negative, we can see that as the <strong>temperature decreases, the probability of accepting a worse solution tends towards 0.</strong>
+                    </p>
+                </div>
+                <div class="flexRight">
+                    <img class="graphImg" src="resources/graph.jpg">
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <div class="flexContainer">
+                <div class="flexLeft">
+                    <iframe src="https://player.vimeo.com/video/246196369" width="640" height="360" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+                    <p><a href="https://vimeo.com/246196369">HillClimbingV3</a> from <a href="https://vimeo.com/user75852182">anmol anubhai</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+                </div>
+                <div class="flexRight">
+                    <h1 style="font-size:30; font-family: Raleway">Simulated Annealing and Hill Climbing</h1>
+                    <p class="sectionText">This simulation shows the general basic behavior of the algorithm. Though a typical run makes many more random moves and takes longer, we can break down the behavior of the algorithm over time into three phases. In the beginning, when the temperature is high, the hill climber, representing simulated annealing, is able to explore freely because the probability that he will accept a worse solution, or lower altitude, is close to 1. As the temperature decreases, that probability decreases, so his behavior is characterized more by climbing, or accepting higher solutions. Finally, as the temperature approaches a low, the climber is very unlikely to move downhill, so he settles down at the nearest summit. In the simulation, the flag represents a possible neighboring solution, the highlighted terrain the neighborhood, and the climber's decision process is represented by the thought bubble.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            
+            <div class="frameContainer">
+                <iframe src="interactiveAnneal/index.html" width="100%" height="90%" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+            </div>
+        </div>
+        <div class="section">
+            
+            <div class="flexContainer">
+
+                <div class="flexLeft">
+
+                    <iframe src="https://player.vimeo.com/video/246196148" width="640" height="360" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+                    <p><a href="https://vimeo.com/246196148">TSPFinalV3</a> from <a href="https://vimeo.com/user75852182">anmol anubhai</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+                </div>
+                <div class="flexRight">
+                    <h1 style="font-size:30; font-family: Raleway">Simulated Annealing and TSP</h1>
+                    <p class="sectionText">The Traveling Salesman Problem is a common use case for simulated annealing. Because of the algorithm's ability to <strong>temporarily accept worse solutions, or longer distances in this case, it's uniquely fit for finding optimal solutions to the problem.</strong> The following video shows how a pilot flying around the country might use simulated annealing to minimize the total distance traveled, and thus fuel burned. The paths adjust more at random in the beginning when the temperature is high and start taking on a similar shape near the end when the temperature is low. The following visualization allows you to create your own trip and watch the algorithm plan an optimal route.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            
+            <div class="frameContainer">
+                <iframe src="tsp/index.html" width="100%" height="90%" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+</body>
