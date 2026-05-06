@@ -287,7 +287,8 @@
             Nelder-Mead is a derivative-free optimization method that finds a local minimum by iteratively
             modifying a <em>simplex</em> — a geometric shape with one more vertex than the space has dimensions.
             In 2D, the simplex is a <em>triangle</em>. Each step reflects, expands, contracts, or shrinks
-            the triangle to move it toward the minimum.
+            the triangle to move it toward the minimum. Here we minimize
+            f(x, y) = −exp(−(√(x²+y²) − 2)² + x), which has a global minimum near (2.5, 0).
           </p>
         </header>
 
@@ -305,19 +306,19 @@
                   <span class="nm-code-line indent-0" data-line="1">Evaluate f at each vertex</span>
                   <span class="nm-code-line indent-0" data-line="2">Sort: f(u) ≤ f(v) ≤ f(w)</span>
                   <span class="nm-code-line indent-0" data-line="3">Compute centroid c = (u + v) / 2</span>
-                  <span class="nm-code-line indent-0" data-line="4">Reflect: r = c + α(c − w),  α = 1</span>
+                  <span class="nm-code-line indent-0" data-line="4">Reflect: r = 2c − w</span>
                   <span class="nm-code-line indent-0" data-line="5">Evaluate f(r)</span>
                   <span class="nm-code-line indent-1" data-line="6">If f(u) ≤ f(r) &lt; f(v):  replace w ← r</span>
                   <span class="nm-code-line indent-1" data-line="7">Else if f(r) &lt; f(u):</span>
-                  <span class="nm-code-line indent-2" data-line="8">Expand: e = c + γ(r − c),  γ = 2</span>
+                  <span class="nm-code-line indent-2" data-line="8">Expand: e = c + 2(r − c)</span>
                   <span class="nm-code-line indent-2" data-line="9">Evaluate f(e)</span>
                   <span class="nm-code-line indent-2" data-line="10">If f(e) &lt; f(r):  replace w ← e</span>
                   <span class="nm-code-line indent-2" data-line="11">Else:  replace w ← r</span>
                   <span class="nm-code-line indent-1" data-line="12">Else (f(r) ≥ f(v)):</span>
-                  <span class="nm-code-line indent-2" data-line="13">Contract: p = c + ρ(w − c),  ρ = 0.5</span>
-                  <span class="nm-code-line indent-2" data-line="14">Evaluate f(p)</span>
-                  <span class="nm-code-line indent-2" data-line="15">If f(p) &lt; f(w):  replace w ← p</span>
-                  <span class="nm-code-line indent-2" data-line="16">Else: shrink all toward u,  σ = 0.5</span>
+                  <span class="nm-code-line indent-2" data-line="13">p₁ = (w + c) / 2  and  p₂ = (c + r) / 2</span>
+                  <span class="nm-code-line indent-2" data-line="14">Evaluate f(p₁) and f(p₂)</span>
+                  <span class="nm-code-line indent-2" data-line="15">If min(f(p₁), f(p₂)) &lt; f(v):  w ← best of p₁, p₂</span>
+                  <span class="nm-code-line indent-2" data-line="16">Else: shrink — p ← u + 0.5(p − u) for all p</span>
                   <span class="nm-code-line indent-0" data-line="17">Check convergence</span>
                   <span class="nm-code-line indent-0" data-line="18">Repeat ↑</span>
                 </div>
@@ -328,7 +329,7 @@
             <section aria-label="Algorithm visualization">
               <div class="nm-panel">
                 <div class="nm-panel-header" style="display:flex; justify-content:space-between; align-items:center;">
-                  <span>visualization  ·  f(x, y) = (x − 1)² + 0.7(y + 1)²</span>
+                  <span>visualization  ·  f(x, y) = −exp(−(√(x²+y²) − 2)² + x)</span>
                   <span id="nm-iter" class="nm-iter-label"></span>
                 </div>
                 <div id="nm-viz"></div>
@@ -385,7 +386,7 @@
             </div>
             <div class="nm-legend-item">
               <div class="nm-legend-diamond" style="background:#c08040;"></div>
-              <span>p — contracted</span>
+              <span>p₁, p₂ — contraction pts</span>
             </div>
             <div class="nm-legend-item">
               <div class="nm-legend-dot" style="background:#4fc97e;"></div>
