@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ben_sacks | Nelder-Mead Visualization</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+
+  <style>
+    /* ── Demo layout ───────────────────────────────────────────────── */
+    .nm-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    @media (min-width: 768px) {
+      .nm-layout {
+        grid-template-columns: 380px 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    /* ── Panel base ────────────────────────────────────────────────── */
+    .nm-panel {
+      background: #1a1a1a;
+      border: 1px solid var(--grid);
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .nm-panel-header {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #666;
+      padding: 0.55rem 1rem;
+      border-bottom: 1px solid var(--grid);
+      background: #161616;
+    }
+
+    /* ── Pseudocode panel ─────────────────────────────────────────── */
+    .nm-code-body {
+      padding: 0.5rem 0;
+    }
+
+    .nm-code-line {
+      display: block;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.75;
+      color: #888;
+      padding: 0.15rem 1rem;
+      border-left: 3px solid transparent;
+      transition: color 0.15s, background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+      cursor: default;
+      user-select: none;
+    }
+
+    .nm-code-line.nm-code-active {
+      color: var(--text);
+      background: rgba(227, 181, 5, 0.09);
+      border-left-color: var(--accent);
+      font-weight: 700;
+    }
+
+    .nm-code-line.indent-1 { padding-left: 2.2rem; }
+    .nm-code-line.indent-2 { padding-left: 3.4rem; }
+
+    /* ── Visualization panel ──────────────────────────────────────── */
+    #nm-viz {
+      width: 100%;
+      background: #161616;
+    }
+
+    #nm-viz svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* ── Message area ─────────────────────────────────────────────── */
+    .nm-message-box {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      color: #aaa;
+      background: #161616;
+      border: 1px solid var(--grid);
+      border-top: none;
+      padding: 0.65rem 1rem;
+      min-height: 3.2rem;
+    }
+
+    .nm-iter-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      color: #555;
+      letter-spacing: 0.08em;
+      text-align: right;
+      padding-right: 2px;
+    }
+
+    /* ── Controls ─────────────────────────────────────────────────── */
+    .nm-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 0;
+    }
+
+    .nm-btn {
+      border: 1px solid var(--grid);
+      background: rgba(30, 30, 30, 0.6);
+      padding: 0.4rem 0.85rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .nm-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .nm-btn:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    .nm-btn.primary {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .nm-btn.primary:hover:not(:disabled) {
+      background: rgba(227, 181, 5, 0.1);
+    }
+
+    /* ── Speed input ─────────────────────────────────────────────── */
+    .nm-speed-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      border-left: 1px solid var(--grid);
+      padding-left: 0.75rem;
+    }
+
+    .nm-speed-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      color: #777;
+      white-space: nowrap;
+    }
+
+    .nm-speed-input {
+      width: 5rem;
+      background: #1a1a1a;
+      border: 1px solid var(--grid);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.3rem 0.4rem;
+      text-align: center;
+    }
+
+    .nm-speed-input:focus {
+      outline: 1px solid var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* ── Legend ──────────────────────────────────────────────────── */
+    .nm-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      color: #777;
+      padding: 0.5rem 0 0.25rem;
+    }
+
+    .nm-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .nm-legend-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .nm-legend-x {
+      font-size: 1rem; line-height: 1;
+    }
+
+    .nm-legend-diamond {
+      width: 9px; height: 9px;
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="outer-container" id="outerContainer">
+    <div class="grid-viewport" id="viewport">
+
+      <div class="content-wrapper">
+
+        <!-- Navigation -->
+        <nav class="flex justify-between items-center px-4 md:px-8 py-4">
+          <div class="flex space-x-4 md:space-x-8 text-xs tracking-wider uppercase font-mono-accent">
+            <a href="index.html" class="nav-link flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                class="opacity-60 transition-all">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              <span class="hidden sm:inline">Home</span>
+            </a>
+            <a href="teaching.html" class="nav-link flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                class="opacity-60 transition-all">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+              </svg>
+              <span class="hidden sm:inline">Teaching</span>
+            </a>
+            <a href="#" class="nav-link flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                class="opacity-60 transition-all">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              <span class="hidden sm:inline">Photography</span>
+            </a>
+            <a href="#" class="nav-link flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                class="opacity-60 transition-all">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span class="hidden sm:inline">About Me</span>
+            </a>
+          </div>
+          <div>
+            <a href="#" class="nav-link text-xs tracking-wider uppercase font-mono-accent flex items-center gap-2">
+              <span class="hidden sm:inline">Resume</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                class="opacity-60 transition-all">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </a>
+          </div>
+        </nav>
+
+        <!-- Page header -->
+        <header class="flex flex-col justify-end px-4 md:px-8 pt-8 pb-4">
+          <h1 class="text-2xl sm:text-3xl md:text-4xl tracking-tight font-bold mb-4">
+            Nelder-Mead <span class="italic text-accent">Algorithm Visualization</span>
+          </h1>
+          <p class="text-sm md:text-base w-full leading-relaxed text-[#a0a0a0] font-mono-accent max-w-3xl">
+            Nelder-Mead is a derivative-free optimization method that finds a local minimum by iteratively
+            modifying a <em>simplex</em> — a geometric shape with one more vertex than the space has dimensions.
+            In 2D, the simplex is a <em>triangle</em>. Each step reflects, expands, contracts, or shrinks
+            the triangle to move it toward the minimum.
+          </p>
+        </header>
+
+        <main class="flex-1 px-4 md:px-8 mb-16">
+
+          <!-- Two-column demo layout -->
+          <div class="nm-layout">
+
+            <!-- ── Left: Pseudocode panel ────────────────────────────── -->
+            <section aria-label="Algorithm pseudocode">
+              <div class="nm-panel" style="height: 100%;">
+                <div class="nm-panel-header">pseudocode</div>
+                <div class="nm-code-body" id="nm-code-body">
+                  <span class="nm-code-line indent-0" data-line="0">Initialize simplex with three points</span>
+                  <span class="nm-code-line indent-0" data-line="1">Evaluate f at each vertex</span>
+                  <span class="nm-code-line indent-0" data-line="2">Sort: f(u) ≤ f(v) ≤ f(w)</span>
+                  <span class="nm-code-line indent-0" data-line="3">Compute centroid c = (u + v) / 2</span>
+                  <span class="nm-code-line indent-0" data-line="4">Reflect: r = c + α(c − w),  α = 1</span>
+                  <span class="nm-code-line indent-0" data-line="5">Evaluate f(r)</span>
+                  <span class="nm-code-line indent-1" data-line="6">If f(u) ≤ f(r) &lt; f(v):  replace w ← r</span>
+                  <span class="nm-code-line indent-1" data-line="7">Else if f(r) &lt; f(u):</span>
+                  <span class="nm-code-line indent-2" data-line="8">Expand: e = c + γ(r − c),  γ = 2</span>
+                  <span class="nm-code-line indent-2" data-line="9">Evaluate f(e)</span>
+                  <span class="nm-code-line indent-2" data-line="10">If f(e) &lt; f(r):  replace w ← e</span>
+                  <span class="nm-code-line indent-2" data-line="11">Else:  replace w ← r</span>
+                  <span class="nm-code-line indent-1" data-line="12">Else (f(r) ≥ f(v)):</span>
+                  <span class="nm-code-line indent-2" data-line="13">Contract: p = c + ρ(w − c),  ρ = 0.5</span>
+                  <span class="nm-code-line indent-2" data-line="14">Evaluate f(p)</span>
+                  <span class="nm-code-line indent-2" data-line="15">If f(p) &lt; f(w):  replace w ← p</span>
+                  <span class="nm-code-line indent-2" data-line="16">Else: shrink all toward u,  σ = 0.5</span>
+                  <span class="nm-code-line indent-0" data-line="17">Check convergence</span>
+                  <span class="nm-code-line indent-0" data-line="18">Repeat ↑</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- ── Right: Visualization panel ───────────────────────── -->
+            <section aria-label="Algorithm visualization">
+              <div class="nm-panel">
+                <div class="nm-panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+                  <span>visualization  ·  f(x, y) = (x − 1)² + 0.7(y + 1)²</span>
+                  <span id="nm-iter" class="nm-iter-label"></span>
+                </div>
+                <div id="nm-viz"></div>
+              </div>
+
+              <!-- Message area sits beneath the viz, inside the right column -->
+              <div id="nm-message" class="nm-message-box">
+                Loading…
+              </div>
+            </section>
+          </div>
+
+          <!-- ── Controls (full width, below layout) ──────────────────── -->
+          <div class="nm-controls mt-4">
+            <button id="nm-btn-back"  class="nm-btn" aria-label="Step backward">← Back</button>
+            <button id="nm-btn-next"  class="nm-btn primary" aria-label="Step forward">Next →</button>
+            <button id="nm-btn-play"  class="nm-btn" aria-label="Play animation">▶ Play</button>
+            <button id="nm-btn-pause" class="nm-btn" aria-label="Pause animation" disabled>‖ Pause</button>
+            <button id="nm-btn-reset" class="nm-btn" aria-label="Reset to start">↺ Reset</button>
+
+            <div class="nm-speed-wrap">
+              <label for="nm-speed" class="nm-speed-label">Step speed (ms)</label>
+              <input type="number" id="nm-speed" class="nm-speed-input"
+                     value="200" min="50" max="5000" step="50"
+                     aria-label="Autoplay step speed in milliseconds">
+            </div>
+          </div>
+
+          <!-- ── Legend ────────────────────────────────────────────────── -->
+          <div class="nm-legend">
+            <div class="nm-legend-item">
+              <div class="nm-legend-dot" style="background:#e3b505;"></div>
+              <span>u — best vertex</span>
+            </div>
+            <div class="nm-legend-item">
+              <div class="nm-legend-dot" style="background:#a07c00;"></div>
+              <span>v — second vertex</span>
+            </div>
+            <div class="nm-legend-item">
+              <span class="nm-legend-x" style="color:#d45f00; font-weight:700;">✕</span>
+              <span>w — worst vertex</span>
+            </div>
+            <div class="nm-legend-item">
+              <div class="nm-legend-diamond" style="background:#7eccb8;"></div>
+              <span>c — centroid</span>
+            </div>
+            <div class="nm-legend-item">
+              <div class="nm-legend-dot" style="background:#e3b505;"></div>
+              <span>r — reflected</span>
+            </div>
+            <div class="nm-legend-item">
+              <div class="nm-legend-dot" style="background:#70e080;"></div>
+              <span>e — expanded</span>
+            </div>
+            <div class="nm-legend-item">
+              <div class="nm-legend-diamond" style="background:#c08040;"></div>
+              <span>p — contracted</span>
+            </div>
+            <div class="nm-legend-item">
+              <div class="nm-legend-dot" style="background:#4fc97e;"></div>
+              <span>✓ — accepted</span>
+            </div>
+          </div>
+
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/demo-nelder-mead.js" defer></script>
+</body>
+
+</html>
