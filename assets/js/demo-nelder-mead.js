@@ -15,9 +15,9 @@
   const SIGMA = 0.5; // shrink      (p ← u + 0.5(p − u))
   // Contraction: p₁ = midpoint(w,c), p₂ = midpoint(c,r) — no RHO needed
 
-  // Fixed initial simplex — distinct f-values, spans interesting region
-  // f(-1,2)≈−0.348, f(4,3)≈−0.0067, f(2,-3)≈−0.561
-  const INITIAL_SIMPLEX = [[-1, 2], [4, 3], [2, -3]];
+  // Fixed initial simplex — triggers expansion on iteration 1
+  // f(0,-3)≈−0.368, f(-2,-2)≈−0.068, f(-2,-3)≈−0.010
+  const INITIAL_SIMPLEX = [[0, -3], [-2, -2], [-2, -3]];
 
   // ─── Pseudocode lines (indices 0–18) ──────────────────────────────────────
   const PSEUDOCODE = [
@@ -47,7 +47,7 @@
   function generateSteps(initial) {
     const steps = [];
     const MAX_ITER = 30;
-    const TOL = 1e-5;
+    const TOL = 1e-3;
 
     function snap(pts) { return pts.map(p => [...p]); }
     function sorted(pts) {
@@ -291,8 +291,8 @@
   const INNER_H = VB_H - MARGIN.top - MARGIN.bottom;
 
   // Data domain
-  const X_DOM = [-4, 6];
-  const Y_DOM = [-5, 5];
+  const X_DOM = [-3, 5];
+  const Y_DOM = [-4, 4];
 
   function xPx(x) { return MARGIN.left + ((x - X_DOM[0]) / (X_DOM[1] - X_DOM[0])) * INNER_W; }
   function yPx(y) { return MARGIN.top  + ((Y_DOM[1] - y) / (Y_DOM[1] - Y_DOM[0])) * INNER_H; }
