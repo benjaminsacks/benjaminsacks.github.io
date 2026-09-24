@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ben_sacks | Correlation Matching Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    /* Demo specific styles */
+    .demo-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      align-items: flex-end;
+    }
+
+    .ctl {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
+    .ctl-label {
+      font-family: 'Space Mono', monospace;
+      font-size: .7rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #a0a0a0;
+    }
+
+    .seg {
+      display: inline-flex;
+      border: 1px solid var(--grid);
+      background: var(--bg);
+    }
+
+    .seg button {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: .9rem;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      padding: .5em 1.1em;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+
+    .seg button+button {
+      border-left: 1px solid var(--grid);
+    }
+
+    .seg button[aria-pressed="true"] {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .seg button:hover:not([aria-pressed="true"]) {
+      color: var(--accent);
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: .6em 1.1em;
+      border: 1px solid var(--grid);
+      background: rgba(30, 30, 30, .5);
+      color: var(--text);
+      cursor: pointer;
+      transition: background .2s, color .2s, border-color .2s;
+    }
+
+    .btn-action:hover {
+      background: var(--bg);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-action.primary {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .btn-action.primary:hover {
+      background: rgba(227, 181, 5, .1);
+    }
+
+    .score {
+      min-width: 9ch;
+    }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2.5fr) minmax(250px, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .prompts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: #232323;
+      border: 1px solid var(--grid);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .65rem;
+    }
+
+    .card.good {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(227, 181, 5, .15);
+    }
+
+    .card.bad {
+      border-color: #e0685f;
+      box-shadow: 0 0 0 2px rgba(224, 104, 95, .15);
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .num {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: .85rem;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: #a0a0a0;
+    }
+
+    .num b {
+      display: inline-grid;
+      place-items: center;
+      width: 1.8em;
+      height: 1.8em;
+      background: var(--grid);
+      color: var(--text);
+      font-size: .95em;
+      font-style: normal;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .verdict {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: .8rem;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .verdict.good {
+      color: var(--accent);
+    }
+
+    .verdict.bad {
+      color: #e0685f;
+    }
+
+    .plot {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .plot .axis {
+      stroke: #777;
+      stroke-width: 1.5;
+    }
+
+    .plot .gl {
+      stroke: var(--grid);
+      stroke-width: 1;
+    }
+
+    .plot text {
+      fill: #888;
+      font-size: 12px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .plot circle {
+      fill: var(--accent);
+      fill-opacity: .75;
+    }
+
+    .eq {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: .5em;
+      aspect-ratio: 420/270;
+      text-align: center;
+      background: #1a1a1a;
+      border: 1px solid var(--grid);
+    }
+
+    .eq .line {
+      font-size: clamp(1.4rem, 2.2vw, 2.4rem);
+      font-weight: 700;
+      white-space: nowrap;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .eq .other {
+      font-size: clamp(1rem, 1.6vw, 1.6rem);
+      color: #a0a0a0;
+      font-family: 'Space Mono', monospace;
+    }
+
+    i.v {
+      font-family: Georgia, "Times New Roman", serif;
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .picker {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .picker button {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 1.05em;
+      padding: .35em 0;
+      cursor: pointer;
+      border: 1px solid var(--grid);
+      background: var(--bg);
+      color: var(--text);
+      transition: background .2s, color .2s, border-color .2s;
+    }
+
+    .picker button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .picker button.taken {
+      color: #666;
+      border-style: dashed;
+    }
+
+    .picker button[aria-pressed="true"] {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+
+    .picker button.answer {
+      border-color: var(--accent);
+      border-width: 2px;
+      border-style: solid;
+    }
+
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .answers h2 {
+      margin: 0;
+      font-family: 'Space Mono', monospace;
+      font-size: .8rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #a0a0a0;
+      font-weight: 400;
+    }
+
+    .ans {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #232323;
+      border: 1px solid var(--grid);
+      padding: 1rem;
+    }
+
+    .ans .let {
+      display: grid;
+      place-items: center;
+      width: 2.1em;
+      height: 2.1em;
+      background: var(--grid);
+      color: var(--text);
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      font-size: 1.25rem;
+      flex: none;
+    }
+
+    .ans .val {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(1.5rem, 2.6vw, 2.3rem);
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ans .val .lab {
+      color: #a0a0a0;
+      font-weight: 400;
+      font-size: .55em;
+      margin-right: .3em;
+    }
+
+    .ans .who {
+      margin-left: auto;
+      color: #a0a0a0;
+      font-size: .8rem;
+      font-family: 'Space Mono', monospace;
+      text-align: right;
+    }
+
+    .ans.used .let {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    @media (max-width: 900px) {
+      .game-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .answers {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .answers h2 {
+        grid-column: 1/-1;
+      }
+    }
+
+    @media (max-width: 560px) {
+
+      .prompts,
+      .answers {
+        grid-template-columns: 1fr;
+      }
+
+      .eq .line {
+        white-space: normal;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="outer-container" id="outerContainer">
+    <div class="grid-viewport" id="viewport">
+
+      <div class="content-wrapper">
+
+        <!-- Header -->
+        <header class="flex flex-col justify-end px-4 md:px-8 pt-8 pb-4">
+          <h1 id="title" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl tracking-tight font-bold mb-4">
+            Match each plot to its <span class="text-accent">R²</span>
+          </h1>
+          <p class="text-sm md:text-base w-full leading-relaxed text-[#a0a0a0] font-mono-accent">
+            Pick a statistic and a prompt style, then match each one to the choice on the right.
+          </p>
+        </header>
+
+        <main class="flex-1 mb-16">
+          <!-- Controls -->
+          <div class="demo-controls bg-[#232323] border border-grid p-4 mx-4 md:mx-8 mb-6">
+            <div class="ctl">
+              <span class="ctl-label">Matching</span>
+              <div class="seg" role="group" aria-label="Statistic to match">
+                <button data-stat="R2" aria-pressed="true">R²</button>
+                <button data-stat="r" aria-pressed="false"><i class="v">r</i></button>
+              </div>
+            </div>
+            <div class="ctl">
+              <span class="ctl-label">Prompts</span>
+              <div class="seg" role="group" aria-label="Prompt display">
+                <button data-view="scatter" aria-pressed="true">Scatter</button>
+                <button data-view="eq" aria-pressed="false">Equation</button>
+              </div>
+            </div>
+            <div class="actions lg:ml-auto">
+              <button class="btn-action primary" id="check">Check answers</button>
+              <button class="btn-action" id="new">New round</button>
+              <span class="score font-mono-accent text-accent" id="score" aria-live="polite"></span>
+            </div>
+          </div>
+
+          <!-- Game -->
+          <div class="game-layout px-4 md:px-8">
+            <section class="prompts" id="prompts" aria-label="Prompts"></section>
+            <section class="answers" id="answers" aria-label="Answer choices"></section>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/demo-correlation-matching.js" defer></script>
+</body>
+
+</html>
