@@ -311,6 +311,23 @@ nav {
   color: var(--accent);
 }
 
+.demo-image.has-preview svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.demo-image.has-preview .demo-image-label {
+  position: absolute;
+  left: 0.6rem;
+  bottom: 0.6rem;
+  background: rgba(15, 15, 15, 0.72);
+  padding: 0.2rem 0.5rem;
+  z-index: 2;
+}
+
 .demo-image-label {
   font-family: 'Space Mono', monospace;
   font-size: 0.75rem;
