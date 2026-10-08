@@ -1,0 +1,1023 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ben_sacks | Probability Bag Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* site palette (matches assets/css/styles.css): charcoal + gold, Playfair Display + Space Mono */
+  --serif:'Playfair Display',Georgia,'Times New Roman',serif;
+  --mono:'Space Mono',ui-monospace,Menlo,Consolas,monospace;
+  --r:0px;
+  --bg:#1e1e1e; --panel:#232323; --ink:#e9e9e9; --muted:#a0a0a0; --line:#3d3d3d; --soft:#2c2c2c;
+  --blue:#4a8cff; --blueEdge:#a9ccff; --green:#2ecc71; --greenEdge:#a6efc4;
+  --acc:#e3b505; --accSoft:rgba(227,181,5,.38); --accHot:rgba(227,181,5,.26); --accInk:#f2cc3a; --onAcc:#1e1e1e;
+  --bagBack:#4a3b28; --bagIn:#2e2416; --bagFront:#8c6538; --bagLine:#d2ad74;
+  --red:#ff5a4f; --redEdge:#ffc2bd; --yellow:#ffec6a; --yellowEdge:#7a5f00; --purple:#b77be6; --purpleEdge:#e8d0fa;
+  --ok:#3ddc84; --bad:#ff6b6b;
+  --shadow:none;
+  color-scheme:dark;
+}
+[data-theme=light]{
+  --bg:#f3f1ea; --panel:#ffffff; --ink:#1e1e1e; --muted:#5f5f5f; --line:#d6d3c8; --soft:#eceae1;
+  --blue:#1565e0; --blueEdge:#0b419a; --green:#0f9d58; --greenEdge:#086a3a;
+  --acc:#d9a800; --accSoft:rgba(217,168,0,.38); --accHot:rgba(217,168,0,.28); --accInk:#6b5200; --onAcc:#1e1e1e;
+  --bagBack:#ead6b0; --bagIn:#b8935d; --bagFront:#c28d52; --bagLine:#6e4c22;
+  --red:#d93025; --redEdge:#8f1a12; --yellow:#f4c20d; --yellowEdge:#7a5f00; --purple:#8e44ad; --purpleEdge:#4f1f66;
+  --ok:#0b7f44; --bad:#c62828;
+  --shadow:0 1px 2px rgba(20,25,40,.05),0 6px 18px rgba(20,25,40,.06);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--serif);background:var(--bg);color:var(--ink);
+  font-size:clamp(15px, .9vw + 4px, 22px);line-height:1.35;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.app{display:grid;grid-template-rows:auto 1fr;grid-template-columns:minmax(0,1fr);height:100vh;height:100dvh}
+
+/* top bar */
+header.top{display:flex;align-items:center;gap:.6em;padding:.45em .9em;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:-.01em;white-space:nowrap;font-size:1.05em;display:flex;align-items:center;gap:.4em}
+.brand svg{width:1.3em;height:1.3em}
+nav.tabs{display:flex;gap:.2em;overflow-x:auto;flex:1 1 300px;min-width:0;scrollbar-width:thin;padding:.1em 0}
+.tab{border:0;background:transparent;padding:.35em .65em;border-radius:var(--r);cursor:pointer;white-space:nowrap;font-weight:600;color:var(--muted);font-size:.86em}
+.tab b{font-weight:800;margin-right:.3em;opacity:.55}
+.tab:hover{background:var(--soft);color:var(--ink)}
+.tab.on{background:var(--ink);color:var(--panel)}
+.tab.on b{opacity:.8}
+.tools{display:flex;align-items:center;gap:.4em;font-size:.82em}
+.tools .lbl{color:var(--muted);font-weight:600}
+
+/* main layout */
+main{display:grid;grid-template-columns:minmax(0,40fr) minmax(0,60fr);min-height:0}
+.left{display:flex;flex-direction:column;gap:.45em;padding:.7em .9em;border-right:1px solid var(--line);min-height:0;overflow:auto;font-size:.84em}
+.right{overflow:auto;padding:.6em 1.3em .6em;min-height:0}
+.bagwrap{flex:0 1 auto;width:100%;aspect-ratio:400/452;max-height:calc(100dvh - 215px);min-height:170px;align-self:center;display:flex;justify-content:center;align-items:stretch;position:relative;overflow:hidden}
+.bagwrap svg{height:100%;width:100%;display:block}
+.bagcap{flex:none;text-align:center;color:var(--muted);font-weight:600;min-height:1.4em}
+.bagcap .cap2{font-size:.88em;font-weight:600;margin-top:.15em}
+.bagcap b{color:var(--ink)}
+.bagcap .given{color:var(--accInk);background:var(--accHot);padding:.1em .5em;border-radius:var(--r)}
+
+/* buttons */
+.btn{border:1px solid var(--line);background:var(--panel);padding:.38em .8em;border-radius:var(--r);cursor:pointer;font-weight:600;line-height:1.2}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.btn.on{background:var(--acc);border-color:var(--acc);color:var(--onAcc)}
+.btn.big{font-size:1.05em;padding:.5em 1em;border-radius:var(--r)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:focus-visible,.tab:focus-visible,.seg button:focus-visible,.rb:focus-visible,.stp button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:.45em;align-items:center;margin:.45em 0}
+.row.tight{gap:.35em;margin:0;justify-content:center}
+.muted{color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:transparent;padding:.35em .75em;font-weight:700;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button small{font-weight:500;opacity:.7;font-size:.72em;margin-left:.2em}
+.seg button.on{background:var(--ink);color:var(--panel)}
+.seg.sm button{padding:.25em .55em;font-size:.9em}
+
+/* left panel bits */
+.presets{display:flex;flex-wrap:wrap;gap:.35em;align-items:center;justify-content:center}
+.presets .lbl{color:var(--muted);font-weight:700;margin-right:.1em}
+.chk{display:inline-flex;align-items:center;gap:.3em;color:var(--muted);font-weight:600;cursor:pointer}
+.chk input{width:1.05em;height:1.05em;accent-color:var(--acc)}
+details.comp{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:.3em .7em}
+details.comp summary{cursor:pointer;font-weight:700;padding:.2em 0}
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:.35em .9em;padding:.35em 0 .2em}
+.stp{display:flex;align-items:center;gap:.35em}
+.stp .sl{flex:1;display:flex;align-items:center;gap:.35em;font-weight:600;white-space:nowrap}
+.stp button{width:1.9em;height:1.9em;border-radius:var(--r);border:1px solid var(--line);background:var(--soft);cursor:pointer;font-weight:800;font-size:1em;line-height:1}
+.stp button:disabled{opacity:.3;cursor:not-allowed}
+.stp .sv{min-width:1.6em;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
+.limit{font-size:.85em;color:var(--muted);text-align:center;padding-bottom:.2em}
+.tally{display:flex;flex-wrap:wrap;gap:.35em .7em;justify-content:center;align-items:center;font-weight:600;font-variant-numeric:tabular-nums;min-height:1.5em}
+.tally .chip{display:inline-flex;align-items:center;gap:.25em}
+.ic{vertical-align:-.18em;flex:none}
+
+/* bag svg */
+.bag-back{fill:var(--bagBack)}
+.bag-front{fill:var(--bagFront);transition:fill-opacity .4s ease}
+.bag-outline{fill:none;stroke:var(--bagLine);stroke-width:3;stroke-linejoin:round}
+.gusset{fill:rgba(60,35,10,.13)}
+.crease{fill:none;stroke:var(--bagLine);stroke-width:1.6;opacity:.55}
+.wall .deco{transition:opacity .4s ease}
+.wall.clear .bag-front{fill-opacity:0}
+.wall.clear,.bag-outline,#drawLayer{pointer-events:none}
+.wall.clear .deco{opacity:0}
+.wall .q{font:800 130px var(--serif);fill:var(--bagLine);opacity:.5}
+.sh{cursor:default}
+.sh text{font:800 15px var(--serif);text-anchor:middle;pointer-events:none}
+.sh .si{transition:opacity .3s ease}
+.sh.dim .si{opacity:.15}
+#bag.cond .sh .si{transition-duration:1s}
+.sh.out .si{opacity:.035}
+.sh.mid .si{opacity:.5}
+.sh.away .si{opacity:0}
+.sh.new .si{animation:pop .35s ease}
+@keyframes pop{from{opacity:0}to{opacity:1}}
+.drawn{transition:opacity .38s}
+.drawn.back{opacity:0}
+.drawn-lbl{font:700 22px var(--serif);fill:var(--ink);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:6px}
+
+/* right panel */
+.shead{display:flex;align-items:center;gap:.6em;margin:.2em 0 .4em;flex-wrap:wrap}
+.shead h2{margin:0;font-size:1.55em;letter-spacing:-.015em;display:flex;align-items:center;gap:.45em}
+.shead .num{display:inline-grid;place-items:center;width:1.55em;height:1.55em;border-radius:50%;background:var(--ink);color:var(--panel);font-size:.7em}
+.sp{flex:1}
+h3{margin:.1em 0 .45em;font-size:1.08em}
+.block{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:.75em 1em;margin:.6em 0;box-shadow:var(--shadow)}
+.sublab{font-size:.78em;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:.6em 0 .2em}
+.grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:.6em}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.6em}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:1em;align-items:center}
+.duo2{display:grid;grid-template-columns:1.25fr 1fr;gap:1em;align-items:center}
+
+/* reveal boxes */
+.rb{border:2px dashed var(--line);background:var(--soft);border-radius:var(--r);padding:.12em .55em;min-width:2.3em;min-height:1.85em;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:.3em;font-weight:700;transition:background .2s,border-color .2s;line-height:1.2;text-align:center;vertical-align:middle}
+.rb.st0{color:var(--muted)}
+.rb:not(.st0){border-style:solid;border-color:var(--acc);background:var(--panel)}
+.rb:hover{border-color:var(--acc)}
+.rb .words{font-size:.62em;font-weight:700;line-height:1.15;max-width:11em;display:inline-block}
+.rb.res{min-width:3em}
+.rb.res:not(.st0){background:var(--accHot)}
+.rb.cardbody{display:flex;width:100%;justify-content:flex-start;text-align:left;font-weight:500;padding:.45em .7em;min-height:2.4em}
+.rb.cardbody.st0{font-weight:700;font-size:.85em}
+.rb.cardbody:not(.st0){border-color:var(--line);border-style:solid;background:transparent;display:block}
+.rb.badge{font-size:.9em}
+.show::before{content:'▸ '}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:.6em .8em;box-shadow:var(--shadow)}
+.card-h{font-weight:800;margin-bottom:.35em;font-size:1.02em}
+.fl{font-size:1.15em;font-weight:700;margin:.15em 0}
+.eq{display:flex;align-items:center;flex-wrap:wrap;gap:.45em;font-size:1.35em;font-weight:700;margin:.25em 0}
+.eq .lhs{white-space:nowrap}
+.op{color:var(--muted);font-weight:600}
+.frac{display:inline-flex;flex-direction:column;align-items:center;gap:.18em;vertical-align:middle}
+.fbar{height:3px;background:var(--ink);align-self:stretch;border-radius:var(--r);min-width:2.5em}
+.term{display:inline-flex;flex-direction:column;align-items:center;gap:.1em}
+.term small{font-size:.5em;color:var(--muted);font-weight:700}
+.sfr{display:inline-flex;flex-direction:column;align-items:center;line-height:1.05;vertical-align:middle;font-size:.8em;margin:0 .12em;font-variant-numeric:tabular-nums}
+.sfr>span:last-child{border-top:2px solid currentColor;padding-top:.06em;align-self:stretch;text-align:center}
+.dec{font-size:.8em;color:var(--muted);font-weight:700;margin-left:.25em}
+.ok{color:var(--ok);font-weight:800}
+.bad{color:var(--bad);font-weight:800}
+.chipnote{display:inline-block;padding:.2em .6em;border-radius:var(--r);font-weight:700;font-size:.9em}
+.chipnote.ok{background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.chipnote.bad{background:color-mix(in srgb,var(--bad) 13%,transparent)}
+
+/* vocab */
+.trial{display:flex;align-items:stretch;gap:.6em;flex-wrap:wrap}
+.trial.empty{color:var(--muted);font-weight:600;padding:.6em 0}
+.tc{background:var(--soft);border-radius:var(--r);padding:.45em .8em;min-width:6em}
+.tl{font-size:.75em;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.tv{font-size:1.3em;font-weight:800;display:flex;align-items:center;gap:.35em}
+.arr{align-self:center;color:var(--muted);font-size:1.4em}
+.chart{width:100%;height:auto;display:block}
+.chart .ax{stroke:var(--line);stroke-width:1}
+.chart .axl{fill:var(--muted);font:600 13px var(--serif)}
+.chart .run{fill:none;stroke:var(--ink);stroke-width:2.5;stroke-linejoin:round}
+.chart .truth{stroke:var(--acc);stroke-width:3;stroke-dasharray:9 6}
+.chart .tl2{fill:var(--accInk);font:800 14px var(--serif)}
+
+/* venn */
+.venn{position:relative;width:100%;container-type:inline-size;margin:0 auto}
+.venn.big{max-width:760px}
+.venn.mini{max-width:430px}
+.venn svg{display:block;width:100%;height:auto;overflow:visible}
+.vr{fill:rgba(0,0,0,0);transition:fill .2s}
+.vr.int{cursor:pointer}
+.vr.hot{fill:var(--accHot)}
+.vr.sel{fill:var(--accSoft)}
+.vlay{fill:var(--acc);fill-opacity:.36;pointer-events:none}
+.veil{fill:var(--bg);opacity:0;pointer-events:none;transition:opacity 1s ease}
+.veil.on{opacity:.9}
+.vframe{fill:none;stroke:var(--ink);stroke-width:2.5}
+.vcL{fill:none;stroke:var(--blue);stroke-width:4;pointer-events:none}
+.vcR{fill:none;stroke:var(--ink);stroke-width:4;stroke-dasharray:14 7;pointer-events:none}
+.vt{font:800 22px var(--serif);fill:var(--ink);text-anchor:middle}
+.vt.blue{fill:var(--blue)}
+.vt.om{font-size:28px;text-anchor:start}
+.vo{position:absolute;transform:translate(-50%,-50%);font-size:clamp(11px,3.3cqw,24px);display:flex;align-items:center;gap:.25em;white-space:nowrap;font-weight:700}
+.vo.ra{transform:translate(-100%,-50%)}
+.vo .vl{color:var(--muted);font-weight:800}
+.vo.hot .vl{color:var(--accInk)}
+.vtag{position:absolute;transform:translate(-50%,-50%);font-size:clamp(12px,4cqw,26px);font-weight:800;color:var(--onAcc);background:var(--acc);padding:.05em .45em;border-radius:var(--r);pointer-events:none}
+.vtag.pulse{animation:pulse 1s ease 2}
+@keyframes pulse{50%{transform:translate(-50%,-50%) scale(1.25)}}
+
+/* table */
+.ct{border-collapse:separate;border-spacing:0;font-size:1.2em;margin:.3em auto;font-variant-numeric:tabular-nums}
+.ct th,.ct td{padding:.4em .7em;text-align:center;border-bottom:1px solid var(--line);border-right:1px solid var(--line);transition:background .2s}
+.ct tr>*:first-child{border-left:1px solid var(--line)}
+.ct thead th{border-top:1px solid var(--line)}
+.ct th{font-weight:800}
+.ct th small{display:block;font-weight:600;font-size:.62em;color:var(--muted)}
+.ct .tot{background:var(--soft)}
+.ct .hot{background:var(--accHot)!important}
+.ct td .rb{min-width:3em;font-size:1em}
+.ct thead th:first-child{border:0}
+
+/* bars */
+.pbar{display:grid;grid-template-columns:11em 1fr 4em;gap:.6em;align-items:center;margin:.3em 0;font-weight:700}
+.pt{height:1.2em;background:var(--soft);border-radius:var(--r);overflow:hidden}
+.pf{height:100%;background:var(--blue);transition:width .4s}
+.pv{text-align:right;font-variant-numeric:tabular-nums}
+.split{display:flex;height:3.2em;border-radius:var(--r);overflow:hidden;border:2px solid var(--ink);margin:.4em 0}
+.split>div{display:flex;align-items:center;justify-content:center;font-weight:800;transition:flex-grow .4s;min-width:0;overflow:hidden;white-space:nowrap;gap:.3em}
+.split>div+div{border-left:3px solid var(--ink)}
+.seg-b{background:var(--blue);color:#fff}
+.seg-g{background:var(--green);background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0 3px,transparent 3px 8px);color:#fff}
+.seg-s{background:var(--soft)}
+.seg-c{background:var(--panel)}
+.sheet{display:grid;grid-template-columns:repeat(3,1fr);gap:.6em}
+.sheet .card{box-shadow:none}
+.sheet .fl{font-size:1em}
+.sheet p{margin:.2em 0;font-size:.9em}
+.kbd{font-size:.72em;color:var(--muted);white-space:nowrap}
+
+
+/* ---- round 2 additions ---- */
+#tip{position:fixed;z-index:60;pointer-events:none;background:var(--ink);color:var(--panel);padding:.3em .65em;border-radius:var(--r);font-weight:600;font-size:.8em;display:none;white-space:nowrap;box-shadow:var(--shadow)}
+#tip b{font-weight:800}
+.hlw{border-bottom:2px dotted var(--acc);cursor:help;border-radius:var(--r);transition:background .15s}
+.hlw.hot{background:var(--accHot)}
+.vr.hot.dbl{fill:var(--acc);fill-opacity:.85}
+.vtwrap{display:flex;flex-direction:column;align-items:center;gap:.35em}
+.vtwrap .venn.big{max-width:min(560px, calc((100dvh - 395px) * 1.389))}
+.vtwrap .ct{font-size:1.2em;margin:0 auto}
+.vtwrap .ct th,.vtwrap .ct td{padding:.18em .75em}
+.vtwrap .ct td .rb{min-height:1.6em}
+.ck{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:.2em .6em;align-items:center;padding:.25em .8em;margin:.35em 0}
+.ck .eq{font-size:.94em;margin:0;gap:.3em}
+.ck>.eq:first-of-type{flex-wrap:nowrap}
+.rb.res,.rb.badge{white-space:nowrap}
+.ck .rb{min-height:1.6em}
+.ck .vs{color:var(--muted);font-weight:800}
+.ck .cl{grid-column:1/-1;margin-bottom:-.3em}
+.ext{border-collapse:separate;border-spacing:0;margin:.3em auto;font-size:1.1em;font-variant-numeric:tabular-nums}
+.ext th,.ext td{padding:.35em .8em;text-align:center;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+.ext tr>*:first-child{border-left:1px solid var(--line)}
+.ext thead th{border-top:1px solid var(--line)}
+.ext thead th:first-child{border:0}
+.ext .tot{background:var(--soft)}
+.ext .act{font-size:1.25em;font-weight:800}
+.ext .exp{font-size:.72em;font-weight:700;color:var(--muted)}
+.ext td.flag{background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.ext td.match{background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.ext .hot{background:var(--accHot)!important}
+.short{width:100%;border-collapse:collapse;font-size:1em}
+.short th,.short td{padding:.45em .5em;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.short thead th{font-size:.75em;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.short .fm{font-weight:700;white-space:nowrap}
+.chips{display:inline-flex;align-items:center;gap:.3em;flex-wrap:wrap}
+.chips .evl{font-weight:800;font-size:1.15em;margin-right:.15em}
+.cchip{width:2.2em;height:2.2em;border-radius:50%;border:3px solid var(--line);background:var(--panel);font-weight:800;cursor:pointer;display:inline-grid;place-items:center;color:var(--muted);transition:transform .15s}
+.cchip.on{background:var(--c);border-color:var(--c);color:#fff}
+.cchip.on.yl{color:#2a2000}
+.cchip.on.gr{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0 3px,transparent 3px 8px)}
+.cchip.hot{transform:scale(1.12);box-shadow:0 0 0 3px var(--acc)}
+.letter{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:var(--c);color:#fff;font-weight:800;font-size:.85em;vertical-align:middle;margin:0 .05em}
+.letter.yl{color:#2a2000}
+.letter.gr{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0 3px,transparent 3px 8px)}
+.stack{display:flex;height:4.2em;border-radius:var(--r);overflow:hidden;border:2px solid var(--ink);margin:.4em 0}
+.stack>div{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1em;min-width:0;overflow:hidden;font-weight:800;color:#fff;transition:flex-grow .4s,filter .2s}
+.stack>div+div{border-left:2px solid var(--ink)}
+.stack>div.yl{color:#2a2000}
+.stack>div.gr{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.3) 0 3px,transparent 3px 8px)}
+.stack>div.hot{filter:brightness(1.15);box-shadow:inset 0 0 0 4px var(--acc)}
+.stack .rb{font-size:.8em;min-height:1.6em;padding:.05em .35em;color:var(--ink)}
+.vsT{border-collapse:separate;border-spacing:0;font-size:1.05em;margin:.2em 0}
+.vsT th,.vsT td{padding:.35em .6em;border-bottom:1px solid var(--line);text-align:left}
+.vsT thead th{font-size:.78em;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.vsT tbody th{font-size:1.3em}
+.cmpT{border-collapse:collapse;width:100%;font-size:.95em}
+.cmpT th,.cmpT td{padding:.3em .5em;border-bottom:1px solid var(--line);text-align:left;font-weight:700}
+.cmpT thead th{color:var(--muted);font-size:.8em;text-transform:uppercase;letter-spacing:.05em}
+.span3{grid-column:1/-1}
+.pair{display:flex;flex-wrap:wrap;gap:.3em 2.2em}
+.split .hot{box-shadow:inset 0 0 0 4px var(--acc)}
+@media (max-width:1100px){ .vt2,.block.two{grid-template-columns:minmax(0,1fr)} .ck{grid-template-columns:1fr} .ck .vs{display:none} }
+
+/* round 4 */
+.block.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:.4em 1.4em;align-items:start}
+.vt2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1em;align-items:center;margin:.3em 0}
+.vt2 .venn.mini{max-width:min(100%, calc((100dvh - 470px) * 1.389))}
+.ct.static{font-size:1.15em}
+.vt2 .vo{font-size:clamp(14px,4.6cqw,24px)}
+.block.two .eq{font-size:1.15em}
+.chart{max-height:calc(100dvh - 492px)}
+.ct.static td{font-weight:800;min-width:2.6em}
+.ct td.sel{background:var(--accSoft)}
+.vnum{display:inline-block;font-weight:800;transition:opacity 1s}
+.gone{opacity:.13;transition:opacity 1s}
+
+@media (max-width:1250px){ .grid3{grid-template-columns:1fr} .duo{grid-template-columns:1fr} .sheet{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:1100px){ .duo2{grid-template-columns:1fr} }
+@media (max-width:900px){
+  .app{height:auto;min-height:100vh}
+  main{grid-template-columns:minmax(0,1fr)}
+  .left{border-right:0;border-bottom:1px solid var(--line);overflow:visible}
+  .bagwrap{height:36vh;flex:none;aspect-ratio:auto;max-height:none}
+  .right{overflow:visible;padding:.6em .8em 2em}
+  .grid4{grid-template-columns:1fr}
+  .sheet{grid-template-columns:1fr}
+  .eq{font-size:1.15em}
+  .pbar{grid-template-columns:8em 1fr 3.5em}
+  .kbd{display:none}
+  .ct,.ct.static,.vtwrap .ct{font-size:.9em}
+  .ct th,.ct td,.vtwrap .ct th,.vtwrap .ct td{padding:.3em .4em}
+}
+@media (min-width:1101px){
+  .vtwrap{flex-direction:row;align-items:stretch;justify-content:center;gap:1.2em}
+  .vtwrap .venn.big{flex:1 1 0;min-width:0;max-width:min(640px, calc((100dvh - 190px) * 1.389))}
+  .vtwrap .ct{font-size:1em;flex:none;margin:0;align-self:flex-start}
+  .vtwrap .ct th,.vtwrap .ct td{vertical-align:middle}
+  .vtwrap .ct th,.vtwrap .ct td{padding:.12em .4em}
+  .vtwrap .ct td .rb{min-width:2.2em}
+}
+.block .tally{justify-content:flex-start;margin:.3em 0}
+@media (prefers-reduced-motion:reduce){ *{transition-duration:.01s!important;animation-duration:.01s!important} }
+
+/* ---- site styling: Space Mono for interface text, gold accent for active/primary ---- */
+.tab,.btn,.seg button,.stp button{font-family:var(--mono)}
+.tab{font-size:.8em}
+.tab.on{background:var(--acc);color:var(--onAcc)}
+.tab.on b{opacity:.7}
+.tools,.kbd,.limit,.tally,.bagcap,.presets .lbl,.sublab,.tl,#tip,details.comp summary,.chk,
+.short thead th,.vsT thead th,.cmpT thead th,.ct th small{font-family:var(--mono)}
+.chart .axl{font-family:var(--mono)}
+.btn{background:var(--panel)}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.btn.primary{background:transparent;border-color:var(--acc);color:var(--acc)}
+.btn.primary:hover{background:var(--accHot)}
+.btn.on,.btn.on:hover{background:var(--acc);border-color:var(--acc);color:var(--onAcc)}
+.seg button.on{background:var(--acc);color:var(--onAcc)}
+.seg button:hover:not(.on){color:var(--acc)}
+.stp button:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}
+.rb:hover{border-color:var(--acc)}
+.btn:focus-visible,.tab:focus-visible,.seg button:focus-visible,.rb:focus-visible,.stp button:focus-visible{outline-color:var(--acc)}
+header.top{border-bottom-color:var(--line)}
+</style>
+</head>
+<body>
+<div id="tip" role="tooltip"></div>
+<div class="app">
+  <header class="top">
+    <div class="brand"><svg viewBox="-16 -16 32 32"><circle r="13" fill="var(--blue)"/><rect x="-4" y="-4" width="18" height="18" rx="3" fill="var(--green)"/></svg>Probability Bag</div>
+    <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+    <div class="tools">
+      <button class="btn" data-act="theme" id="themeBtn" aria-label="Toggle light/dark mode">☀</button>
+      <button class="btn" data-act="fs" aria-label="Fullscreen">⛶</button>
+      <span class="kbd">← → · R · F</span>
+    </div>
+  </header>
+  <main>
+    <aside class="left" aria-label="The bag">
+      <div class="bagwrap" id="bagwrap"></div>
+      <div class="bagcap" id="bagcap"></div>
+      <details class="comp" id="comp"><summary id="compSum">Edit bag contents</summary><div id="stepHost"></div></details>
+    </aside>
+    <section class="right" id="panel" aria-live="polite"></section>
+  </main>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- constants ---------- */
+const KINDS=['bs','bc','gs','gc'];
+const KNAME={bs:'blue square',bc:'blue circle',gs:'green square',gc:'green circle'};
+const EV={B:['bs','bc'],Bc:['gs','gc'],S:['bs','gs'],Sc:['bc','gc']};
+const LAB={B:'B',Bc:'B′',S:'S',Sc:'S′'};
+const WORD={B:'blue',Bc:'green',S:'square',Sc:'circle'};
+const COMP={B:'Bc',Bc:'B',S:'Sc',Sc:'S'};
+const PRESETS={def:{bs:6,bc:4,gs:3,gc:7},ind:{bs:2,bc:4,gs:3,gc:6}};
+/* multi-color (Disjoint tab) bag */
+const MK=['B','G','R','Y','P'];
+const MNAME={B:'blue',G:'green',R:'red',Y:'yellow',P:'purple'};
+const MCOL={B:'blue',G:'green',R:'red',Y:'yellow',P:'purple'};
+const MDEF={B:5,G:4,R:6,Y:3,P:4};
+const MINN=15, MAXN=30;
+
+/* ---------- state ---------- */
+const st={
+  counts:{...PRESETS.def}, mcounts:{...MDEF}, sec:0, clear:true, theme:'dark', rev:{},
+  s1ev:'B', s2ev:'B', s5:{c:'B',s:'S'}, s6:{c:'B',s:'S'}, s7:{x:'B',y:'S'}, s7on:true,
+  vtProb:false, link:true,
+  A:['B'], C:['G'],
+  draws:{two:[],multi:[]}, last:{two:null,multi:null},
+  hover:null, hoverDbl:false, bagHover:null
+};
+const REG={};
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const secId=()=>SECS[st.sec].id;
+const mode=()=>secId()==='disj'?'multi':'two';
+const curKinds=()=>mode()==='two'?KINDS:MK;
+const cnt=()=>mode()==='two'?st.counts:st.mcounts;
+const N=()=>curKinds().reduce((a,k)=>a+cnt()[k],0);
+const n=ks=>ks.reduce((a,k)=>a+(cnt()[k]||0),0);
+const inter=(a,b)=>a.filter(k=>b.includes(k));
+const union=(a,b)=>curKinds().filter(k=>a.includes(k)||b.includes(k));
+const isColor=e=>e==='B'||e==='Bc';
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a||1}
+function fracStr(a,b){ if(b===0) return 'undefined'; if(a===0) return '0'; const g=gcd(a,b); return b/g===1? String(a/g) : `${a/g}/${b/g}`; }
+function decStr(a,b){ if(b===0) return 'undefined'; const v=a/b, r=Math.round(v*1000)/1000, exact=Math.abs(r-v)<1e-12;
+  let s=r.toFixed(3); if(exact && s.endsWith('0')) s=r.toFixed(2); return s; }
+function resStr(a,b,und){ return b===0 ? (und||'undefined') : decStr(a,b); }
+const sfr=(a,b)=>`<span class="sfr"><span>${a}</span><span>${b}</span></span>`;
+const hla=ks=>ks?` data-hl="${ks.join(',')}"`:'';
+const hp=(txt,ks,dbl)=>`<span class="hlw"${hla(ks)}${dbl?' data-dbl="1"':''}>${txt}</span>`;
+function shapeSvg(k,sz=15){
+  if(MK.includes(k)){
+    const c=MCOL[k];
+    return `<circle r="${sz}" fill="var(--${c})" stroke="var(--${c}Edge)" stroke-width="2"/>`+(k==='G'?`<circle r="${sz}" fill="url(#stripe)"/>`:'')+
+      `<text y="5.5" fill="${k==='Y'?'#2a2000':'#fff'}" style="paint-order:stroke;stroke:${k==='Y'?'transparent':'rgba(0,0,0,.35)'};stroke-width:2px">${k}</text>`;
+  }
+  const blue=k[0]==='b', sq=k[1]==='s';
+  const base= sq ? `<rect x="${-sz+1}" y="${-sz+1}" width="${2*sz-2}" height="${2*sz-2}" rx="3"` : `<circle r="${sz}"`;
+  return `${base} fill="var(--${blue?'blue':'green'})" stroke="var(--${blue?'blue':'green'}Edge)" stroke-width="2"/>`+(blue?'':`${base} fill="url(#stripe)"/>`);
+}
+const icon=(k,s=1)=>`<svg class="ic" viewBox="-17 -17 34 34" width="${s}em" height="${s}em" aria-hidden="true">${shapeSvg(k)}</svg>`;
+const evIcon=e=>e==='B'?icon('bc'):e==='Bc'?icon('gc'):e==='S'?`<svg class="ic" viewBox="-16 -16 32 32" width="1em" height="1em"><rect x="-13" y="-13" width="26" height="26" rx="3" fill="none" stroke="currentColor" stroke-width="3"/></svg>`:`<svg class="ic" viewBox="-16 -16 32 32" width="1em" height="1em"><circle r="13" fill="none" stroke="currentColor" stroke-width="3"/></svg>`;
+const letter=k=>`<span class="letter${k==='Y'?' yl':''}${k==='G'?' gr':''}" style="--c:var(--${MCOL[k]})" data-hl="${k}">${k}</span>`;
+
+/* reveal box: stages are html strings; click cycles. hl = set of shapes it represents (hover highlight) */
+function rb(id,stages,cls='',rr=false,hl=null){
+  REG[id]=stages; const s=(st.rev[id]||0)%stages.length;
+  return `<button class="rb ${cls} st${s}${s===stages.length-1?' full':''}" data-rid="${id}" data-cls="${cls}"${rr?' data-rr="1"':''}${hla(hl)} aria-label="Reveal (click to cycle)">${stages[s]}</button>`;
+}
+const W=s=>`<span class="words">${s}</span>`;
+function card(id,title,body,label='Show definition'){
+  return `<div class="card"><div class="card-h">${title}</div>${rb(id,[`<span class="show">${label}</span>`,body],'cardbody')}</div>`;
+}
+function seg(key,opts,val,labels){
+  return `<div class="seg" role="group">${opts.map((o,j)=>{ const on=String(o)===String(val);
+    return `<button class="${on?'on':''}" data-set="${key}" data-val="${o}" aria-pressed="${on}"${!labels&&EV[o]?hla(EV[o]):''}>${labels?labels[j]:`${LAB[o]}<small>${WORD[o]}</small>`}</button>`; }).join('')}</div>`;
+}
+function fracBoxes(id,numW,numK,denW,denK){
+  return `<span class="frac">${rb(id+'n',['?',W(numW),String(n(numK))],'fnum',false,numK)}<span class="fbar"></span>${rb(id+'d',['?',W(denW),String(n(denK))],'fden',false,denK)}</span>`;
+}
+function probEq(id,lhs,numW,numK,denW,denK,und){
+  return `<div class="eq"><span class="lhs">${lhs}</span><span class="op">=</span>${fracBoxes(id,numW,numK,denW,denK)}
+  <span class="op">=</span>${rb(id+'r',['?',resStr(n(numK),n(denK),und)],'res')}</div>`;
+}
+function term(id,val,cap,hl,dbl){ return `<span class="term"${hla(hl)}${dbl?' data-dbl="1"':''}>${rb(id,['?',val],'',false,hl)}<small>${cap}</small></span>`; }
+const badge=(id,q,ok,okTxt,badTxt)=>rb(id,[q,ok===null?'<span class="muted">can’t check: the given event never happens</span>':ok?`<span class="ok">✓ ${okTxt}</span>`:`<span class="bad">✗ ${badTxt}</span>`],'badge');
+
+/* ---------- bag ---------- */
+const NS='http://www.w3.org/2000/svg';
+/* paper lunch bag: straight sides, flat bottom, serrated top */
+const BAG={x0:50,x1:350,bottom:440,frontTop:120,backTop:100,tooth:7.5};
+const INNER={x:76,y:146,w:248,h:272};          // every shape lives fully inside this rectangle (about 25 units of padding from every bag edge)
+const COLS=6, ROWS=5, SZ=15, JX=4, JY=9;      // 30 slots; half-extent 16 incl. stroke; jitter keeps bbox inside its cell
+function zigPath(x0,x1,yTop,yBase,bottom,teeth){
+  const w=(x1-x0)/teeth; let d=`M${x0} ${bottom} L${x0} ${yBase}`;
+  for(let i=1;i<=teeth;i++) d+=` L${(x0+i*w).toFixed(2)} ${i%2?yTop:yBase}`;
+  return d+` L${x1} ${bottom} Z`;
+}
+const FRONT=zigPath(BAG.x0,BAG.x1,BAG.frontTop-BAG.tooth,BAG.frontTop,BAG.bottom,20);
+const BACK=zigPath(BAG.x0,BAG.x1,BAG.backTop-BAG.tooth,BAG.backTop,BAG.bottom,20);
+const BACKTOP=(()=>{ const w=(BAG.x1-BAG.x0)/20; let d=`M${BAG.x0} ${BAG.frontTop} L${BAG.x0} ${BAG.backTop}`; for(let i=1;i<=20;i++) d+=` L${(BAG.x0+i*w).toFixed(2)} ${i%2?BAG.backTop-BAG.tooth:BAG.backTop}`; return d+` L${BAG.x1} ${BAG.frontTop}`; })();
+const SLOTS=[];
+(function(){ const cw=INNER.w/COLS, ch=INNER.h/ROWS;
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) SLOTS.push([INNER.x+cw*(c+.5), INNER.y+ch*(r+.5)]); })();
+const bags={two:[],multi:[]};
+const S=()=>bags[mode()];
+let sid=0;
+const rj=m=>Math.round((Math.random()*2-1)*m);
+const pos=s=>[SLOTS[s.slot][0]+s.jx, SLOTS[s.slot][1]+s.jy];
+function syncShapes(){
+  const arr=S(), c=cnt();
+  for(const k of curKinds()){
+    let cur=arr.filter(s=>s.k===k);
+    while(cur.length>c[k]){ const r=cur[Math.floor(Math.random()*cur.length)]; arr.splice(arr.indexOf(r),1); cur=cur.filter(s=>s!==r); }
+    while(cur.length<c[k]){
+      const used=new Set(arr.map(s=>s.slot)); const free=SLOTS.map((_,i)=>i).filter(i=>!used.has(i));
+      const s={id:++sid,k,slot:free[Math.floor(Math.random()*free.length)],jx:rj(JX),jy:rj(JY),fresh:true}; arr.push(s); cur.push(s);
+    }
+  }
+}
+function shuffle(){
+  const idx=SLOTS.map((_,i)=>i); for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+  S().forEach((s,i)=>{s.slot=idx[i];s.jx=rj(JX);s.jy=rj(JY);}); drawBag();
+}
+function bagSVG(){
+  const {x0,x1,bottom,frontTop}=BAG;
+  return `<svg id="bag" viewBox="0 0 400 452" preserveAspectRatio="xMidYMid meet" role="img" aria-label="A paper bag of shapes">
+  <defs><clipPath id="frontClip"><path d="${FRONT}"/></clipPath>
+   <pattern id="stripe" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.6" height="6" fill="rgba(255,255,255,.6)"/></pattern></defs>
+  <path class="bag-back" d="${BACK}"/><path class="bag-outline" d="${BACKTOP}"/>
+  <rect id="innerRect" x="${INNER.x}" y="${INNER.y}" width="${INNER.w}" height="${INNER.h}" fill="none"/>
+  <g id="shapesLayer"></g>
+  <g id="wall" class="wall${st.clear?' clear':''}"><path class="bag-front" d="${FRONT}"/>
+   <g class="deco" clip-path="url(#frontClip)">
+    <rect class="gusset" x="${x0}" y="0" width="18" height="${bottom}"/><rect class="gusset" x="${x1-18}" y="0" width="18" height="${bottom}"/>
+    <path class="crease" d="M${x0+18} ${frontTop} V${bottom-30} M${x1-18} ${frontTop} V${bottom-30} M${x0} ${bottom-30} H${x1} M${x0} ${bottom} L${x0+18} ${bottom-30} M${x1} ${bottom} L${x1-18} ${bottom-30}"/>
+    <text class="q" x="200" y="330" text-anchor="middle">?</text></g></g>
+  <path class="bag-outline" d="${FRONT}"/>
+  <g id="drawLayer"></g>
+  </svg>`;
+}
+/* positions use the SVG transform attribute (bag coordinates), never CSS px, so every browser places shapes identically */
+function setPos(g,x,y,sc=1){ g.setAttribute('transform',`translate(${x.toFixed(2)} ${y.toFixed(2)})${sc!==1?` scale(${sc.toFixed(3)})`:''}`); g._p=[x,y,sc]; }
+function tween(g,to,ms,done){
+  const from=g._p||to, t0=performance.now(); cancelAnimationFrame(g._a);
+  const f=now=>{ const u=Math.min(1,(now-t0)/ms), e=1-Math.pow(1-u,3);
+    setPos(g,from[0]+(to[0]-from[0])*e,from[1]+(to[1]-from[1])*e,from[2]+(to[2]-from[2])*e);
+    if(u<1) g._a=requestAnimationFrame(f); else if(done) done(); };
+  g._a=requestAnimationFrame(f);
+}
+function drawBag(){
+  const layer=$('#shapesLayer'), arr=S(); const have=new Map([...layer.children].map(g=>[+g.dataset.id,g]));
+  const keep=new Set(arr.map(s=>s.id));
+  have.forEach((g,id)=>{ if(!keep.has(id)) g.remove(); });
+  arr.forEach(s=>{
+    let g=have.get(s.id); const [x,y]=pos(s);
+    if(!g){ g=document.createElementNS(NS,'g'); g.setAttribute('class','sh'+(s.fresh?' new':'')); g.dataset.id=s.id; g.dataset.k=s.k;
+      g.innerHTML=`<g class="si">${shapeSvg(s.k)}</g>`; setPos(g,x,y); layer.appendChild(g); s.fresh=false;
+      setTimeout(()=>g.classList.remove('new'),400);
+    } else if(!g._p||g._p[0]!==x||g._p[1]!==y) tween(g,[x,y,1],450);
+  });
+  applyHL();
+}
+let curMode=null;
+function ensureMode(){
+  const m=mode(); if(m===curMode) return; curMode=m;
+  animateDraw(null); $('#shapesLayer').innerHTML=''; drawBag();
+}
+let drawT1=0, drawT2=0;
+function animateDraw(s){
+  const layer=$('#drawLayer'); clearTimeout(drawT1); clearTimeout(drawT2); layer.innerHTML=''; $$('.sh.away').forEach(g=>g.classList.remove('away'));
+  if(!s) return;
+  const orig=$(`#shapesLayer [data-id="${s.id}"]`); const [x,y]=pos(s);
+  const g=document.createElementNS(NS,'g'); g.setAttribute('class','drawn'); g.innerHTML=shapeSvg(s.k); setPos(g,x,y);
+  layer.appendChild(g); orig&&orig.classList.add('away');
+  tween(g,[200,46,1.9],380);
+  drawT1=setTimeout(()=>{ tween(g,[x,y,1],380); g.classList.add('back');
+    drawT2=setTimeout(()=>{ layer.innerHTML=''; orig&&orig.classList.remove('away'); },400); },1300);
+}
+function randKind(){ let r=Math.floor(Math.random()*N()); for(const k of curKinds()){ if(r<cnt()[k]) return k; r-=cnt()[k]; } return curKinds()[0]; }
+function drawOne(){
+  const arr=S(); if(!arr.length) return; const s=arr[Math.floor(Math.random()*arr.length)];
+  st.draws[mode()].push(s.k); st.last[mode()]={k:s.k,t:st.draws[mode()].length}; animateDraw(s); afterDraw();
+}
+function draw100(){ let k; for(let i=0;i<100;i++){ k=randKind(); st.draws[mode()].push(k); } st.last[mode()]={k,t:st.draws[mode()].length}; afterDraw(); }
+function afterDraw(){ if(secId()==='vocab') renderPanel(); }
+
+/* ---------- venn ---------- */
+let vsep=0, vanim=0;
+const cxL=s=>230-55*s, cxR=s=>370+55*s, VCY=172, rad=s=>112-12*s;
+function anchorX(a,s){ const [t,o]=a.split(':'); return (t==='L'?cxL(s):t==='R'?cxR(s):0)+Number(o); }
+const REGPOS={bc:['L:-52',VCY],bs:['C:300',VCY],gs:['R:52',VCY],gc:['C:300',300]};
+/* Venn viewBox is "50 0 500 360": the frame hugs the circles (x 70..530) */
+const VX0=50, VW=500, VH=360;
+const vxp=x=>((x-VX0)/VW*100)+'%', vyp=y=>(y/VH*100)+'%';
+function vennSVG(p,o={}){
+  const L=cxL(vsep), R=cxR(vsep);
+  const circ=(side,extra)=>`<circle data-c="${side}" cx="${side==='L'?L:R}" cy="${VCY}" r="${rad(vsep)}" ${extra}/>`;
+  const reg=(k,cls,extra='')=>{
+    const a=`class="${cls}" data-k="${k}" ${extra}`;
+    switch(k){
+      case 'bc': return circ('L',`${a} mask="url(#${p}nR)"`);
+      case 'bs': return circ('L',`${a} clip-path="url(#${p}cR)"`);
+      case 'gs': return circ('R',`${a} mask="url(#${p}nL)"`);
+      default: return `<rect x="70" y="20" width="460" height="300" rx="0" ${a} mask="url(#${p}n2)"/>`;
+    }};
+  const shade=o.shade||[], giv=o.given;
+  let base='', lay='', veil='';
+  for(const k of KINDS){
+    /* regions are never hover sources; they light up only when a number/fraction for that set is hovered */
+    base+=reg(k,`vr${o.cycle?' int':''}${shade.includes(k)?' sel':''}`, o.cycle?`data-cycle="${o.cycle[k]}"`:'');
+    veil+=reg(k,`veil${giv&&!giv.includes(k)&&o.givenOn?' on':''}`);
+  }
+  (o.layers||[]).forEach(ly=>ly.forEach(k=>{ lay+=reg(k,'vlay'); }));
+  const mk=(id,inner)=>`<mask id="${p}${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="600" height="${VH}"><rect width="600" height="${VH}" fill="white"/>${inner}</mask>`;
+  return `<svg viewBox="${VX0} 0 ${VW} ${VH}" aria-hidden="true"><defs>
+    <clipPath id="${p}cR">${circ('R','')}</clipPath>
+    ${mk('nR',circ('R','fill="black"'))}${mk('nL',circ('L','fill="black"'))}${mk('n2',circ('L','fill="black"')+circ('R','fill="black"'))}
+  </defs>
+  ${base}${lay}
+  <rect class="vframe" x="70" y="20" width="460" height="300" rx="0"/>
+  ${circ('L','class="vcL"')}${circ('R','class="vcR"')}
+  ${veil}
+  <text class="vt om" x="84" y="52">Ω</text>
+  <text class="vt blue" data-anch="L:0" x="${L}" y="48">B · blue</text>
+  <text class="vt" data-anch="R:0" x="${R}" y="48">S · square</text>
+  </svg>`;
+}
+function vo(inner,anch,y,hl,cls=''){ return `<div class="vo ${cls}" data-anch="${anch}" ${hl?`data-hl="${hl}"`:''} style="left:${vxp(anchorX(anch,vsep))};top:${vyp(y)}">${inner}</div>`; }
+function vennBig(p,prob){
+  const N0=N(), val=ks=>prob?decStr(n(ks),N0):String(n(ks));
+  const box=(id,ks,anch,y,pre='',cls='')=>vo(`${pre}${rb(p+id,['?',val(ks)],'vbox',false,ks)}`,anch,y,ks.join(','),cls);
+  const cyc={bc:p+'bc',bs:p+'bs',gs:p+'gs',gc:p+'gc'}, P=prob?'P':'n';
+  return `<div class="venn big">${vennSVG(p,{cycle:cyc})}
+  ${['bc','bs','gs','gc'].map(k=>box(k,[k],REGPOS[k][0],REGPOS[k][1])).join('')}
+  ${box('nB',EV.B,'L:-70',304,`<span class="vl">${P}(B) =</span>`)}
+  ${box('nS',EV.S,'R:70',304,`<span class="vl">${P}(S) =</span>`)}
+  ${box('nO',KINDS,'C:530',344,`<span class="vl">${P}(Ω) =</span>`,'ra')}
+  </div>`;
+}
+/* always-visible Venn with the four joint counts (And / Or / Given tabs) */
+const goneFor=(ks,o)=>!!(o.given&&o.givenOn&&ks.every(k=>!o.given.includes(k)));
+function vennCounts(p,o={}){
+  const nums=['bc','bs','gs','gc'].map(k=>vo(`<span class="vnum${goneFor([k],o)?' gone':''}" data-gk="${k}">${n([k])}</span>`,REGPOS[k][0],REGPOS[k][1],k)).join('');
+  return `<div class="venn mini">${vennSVG(p,o)}${nums}${o.extra||''}</div>`;
+}
+/* always-visible contingency table (And / Or / Given tabs) */
+function ctableS(o={}){
+  const shade=o.shade||[];
+  const c=(ks,cls='',tag='td',lab=null)=>`<${tag} class="${cls}${ks.length===1&&shade.includes(ks[0])?' sel':''}${goneFor(ks,o)?' gone':''}" data-hl="${ks.join(',')}" data-gk="${ks.join(',')}">${lab===null?n(ks):lab}</${tag}>`;
+  return `<table class="ct static"><thead><tr><th></th>
+   ${c(EV.S,'','th',`${evIcon('S')} S<small>square</small>`)}${c(EV.Sc,'','th',`${evIcon('Sc')} S′<small>circle</small>`)}<th class="tot" data-hl="${KINDS}">Total</th></tr></thead>
+   <tbody><tr>${c(EV.B,'','th',`${icon('bc')} B<small>blue</small>`)}${c(['bs'])}${c(['bc'])}${c(EV.B,'tot')}</tr>
+   <tr>${c(EV.Bc,'','th',`${icon('gc')} B′<small>green</small>`)}${c(['gs'])}${c(['gc'])}${c(EV.Bc,'tot')}</tr>
+   <tr><th class="tot" data-hl="${KINDS}">Total</th>${c(EV.S,'tot')}${c(EV.Sc,'tot')}<td class="tot" data-hl="${KINDS}">${N()}</td></tr></tbody></table>`;
+}
+function applySep(){
+  $$('[data-c]').forEach(c=>{ c.setAttribute('cx',c.dataset.c==='L'?cxL(vsep):cxR(vsep)); c.setAttribute('r',rad(vsep)); });
+  $$('[data-anch]').forEach(el=>{ const x=anchorX(el.dataset.anch,vsep); if(el instanceof SVGElement) el.setAttribute('x',x); else el.style.left=vxp(x); });
+}
+function animateSep(){
+  const target=st.counts.bs===0?1:0; cancelAnimationFrame(vanim);
+  if(Math.abs(target-vsep)<1e-6){ vsep=target; applySep(); return; }
+  const from=vsep, t0=performance.now();
+  const step=now=>{ const u=Math.min(1,(now-t0)/450), e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2; vsep=from+(target-from)*e; applySep(); if(u<1) vanim=requestAnimationFrame(step); };
+  vanim=requestAnimationFrame(step);
+}
+
+/* ---------- contingency table (revealable, Venn + Table tab) ---------- */
+function ctable(p,prob){
+  const N0=N();
+  const cell=(id,ks,cls='')=>`<td class="${cls}" data-hl="${ks.join(',')}">${rb(p+id,['?',prob?decStr(n(ks),N0):String(n(ks))],'cell',false,ks)}</td>`;
+  return `<table class="ct"><thead><tr><th></th>
+   <th data-hl="bs,gs">${evIcon('S')} S<small>square</small></th><th data-hl="bc,gc">${evIcon('Sc')} S′<small>circle</small></th><th class="tot" data-hl="${KINDS}">Total</th></tr></thead>
+   <tbody><tr><th data-hl="bs,bc">${icon('bc')} B<small>blue</small></th>${cell('bs',['bs'])}${cell('bc',['bc'])}${cell('B',EV.B,'tot')}</tr>
+   <tr><th data-hl="gs,gc">${icon('gc')} B′<small>green</small></th>${cell('gs',['gs'])}${cell('gc',['gc'])}${cell('Bc',EV.Bc,'tot')}</tr>
+   <tr><th class="tot" data-hl="${KINDS}">Total</th>${cell('S',EV.S,'tot')}${cell('Sc',EV.Sc,'tot')}${cell('O',KINDS,'tot')}</tr></tbody></table>`;
+}
+/* Venn quantity <-> table quantity: revealing one reveals the other */
+const LINK={vbc:'tbc',vbs:'tbs',vgs:'tgs',vgc:'tgc',vnB:'tB',vnS:'tS',vnO:'tO'};
+Object.keys(LINK).forEach(k=>{ LINK[LINK[k]]=k; });
+
+/* ---------- sections ---------- */
+function head(i,extra=''){
+  const Sx=SECS[i];
+  return `<div class="shead"><h2><span class="num">${i+1}</span>${Sx.t}</h2><div class="sp"></div>${extra}</div>`;
+}
+function chart(set,showP){
+  const Wd=640,H=230,L=46,R=14,T=14,B=30, dr=st.draws.two, Tn=dr.length, xmax=Math.max(Tn,100);
+  const X=i=>L+(Wd-L-R)*i/xmax, Y=v=>T+(H-T-B)*(1-v);
+  let g='';
+  [0,.25,.5,.75,1].forEach(v=>{ g+=`<line class="ax" x1="${L}" x2="${Wd-R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axl" x="${L-8}" y="${Y(v)+4}" text-anchor="end">${v}</text>`; });
+  g+=`<text class="axl" x="${L}" y="${H-8}">0</text><text class="axl" x="${(L+Wd-R)/2}" y="${H-8}" text-anchor="middle">number of draws</text><text class="axl" x="${Wd-R}" y="${H-8}" text-anchor="end">${xmax}</text>`;
+  if(Tn){ const stp=Math.max(1,Math.ceil(Tn/500)); let c=0, pts=[];
+    for(let i=0;i<Tn;i++){ if(set.includes(dr[i])) c++; if((i+1)%stp===0||i===Tn-1) pts.push(`${X(i+1).toFixed(1)},${Y(c/(i+1)).toFixed(1)}`); }
+    g+=`<polyline class="run" points="${pts.join(' ')}"/>`; }
+  if(showP){ const p=n(set)/N(); g+=`<line class="truth" x1="${L}" x2="${Wd-R}" y1="${Y(p)}" y2="${Y(p)}"/><text class="tl2" x="${Wd-R-4}" y="${Y(p)-8}" text-anchor="end">true P = ${decStr(n(set),N())}</text>`; }
+  return `<svg class="chart" viewBox="0 0 ${Wd} ${H}" role="img" aria-label="Running relative frequency">${g}</svg>`;
+}
+function secVocab(i){
+  const e=st.s1ev, set=EV[e], N0=N(), dr=st.draws.two, Tn=dr.length, hits=dr.filter(k=>set.includes(k)).length;
+  return head(i)+`<div class="grid4">
+   ${card('d-tr','Trial','One run of the random process: <b>one draw</b> from the bag.')}
+   ${card('d-out','Outcome','The specific shape that comes out on a trial.')}
+   ${card('d-om','Sample space Ω',`Every possible outcome: ${hp('<b>every shape in the bag</b>',KINDS)}. n(Ω) = ${N0}`)}
+   ${card('d-ev','Event',`A set of outcomes we care about. Example: ${hp('B = “the drawn shape is blue.”',EV.B)}`)}
+  </div>
+  <div class="block"><div class="row"><h3 style="margin:0">How often does ${LAB[e]} happen?</h3><div class="sp"></div>${seg('s1ev',['B','Bc','S','Sc'],e)}</div>
+   <div class="row"><button class="btn primary" data-act="draw1">Draw one</button><button class="btn primary" data-act="draw100">Draw 100</button><button class="btn" data-act="resetDraws">Reset</button>
+   ${rb('s1-true',[`<span class="show">Show true P(${LAB[e]})</span>`,`True P(${LAB[e]}) = ${decStr(n(set),N0)}`],'',true,set)}</div>
+   ${tallyHtml()}
+   <div class="row"><span class="muted">${Tn? `${hits} of ${Tn} draws were ${WORD[e]} → relative frequency ${decStr(hits,Tn).replace('≈ ','')}` : 'No draws yet'}</span></div>
+   ${chart(set,(st.rev['s1-true']||0)===1)}</div>`;
+}
+function secSingle(i){
+  const e=st.s2ev, c=COMP[e], N0=N(), ne=n(EV[e]), nc=n(EV[c]);
+  return head(i)+`<div class="row">${seg('s2ev',['B','Bc','S','Sc'],e)}</div>
+  <div class="block">${probEq('p1',`P(${LAB[e]})`,`${WORD[e]} shapes`,EV[e],'all shapes',KINDS)}</div>
+  <div class="block"><h3>Complement: ${hp(LAB[c],EV[c])} = not ${LAB[e]} ${hp(`(${WORD[c]})`,EV[c])}</h3>
+   <div class="two" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:.4em 1.6em;align-items:start">
+   <div><div class="sublab">By counting</div>${probEq('p2',`P(${LAB[c]})`,`${WORD[c]} shapes`,EV[c],'all shapes',KINDS)}</div>
+   <div><div class="sublab">By the complement rule</div>
+   <div class="eq"><span class="lhs">P(${LAB[c]})</span><span class="op">=</span>${hp('1',KINDS)}<span class="op">−</span>${term('p3a',decStr(ne,N0),`P(${LAB[e]})`,EV[e])}<span class="op">=</span>${rb('p3r',['?',resStr(N0-ne,N0)],'res',false,EV[c])}</div></div>
+   </div>
+   <div class="row">${rb('p3m',['Same answer?',`<span class="ok">✓ Both ways give ${resStr(nc,N0)}</span>`],'badge')}</div>
+  </div>
+  <div class="grid4">${card('f-p','Probability',`<div class="fl">P(A) = n(A) / n(Ω)</div>`,'Show formula')}${card('f-c','Complement',`<div class="fl">P(A′) = 1 − P(A)</div>`,'Show formula')}</div>`;
+}
+function secVT(i){
+  return head(i,seg('vtProb',['0','1'],st.vtProb?'1':'0',['Counts','Probabilities']))+`
+  <div class="vtwrap">${vennBig('v',st.vtProb)}${ctable('t',st.vtProb)}</div>`;
+}
+function secJoint(i){
+  const {c,s}=st.s5, ks=inter(EV[c],EV[s]);
+  return head(i)+`<div class="row">${seg('s5c',['B','Bc'],c)}<span class="op" style="font-size:1.6em">∩</span>${seg('s5s',['S','Sc'],s)}</div>
+  <div class="block">${probEq('j1',`P(${LAB[c]} ∩ ${LAB[s]})`,`${WORD[c]} AND ${WORD[s]} shapes`,ks,'all shapes',KINDS)}</div>
+  <div class="vt2">${vennCounts('j',{shade:ks})}${ctableS({shade:ks})}</div>
+  <div class="card"><div class="card-h">Intersection ∩ means “and”</div>${rb('d-int',['<span class="show">Show definition</span>',`The overlap: outcomes where <b>both</b> events happen. P(${LAB[c]} ∩ ${LAB[s]}) is the chance the shape is ${WORD[c]} <b>and</b> ${WORD[s]}.`],'cardbody')}</div>`;
+}
+function secUnion(i){
+  const {c,s}=st.s6, A=EV[c], Bv=EV[s], U=union(A,Bv), I=inter(A,Bv), N0=N(), nu=n(U), na=n(A), nb=n(Bv), ni=n(I);
+  const lab=`${LAB[c]} ∪ ${LAB[s]}`, labI=`${LAB[c]} ∩ ${LAB[s]}`;
+  return head(i)+`<div class="row">${seg('s6c',['B','Bc'],c)}<span class="op" style="font-size:1.6em">∪</span>${seg('s6s',['S','Sc'],s)}</div>
+  <div class="block two">
+   <div><div class="sublab">Route 1 · counting</div>
+    ${probEq('u1',`P(${lab})`,`${WORD[c]} OR ${WORD[s]} shapes`,U,'all shapes',KINDS)}
+    <div class="row">${rb('u-ok',['Same answer?',`<span class="ok">✓ Both routes give ${resStr(nu,N0)}</span>`],'badge')}</div></div>
+   <div><div class="sublab">Route 2 · addition rule</div>
+    ${rb('u-f',['<span class="show">Show rule</span>',`<b>P(${lab}) = ${hp(`P(${LAB[c]})`,A,true)} + ${hp(`P(${LAB[s]})`,Bv,true)} − ${hp(`P(${labI})`,I,true)}</b>`],'cardbody')}
+    <div class="eq"><span class="op">=</span>${term('u2a',decStr(na,N0),`P(${LAB[c]})`,A,true)}<span class="op">+</span>${term('u2b',decStr(nb,N0),`P(${LAB[s]})`,Bv,true)}<span class="op">−</span>${term('u2c',decStr(ni,N0),`P(${labI})`,I,true)}<span class="op">=</span>${rb('u2r',['?',resStr(na+nb-ni,N0)],'res',false,U)}</div></div>
+  </div>
+  <div class="vt2">${vennCounts('u',{shade:U})}${ctableS({shade:U})}</div>
+  <div class="card"><div class="card-h">Union ∪ means “or”</div>${rb('d-un',['<span class="show">Show definition</span>',`Outcomes where <b>either</b> event happens, <b>or</b> both. P(${LAB[c]} ∪ ${LAB[s]}) is the chance the shape is ${WORD[c]} or ${WORD[s]} (or both).`],'cardbody')}</div>`;
+}
+function condWords(x,y){ const [a,b]=isColor(x)?[x,y]:[y,x]; return `${WORD[a]} AND ${WORD[b]} shapes`; }
+function secCond(i){
+  const {x,y}=st.s7, X=EV[x], Y=EV[y], XY=inter(X,Y), N0=N(), nY=n(Y), nXY=n(XY), yOpts=isColor(x)?['S','Sc']:['B','Bc'];
+  const und='undefined', note=nY===0?`<div class="chipnote bad">n(${LAB[y]}) = 0: the given event never happens, so P(${LAB[x]} | ${LAB[y]}) is undefined</div>`:'';
+  const g={shade:XY,given:Y,givenOn:st.s7on};
+  return head(i)+`<div class="row"><span style="font-size:1.4em;font-weight:800">P(</span>${seg('s7x',['B','Bc','S','Sc'],x)}<span style="font-size:1.4em;font-weight:800">|</span>${seg('s7y',yOpts,y)}<span style="font-size:1.4em;font-weight:800">)</span>
+   <div class="sp"></div><button class="btn big ${st.s7on?'on':''}" data-act="cond" id="condBtn"${hla(Y)}>${st.s7on?'Restore full Ω':`Shrink Ω to ${LAB[y]}`}</button></div>
+  <div class="block two">
+   <div><div class="sublab">Counting route</div>
+    ${probEq('c1',`P(${LAB[x]} | ${LAB[y]})`,condWords(x,y),XY,`${WORD[y]} shapes`,Y,und)}</div>
+   <div><div class="sublab">Formula route</div>
+    <div class="eq"><span class="lhs">P(${LAB[x]} | ${LAB[y]})</span><span class="op">=</span><span class="frac">${term('c2a',decStr(nXY,N0),`P(${LAB[x]} ∩ ${LAB[y]})`,XY)}<span class="fbar"></span>${term('c2b',decStr(nY,N0),`P(${LAB[y]})`,Y)}</span><span class="op">=</span>${rb('c2r',['?',resStr(nXY,nY,und)],'res')}</div></div>
+  </div>${note}
+  <div class="vt2">${vennCounts('c',g)}${ctableS(g)}</div>
+  ${card('d-cond','Conditional probability',`The probability of an event <b>given</b> another event is known to have occurred. ${hp('The given event',Y)} becomes the new denominator.<br>P(${LAB[x]} | ${LAB[y]}) is read “probability of ${LAB[x]} given ${LAB[y]}.”`)}`;
+}
+const kindLabel=k=>MK.includes(k)?`${MNAME[k]} (${k})`:`${KNAME[k]}s`;
+function stepperHtml(){
+  const T=N(), c=cnt();
+  return `<div class="steps">${curKinds().map(k=>`<div class="stp"><span class="sl">${icon(k)} ${kindLabel(k)}</span>
+   <button data-step="${k}" data-d="-1" ${c[k]===0||T<=MINN?'disabled':''} aria-label="One fewer ${kindLabel(k)}">−</button><span class="sv">${c[k]}</span>
+   <button data-step="${k}" data-d="1" ${T>=MAXN?'disabled':''} aria-label="One more ${kindLabel(k)}">+</button></div>`).join('')}</div>
+   <div class="limit">n(Ω) = ${T} · bag holds 15 to 30 shapes</div>`;
+}
+const isPreset=p=>KINDS.every(k=>st.counts[k]===PRESETS[p][k]);
+
+/* ----- independence: three checks + proportion bars ----- */
+function secIndep(i){
+  const N0=N(), nB=n(EV.B), nS=n(EV.S), nBS=st.counts.bs, c=st.counts, BS=['bs'];
+  const ckRow=(id,title,left,right,ok)=>`<div class="block ck"><div class="sublab cl">${title}</div>${left}<span class="vs">vs</span>${right}${badge(id+'b','Equal?',ok,'equal','not equal')}</div>`;
+  const okC=(a,b,cc,d)=> (b===0||d===0)?null : a*d===cc*b;
+  const bar=(l,a,b,hl)=>`<div class="pbar"${hla(hl)}><div>${l}</div><div class="pt"><div class="pf" style="width:${b?a/b*100:0}%"></div></div><div class="pv">${b?(Math.round(a/b*1000)/10)+'%':'n/a'}</div></div>`;
+  const bars=`<div class="block"><h3>% blue</h3>${bar('among squares',nBS,nS,EV.S)}${bar('among circles',c.bc,n(EV.Sc),EV.Sc)}${bar('overall',nB,N0,KINDS)}<div class="muted">Independent ⇔ all three bars match.</div></div>`;
+  return head(i)+`<div class="row"><button class="btn big ${isPreset('def')?'on':''}" data-act="preset" data-val="def">Default (dependent)</button><button class="btn big ${isPreset('ind')?'on':''}" data-act="preset" data-val="ind">Independent</button></div>
+  ${card('d-ind','Independence','B and S are <b>independent</b> if knowing one tells you nothing about the other. Check whether the pairs below are equal. If any pair is <b>not</b> equal, B and S are <b>not</b> independent.')}
+  ${ckRow('i1','Check 1',probEq('i1l','P(B | S)','blue AND square shapes',BS,'square shapes',EV.S),probEq('i1r','P(B)','blue shapes',EV.B,'all shapes',KINDS),okC(nBS,nS,nB,N0))}
+  ${ckRow('i2','Check 2',probEq('i2l','P(S | B)','blue AND square shapes',BS,'blue shapes',EV.B),probEq('i2r','P(S)','square shapes',EV.S,'all shapes',KINDS),okC(nBS,nB,nS,N0))}
+  ${ckRow('i3','Check 3',probEq('i3l','P(B ∩ S)','blue AND square shapes',BS,'all shapes',KINDS),
+    `<div class="eq"><span class="lhs">P(B) × P(S)</span><span class="op">=</span>${fracBoxes('i3a','blue shapes',EV.B,'all shapes',KINDS)}<span class="op">×</span>${fracBoxes('i3b','square shapes',EV.S,'all shapes',KINDS)}<span class="op">=</span>${rb('i3rr',['?',resStr(nB*nS,N0*N0)],'res')}</div>`,okC(nBS,N0,nB*nS,N0*N0))}
+  ${bars}`;
+}
+
+/* ----- disjoint (multi-color bag) ----- */
+const cw=set=>set.length?set.map(k=>MNAME[k]).join(' or ')+' shapes':'no shapes';
+function chipsFor(ev){
+  return `<div class="chips"><span class="evl">${ev} =</span>${MK.map(k=>`<button class="cchip${st[ev].includes(k)?' on':''}${k==='Y'?' yl':''}${k==='G'?' gr':''}" style="--c:var(--${MCOL[k]})" data-act="chip" data-ev="${ev}" data-val="${k}" data-hl="${k}" aria-pressed="${st[ev].includes(k)}" aria-label="${MNAME[k]}">${k}</button>`).join('')}</div>`;
+}
+function secDisj(i){
+  const A=st.A, C=st.C, I=MK.filter(k=>A.includes(k)&&C.includes(k)), U=MK.filter(k=>A.includes(k)||C.includes(k));
+  const N0=N(), nA=n(A), nC=n(C), nI=n(I), dis=I.length===0, eqInd=nI*N0===nA*nC;
+  const iW=I.length?cw(I):'shapes in both A and C';
+  return head(i)+`<div class="row">${chipsFor('A')}<span style="width:.6em"></span>${chipsFor('C')}<span class="chipnote ${dis?'ok':'bad'}">${dis?'A and C are disjoint':`Not disjoint: they share ${I.join(', ')}`}</span></div>
+  ${card('d-dis','Disjoint (mutually exclusive)','A and C are <b>disjoint</b> if they can’t both happen on the same draw. They share no outcomes, so A ∩ C = ∅ and P(A ∩ C) = 0.')}
+  <div class="block two">
+   <div>${probEq('dA','P(A)',cw(A),A,'all shapes',MK)}${probEq('dC','P(C)',cw(C),C,'all shapes',MK)}${probEq('dI','P(A ∩ C)',iW,I,'all shapes',MK)}</div>
+   <div><div class="sublab">Shortcut if disjoint: P(A ∪ C) = P(A) + P(C)</div>
+    ${probEq('dU','P(A ∪ C)','shapes in A or C',U,'all shapes',MK)}
+    <div class="eq"><span class="lhs">P(A) + P(C)</span><span class="op">=</span>${term('dU6',decStr(nA,N0),'P(A)',A)}<span class="op">+</span>${term('dU7',decStr(nC,N0),'P(C)',C)}<span class="op">=</span>${rb('dU8',['?',resStr(nA+nC,N0)],'res')}</div>
+    <div class="row">${badge('dU9','Same as counting?',dis,'same: no overlap to subtract',`off by P(A ∩ C) = ${decStr(nI,N0)}`)}</div></div>
+  </div>
+  <div class="block"><div class="sublab">Disjoint ≠ independent</div>
+   <div class="eq" style="font-size:1.15em"><span class="lhs">P(A ∩ C)</span><span class="op">=</span>${rb('vs7',['?',resStr(nI,N0)],'res',false,I)}<span class="op">vs</span><span class="lhs">P(A) × P(C)</span><span class="op">=</span>${rb('vs8',['?',resStr(nA*nC,N0*N0)],'res')}${badge('vs9','Independent?',eqInd,'independent','not independent')}</div>
+   <div class="muted">If they’re disjoint, knowing one happened tells you the other didn’t.</div></div>`;
+}
+function secSheet(i){
+  const c=(t,b,cls='')=>`<div class="card ${cls}"><div class="card-h">${t}</div>${b}</div>`;
+  return head(i)+`<div class="sheet">
+  ${c('Notation','<p><b>B</b> = blue, <b>B′</b> = green</p><p><b>S</b> = square, <b>S′</b> = circle</p>')}
+  ${c('Probability','<div class="fl">P(A) = # of outcomes in A / total # of outcomes</div><p>0 ≤ P(A) ≤ 1</p>')}
+  ${c('Complement','<div class="fl">P(A′) = 1 − P(A)</div>')}
+  ${c('General rule vs. if independent vs. if disjoint',`<table class="cmpT"><thead><tr><th></th><th>General</th><th>If independent</th><th>If disjoint</th></tr></thead><tbody>
+    <tr><td>P(A ∩ C)</td><td>n(A ∩ C) / n(Ω)</td><td>P(A) × P(C)</td><td>0</td></tr>
+    <tr><td>P(A ∪ C)</td><td>P(A) + P(C) − P(A ∩ C)</td><td>P(A) + P(C) − P(A) × P(C)</td><td>P(A) + P(C)</td></tr>
+    <tr><td>P(A | C)</td><td>P(A ∩ C) / P(C)</td><td>P(A)</td><td>0</td></tr></tbody></table>`,'span3')}
+  </div>`;
+}
+const SECS=[
+  {id:'vocab',t:'Trial, outcome, sample space, event',tab:'Vocab',r:secVocab},
+  {id:'single',t:'Single-event probability & complement',tab:'P(A)',r:secSingle},
+  {id:'vt',t:'Venn + Table',tab:'Venn + Table',r:secVT},
+  {id:'joint',t:'Joint probability (∩, “and”)',tab:'∩ And',r:secJoint},
+  {id:'union',t:'Union (∪, “or”)',tab:'∪ Or',r:secUnion},
+  {id:'cond',t:'Conditional probability',tab:'| Given',r:secCond},
+  {id:'indep',t:'Independence',tab:'Indep.',r:secIndep},
+  {id:'disj',t:'Disjoint (mutually exclusive) events',tab:'Disjoint',r:secDisj},
+  {id:'sheet',t:'Formula sheet',tab:'Formulas',r:secSheet,sheet:true}
+];
+
+/* ---------- highlight ---------- */
+function selSet(){
+  switch(secId()){
+    case 'single': return EV[st.s2ev];
+    case 'joint': return inter(EV[st.s5.c],EV[st.s5.s]);
+    case 'union': return union(EV[st.s6.c],EV[st.s6.s]);
+    case 'cond': return inter(EV[st.s7.x],EV[st.s7.y]);
+    default: return null;
+  }
+}
+/* "given" event: shapes outside it fade almost completely (shrinking Ω) */
+function givenSet(){
+  if(secId()==='cond'&&st.s7on) return EV[st.s7.y];
+  return null;
+}
+function givenLabel(){
+  if(secId()==='cond'&&st.s7on){ const y=st.s7.y; return `n(${LAB[y]}) = ${n(EV[y])} shapes`; }
+  return null;
+}
+function applyHL(){
+  const hv=st.hover, set=hv||selSet(), giv=givenSet();
+  $$('#shapesLayer .sh').forEach(g=>{ const k=g.dataset.k, out=!!giv&&!giv.includes(k), off=!out&&!!set&&!set.includes(k);
+    g.classList.toggle('out',out); g.classList.toggle('mid',off&&!!giv); g.classList.toggle('dim',off&&!giv); });
+  const bag=$('#bag'); bag&&bag.classList.toggle('cond',secId()==='cond'||!!giv);
+  const ph=st.hover||st.bagHover;
+  $$('#panel [data-hl]').forEach(el=>{ const ks=el.dataset.hl.split(',').filter(Boolean);
+    const full=!!ph&&ph.length>=curKinds().length&&curKinds().every(k=>ph.includes(k));
+    const hot=!!ph&&ks.length>0&&ks.every(k=>ph.includes(k))&&!(full&&ks.length<ph.length&&el.matches('.seg button,.hlw,.term,.rb,.cchip,.letter')); el.classList.toggle('hot',hot); el.classList.toggle('dbl',hot&&st.hoverDbl&&!!st.hover); });
+  $$('#panel .venn .vr').forEach(el=>{ const hot=!!ph&&ph.includes(el.dataset.k); el.classList.toggle('hot',hot); el.classList.toggle('dbl',hot&&st.hoverDbl&&!!st.hover); });
+  bagCaption();
+}
+function bagCaption(){
+  let s=`n(Ω) = <b>${N()}</b> shapes`;
+  const g=givenLabel(); if(g) s+=` · <span class="given">Ω is now: ${g}</span>`;
+  if(mode()==='multi') s+='<div class="cap2">Each draw is exactly one color, so single-color events can never overlap.</div>';
+  $('#bagcap').innerHTML=s;
+}
+/* tooltip for bag shapes */
+function tipText(k){
+  if(MK.includes(k)){ const inA=st.A.includes(k), inC=st.C.includes(k);
+    return `<b>${MNAME[k]} (${k})</b> · ${inA&&inC?'in A and C':inA?'in A':inC?'in C':'in neither A nor C'}`; }
+  const c=k[0]==='b'?'B':'B′', s=k[1]==='s'?'S':'S′';
+  return `<b>${KNAME[k]}</b> · in ${c}, ${s}, ${c} ∩ ${s}`;
+}
+function showTip(k,e){ const t=$('#tip'); t.innerHTML=tipText(k); t.style.display='block'; moveTip(e); }
+function moveTip(e){ const t=$('#tip'); if(t.style.display!=='block') return; const w=t.offsetWidth;
+  t.style.left=Math.min(window.innerWidth-w-8,e.clientX+14)+'px'; t.style.top=(e.clientY+16)+'px'; }
+function hideTip(){ $('#tip').style.display='none'; }
+
+/* ---------- render ---------- */
+function renderTabs(){
+  $('#tabs').innerHTML=SECS.map((Sx,i)=>`<button class="tab ${i===st.sec?'on':''}" data-tab="${i}" aria-current="${i===st.sec}"><b>${i+1}</b>${Sx.tab}</button>`).join('');
+  const on=$('#tabs .tab.on'); on&&on.scrollIntoView({block:'nearest',inline:'nearest'});
+}
+function renderPanel(){
+  for(const k in REG) delete REG[k];
+  const p=$('#panel'), keepScroll=p.scrollTop, focused=document.activeElement&&p.contains(document.activeElement)?document.activeElement.dataset.rid:null;
+  const openDetails=[...p.querySelectorAll('details[open] summary')].map(s=>s.textContent);
+  p.innerHTML=SECS[st.sec].r(st.sec);
+  p.querySelectorAll('details summary').forEach(s=>{ if(openDetails.includes(s.textContent)) s.parentElement.open=true; });
+  p.scrollTop=keepScroll;
+  if(focused){ const el=p.querySelector(`[data-rid="${focused}"]`); el&&el.focus(); }
+  applySep(); animateSep(); applyHL(); sizeVT();
+}
+/* Venn + Table tab: table height matches the Venn frame (side-by-side layout only) */
+function sizeVT(){
+  const ct=document.querySelector('.vtwrap .ct'), fr=document.querySelector('.vtwrap .venn .vframe'), vn=document.querySelector('.vtwrap .venn'); if(!ct||!fr) return;
+  ct.style.height=''; ct.style.marginTop=''; if(getComputedStyle(ct.parentElement).flexDirection!=='row') return;
+  const f=fr.getBoundingClientRect(); ct.style.height=Math.round(f.height)+'px'; ct.style.marginTop=Math.round(f.top-vn.getBoundingClientRect().top)+'px';
+}
+window.addEventListener('resize',()=>sizeVT());
+function tallyHtml(){
+  const dr=st.draws.two, Tn=dr.length; if(!Tn) return '';
+  const c={}; KINDS.forEach(k=>c[k]=0); dr.forEach(k=>c[k]++);
+  return `<div class="tally"><span>Draws: ${Tn}</span>${KINDS.map(k=>`<span class="chip">${icon(k)} ${c[k]}</span>`).join('')}</div>`;
+}
+function renderLeft(){
+  $('#stepHost').innerHTML=stepperHtml();
+  $('#compSum').textContent='Edit bag contents';
+  bagCaption();
+}
+function render(){ ensureMode(); renderTabs(); renderLeft(); renderPanel(); }
+
+/* ---------- actions ---------- */
+function setCounts(c){
+  const ks=curKinds(); if(ks.some(k=>!(c[k]>=0))) return;
+  const T=ks.reduce((a,k)=>a+c[k],0); if(T<MINN||T>MAXN) return;
+  if(mode()==='two') st.counts={...c}; else st.mcounts={...c};
+  st.rev={}; st.draws[mode()]=[]; st.last[mode()]=null; st.s7on=true; animateDraw(null);
+  syncShapes(); drawBag(); render();
+}
+function setRev(id,s){
+  const stg=REG[id]; if(!stg) return; st.rev[id]=s;
+  const el=$(`#panel [data-rid="${id}"]`); if(!el) return;
+  el.innerHTML=stg[s]; el.classList.remove('st0','st1','st2','full'); el.classList.add('st'+s); if(s===stg.length-1) el.classList.add('full');
+}
+function cycle(id){
+  const stg=REG[id]; if(!stg) return;
+  const s=((st.rev[id]||0)+1)%stg.length;
+  const el=$(`#panel [data-rid="${id}"]`);
+  if(el&&el.dataset.rr){ st.rev[id]=s; renderPanel(); return; }
+  setRev(id,s);
+  const p=LINK[id]; if(st.link&&p&&REG[p]) setRev(p,Math.min(s,REG[p].length-1));
+}
+function setKey(key,val){
+  let reset=true;
+  switch(key){
+    case 's1ev': st.s1ev=val; break;
+    case 's2ev': st.s2ev=val; break;
+    case 's5c': st.s5.c=val; break;
+    case 's5s': st.s5.s=val; break;
+    case 's6c': st.s6.c=val; break;
+    case 's6s': st.s6.s=val; break;
+    case 's7x': { st.s7.x=val; const o=isColor(val)?['S','Sc']:['B','Bc']; if(!o.includes(st.s7.y)) st.s7.y=o[0]; st.s7on=true; break; }
+    case 's7y': st.s7.y=val; st.s7on=true; break;
+    case 'vtProb': st.vtProb=val==='1'; reset=false; break;
+  }
+  if(reset) st.rev={};
+  st.hover=null; renderPanel();
+}
+function toggleCond(){
+  st.s7on=!st.s7on; const Y=EV[st.s7.y];
+  $$('#panel .veil').forEach(v=>v.classList.toggle('on',st.s7on&&!Y.includes(v.dataset.k)));
+  $$('#panel [data-gk]').forEach(el=>el.classList.toggle('gone',st.s7on&&el.dataset.gk.split(',').every(k=>!Y.includes(k))));
+  const b=$('#condBtn'); if(b){ b.classList.toggle('on',st.s7on); b.textContent=st.s7on?'Restore full Ω':`Shrink Ω to ${LAB[st.s7.y]}`; }
+  applyHL();
+}
+function toggleChip(ev,k){
+  const set=st[ev]; const i=set.indexOf(k);
+  if(i>=0){ if(set.length===1) return; set.splice(i,1); } else { set.push(k); set.sort((a,b)=>MK.indexOf(a)-MK.indexOf(b)); }
+  st.rev={}; renderPanel();
+}
+function goSec(i){ st.sec=(i+SECS.length)%SECS.length; st.hover=null; st.bagHover=null; st.s7on=true; hideTip(); ensureMode(); renderTabs(); renderLeft(); renderPanel(); $('#panel').scrollTop=0; }
+function fullscreen(){ if(!document.fullscreenElement) document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{}); else document.exitFullscreen&&document.exitFullscreen(); }
+function act(a,el){
+  switch(a){
+    case 'draw1': drawOne(); break;
+    case 'draw100': draw100(); break;
+    case 'resetDraws': st.draws.two=[]; st.last.two=null; renderPanel(); break;
+    case 'preset': setCounts(PRESETS[el.dataset.val]); break;
+    case 'theme': st.theme=st.theme==='light'?'dark':'light'; document.documentElement.dataset.theme=st.theme; $('#themeBtn').textContent=st.theme==='light'?'☾':'☀'; break;
+    case 'fs': fullscreen(); break;
+    case 'cond': toggleCond(); break;
+    case 'chip': toggleChip(el.dataset.ev,el.dataset.val); break;
+  }
+}
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const tab=t.closest('[data-tab]'); if(tab){ goSec(+tab.dataset.tab); return; }
+  const r=t.closest('[data-rid]'); if(r){ cycle(r.dataset.rid); return; }
+  const cy=t.closest('[data-cycle]'); if(cy){ cycle(cy.dataset.cycle); return; }
+  const sk=t.closest('[data-set]'); if(sk){ setKey(sk.dataset.set,sk.dataset.val); return; }
+  const stp=t.closest('[data-step]'); if(stp&&!stp.disabled){ const c={...cnt()}; c[stp.dataset.step]+=+stp.dataset.d; setCounts(c); return; }
+  const a=t.closest('[data-act]'); if(a){ act(a.dataset.act,a); }
+});
+document.addEventListener('change',e=>{
+});
+const panel=document.getElementById('panel');
+function setHover(el){
+  if(el&&el.closest('.vt2')) el=null;
+  const v=el?el.dataset.hl.split(',').filter(Boolean):null, dbl=!!(el&&el.closest('[data-dbl]'));
+  const r=$('#mread'); if(r) r.innerHTML= el&&el.dataset.area ? `<b>${el.dataset.name}</b>: area = ${el.dataset.area}` : 'Hover a rectangle to see its area';
+  if(String(v)!==String(st.hover)||dbl!==st.hoverDbl){ st.hover=v; st.hoverDbl=dbl; applyHL(); }
+}
+panel.addEventListener('pointerover',e=>setHover(e.target.closest('[data-hl]')));
+panel.addEventListener('pointerleave',()=>setHover(null));
+panel.addEventListener('focusin',e=>{ const el=e.target.closest('[data-hl]'); if(el) setHover(el); });
+panel.addEventListener('focusout',()=>setHover(null));
+const bagwrap=document.getElementById('bagwrap');
+bagwrap.addEventListener('pointerover',e=>{
+  const g=e.target.closest('.sh');
+  if(!g){ hideTip(); if(st.bagHover){ st.bagHover=null; applyHL(); } return; }
+  showTip(g.dataset.k,e); st.bagHover=[g.dataset.k]; applyHL();
+});
+bagwrap.addEventListener('pointermove',moveTip);
+bagwrap.addEventListener('pointerleave',()=>{ hideTip(); if(st.bagHover){ st.bagHover=null; applyHL(); } });
+document.addEventListener('keydown',e=>{
+  if(e.target.matches('input,select,textarea')||e.metaKey||e.ctrlKey||e.altKey) return;
+  const k=e.key;
+  if(k==='ArrowRight'){ goSec(st.sec+1); e.preventDefault(); }
+  else if(k==='ArrowLeft'){ goSec(st.sec-1); e.preventDefault(); }
+  else if(k==='r'||k==='R'){ st.rev={}; renderPanel(); }
+  else if(k==='f'||k==='F') fullscreen();
+});
+
+/* ---------- init ---------- */
+$('#bagwrap').innerHTML=bagSVG();
+/* build both bags up front so each keeps its own contents across tab switches */
+['multi','two'].forEach(m=>{ const keep=st.sec; st.sec=m==='multi'?SECS.findIndex(x=>x.id==='disj'):0; syncShapes(); bags[m].forEach(s=>s.fresh=false);
+  const idx=SLOTS.map((_,i)=>i).sort(()=>Math.random()-.5); bags[m].forEach((s,i)=>{s.slot=idx[i];}); st.sec=keep; });
+render();
+})();
+</script>
+</body>
+</html>
