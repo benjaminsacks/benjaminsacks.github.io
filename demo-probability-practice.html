@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ben_sacks | Probability Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* site palette (matches assets/css/styles.css): charcoal + gold, Playfair Display + Space Mono */
+  --serif:'Playfair Display',Georgia,'Times New Roman',serif;
+  --mono:'Space Mono',ui-monospace,Menlo,Consolas,monospace;
+  --bg:#1e1e1e; --panel:#232323; --ink:#e9e9e9; --muted:#a0a0a0; --line:#3d3d3d; --soft:#2c2c2c;
+  --blue:#4a8cff; --blueEdge:#a9ccff; --green:#2ecc71; --greenEdge:#a6efc4;
+  --acc:#e3b505; --accSoft:rgba(227,181,5,.38); --accHot:rgba(227,181,5,.26); --accInk:#f2cc3a; --onAcc:#1e1e1e;
+  --red:#ff5a4f; --purple:#b77be6; --yellow:#ffec6a; --yellowEdge:#7a5f00; --purpleEdge:#e8d0fa;
+  --bagBack:#4a3b28; --bagFront:#8c6538; --bagLine:#d2ad74;
+  --ok:#3ddc84; --bad:#ff6b6b;
+  --shadow:none;
+  color-scheme:dark;
+}
+[data-theme=light]{
+  --bg:#f3f1ea; --panel:#ffffff; --ink:#1e1e1e; --muted:#5f5f5f; --line:#d6d3c8; --soft:#eceae1;
+  --blue:#1565e0; --blueEdge:#0b419a; --green:#0f9d58; --greenEdge:#086a3a;
+  --acc:#d9a800; --accSoft:rgba(217,168,0,.38); --accHot:rgba(217,168,0,.28); --accInk:#6b5200; --onAcc:#1e1e1e;
+  --red:#d93025; --purple:#8e44ad; --yellow:#f4c20d; --purpleEdge:#4f1f66;
+  --bagBack:#ead6b0; --bagFront:#c28d52; --bagLine:#6e4c22;
+  --ok:#0b7f44; --bad:#c62828;
+  --shadow:0 1px 2px rgba(20,25,40,.05),0 6px 18px rgba(20,25,40,.06);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--serif);font-variant-numeric:lining-nums;background:var(--bg);color:var(--ink);
+  font-size:clamp(15px,.8vw + 5px,21px);line-height:1.4;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+sup{font-size:.7em;line-height:0}
+.app{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;height:100vh;height:100dvh}
+
+/* top bar */
+header.top{display:flex;align-items:center;gap:.6em;padding:.45em .9em;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:-.01em;white-space:nowrap;font-size:1.02em;display:flex;align-items:center;gap:.4em}
+.brand svg{width:1.3em;height:1.3em}
+nav.tabs{display:flex;gap:.2em;overflow-x:auto;flex:1 1 300px;min-width:0;scrollbar-width:thin;padding:.1em 0}
+.tab{border:0;background:transparent;padding:.35em .7em;border-radius:9px;cursor:pointer;white-space:nowrap;font-weight:600;color:var(--muted);font-size:.86em}
+.tab b{font-weight:800;margin-right:.3em;opacity:.55}
+.tab:hover{background:var(--soft);color:var(--ink)}
+.tab.on{background:var(--ink);color:var(--panel)}
+.tab.on b{opacity:.8}
+.tools{display:flex;align-items:center;gap:.4em;font-size:.82em}
+.kbd{font-size:.72em;color:var(--muted);white-space:nowrap}
+.btn{border:1px solid var(--line);background:var(--panel);padding:.38em .8em;border-radius:10px;cursor:pointer;font-weight:600;line-height:1.2}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:focus-visible,.tab:focus-visible,.dot:focus-visible,.jump:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* question bar */
+.qbar{background:var(--panel);border-bottom:1px solid var(--line);padding:.6em 1.2em;max-height:30vh;overflow:auto}
+.qbar .qn{display:inline-grid;place-items:center;min-width:1.7em;height:1.7em;padding:0 .4em;border-radius:999px;background:var(--ink);color:var(--panel);font-weight:800;font-size:.8em;margin-right:.55em;vertical-align:middle}
+.qbar p{margin:.15em 0}
+.qbar .sub{margin:.2em 0 0 2.4em;color:var(--muted)}
+
+/* stage */
+.stage{overflow:auto;padding:.8em 1.2em 1em;min-height:0}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1em 1.4em;align-items:start}
+.col{display:flex;flex-direction:column;gap:.7em;min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:.4em .9em;margin:0 0 .6em;font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:.4em;padding:.2em .7em;border-radius:999px;background:var(--soft);border:1px solid var(--line);font-size:.9em}
+.chip i{width:.9em;height:.9em;border-radius:50%;display:inline-block;background:var(--c)}
+
+/* work panel */
+.work{display:flex;flex-direction:column;gap:.55em}
+.ln{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.55em .85em;box-shadow:var(--shadow);opacity:.82}
+.ln.now{opacity:1;border-color:var(--acc);box-shadow:0 0 0 3px var(--accHot),var(--shadow);animation:rise .35s ease}
+.ln .cap{font-size:.74em;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.25em}
+.ln .body .eq{font-size:1.18em;font-weight:700;margin:.15em 0;display:flex;flex-wrap:wrap;align-items:center;gap:.3em}
+.ln .body .eq b{font-weight:800}
+.ln .body .note{color:var(--muted);font-weight:600;font-size:.9em;margin:.2em 0}
+.hint{padding:1em;border:2px dashed var(--line);border-radius:14px;color:var(--muted);font-weight:600;text-align:center}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.1;margin:0 .15em;font-size:.92em}
+.fr>span:first-child{padding:0 .25em .08em}
+.fr>span:last-child{border-top:2px solid currentColor;padding:.08em .25em 0;align-self:stretch;text-align:center}
+.tk{color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);padding:.02em .35em;border-radius:7px;border-bottom:2px solid var(--c)}
+.ans{background:color-mix(in srgb,var(--ok) 12%,var(--panel));border:2px solid var(--ok);border-radius:14px;padding:.6em .9em;font-weight:800;font-size:1.15em;animation:rise .35s ease}
+.ans small{display:block;font-weight:600;font-size:.7em;color:var(--muted)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+/* Q1 */
+.qparts{display:grid;grid-template-columns:minmax(0,1fr);gap:.7em;max-width:900px;margin:0 auto}
+.qpart{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:.6em 1em;box-shadow:var(--shadow);transition:border-color .2s}
+.qpart.active{border-color:var(--acc);box-shadow:0 0 0 3px var(--accHot),var(--shadow)}
+.qp-h{font-weight:800;margin-bottom:.3em}
+.qp-body{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1em;align-items:center}
+.qp-math{min-height:3.2em}
+.qp-math .eq{font-size:1.2em;font-weight:700;display:flex;flex-wrap:wrap;align-items:center;gap:.3em;margin:.2em 0;animation:fadein .35s ease}
+.qp-math .eq.old{animation:none}
+.qp-math .note{color:var(--muted);font-weight:600;margin:.15em 0;animation:fadein .35s ease}
+.qp-math .note.old{animation:none}
+.qp-math .note b{color:var(--ink)}
+table.die{border-collapse:collapse;font-size:1.25em;font-weight:700}
+table.die td{width:2.2em;height:2.1em;text-align:center;border:2px solid var(--ink);background:var(--panel);transition:background .25s,transform .25s}
+table.die td.hot{background:var(--accSoft);transform:scale(1.04)}
+
+/* Q2 */
+.opts{display:flex;flex-direction:column;gap:.7em;max-width:900px;margin:0 auto}
+.opt{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.2em .8em;align-items:center;background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:.65em 1em;box-shadow:var(--shadow);transition:border-color .2s}
+.opt.bad{border-color:var(--bad)}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 8%,var(--panel))}
+.opt .let{width:2em;height:2em;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:800}
+.opt .tx{font-weight:700;font-size:1.05em}
+.opt .mk{width:2.1em;height:2.1em;animation:fadein .3s ease}
+.opt .why{grid-column:2/-1;margin:.1em 0 0;font-weight:600;padding:.35em .7em;border-left:4px solid var(--c);background:color-mix(in srgb,var(--c) 9%,transparent);border-radius:0 10px 10px 0;animation:rise .35s ease}
+.opt .why b{color:var(--c)}
+
+/* Venn + table */
+.vwrap svg{display:block;width:100%;height:auto;max-width:560px;margin:0 auto}
+.rg{fill:transparent}
+.vframe{fill:none;stroke:var(--ink);stroke-width:2.5}
+.vcA{fill:none;stroke:var(--blue);stroke-width:4}
+.vcB{fill:none;stroke:var(--green);stroke-width:4}
+.vt{font:800 22px var(--serif);text-anchor:middle}
+.vt.om{font-size:26px;text-anchor:start;fill:var(--ink)}
+.vsub{font:700 14px var(--serif);text-anchor:middle;fill:var(--ink)}
+.vv{font:800 24px var(--serif);text-anchor:middle;fill:var(--ink)}
+.vv.hide,.vsub.hide{opacity:0}
+.vv.fresh,.vsub.fresh{fill:var(--accInk);animation:fadein .5s ease}
+.vlab{font:800 15px var(--serif);text-anchor:middle}
+.twrap{display:flex;flex-direction:column;align-items:center;gap:.25em}
+.ct{border-collapse:separate;border-spacing:0;font-size:1.1em;font-variant-numeric:tabular-nums;width:100%;max-width:480px}
+.ct th,.ct td{padding:.35em .6em;text-align:center;border-bottom:1px solid var(--line);border-right:1px solid var(--line);transition:background .2s;height:2.3em}
+.ct tr>*:first-child{border-left:1px solid var(--line)}
+.ct thead th{border-top:1px solid var(--line);font-weight:800}
+.ct thead th:first-child{border:0}
+.ct th{font-weight:800}
+.ct .tot{background:var(--soft)}
+.ct td{font-weight:800}
+.ct td.hide{color:transparent}
+.ct td.fresh{color:var(--accInk);box-shadow:inset 0 0 0 3px var(--acc);animation:fadein .5s ease}
+.ct td.hot{background:var(--accSoft)}
+.ct td.hot.tot{background:var(--accSoft)}
+.tcap{font-size:.8em;color:var(--muted);font-weight:600;text-align:center}
+
+/* Q6 coins */
+.coinsvg{display:block;width:100%;height:auto;max-width:620px;margin:0 auto}
+.coin .face{stroke-width:2}
+.coin .ring{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.4}
+.coin text{font:800 11px var(--serif);text-anchor:middle;pointer-events:none}
+.coin{transition:opacity .3s}
+.coin.dim{opacity:.22}
+.slot{fill:none;stroke:var(--line);stroke-width:2;stroke-dasharray:5 4}
+.dslot{fill:var(--soft);stroke:var(--muted);stroke-width:2;stroke-dasharray:7 5}
+.dlab{font:800 15px var(--serif);text-anchor:middle;fill:var(--muted)}
+.dnote{font:700 14px var(--serif);text-anchor:middle;fill:var(--ink)}
+.stat{font:700 15px var(--serif);fill:var(--ink)}
+.stat.h{font-weight:800;fill:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+.stat.tt{font-weight:800}
+.sack-body{fill:var(--bagFront);stroke:var(--bagLine);stroke-width:3;stroke-linejoin:round}
+.sack-top{fill:var(--bagBack);stroke:var(--bagLine);stroke-width:3;stroke-linejoin:round}
+.sack-rope{fill:none;stroke:var(--bagLine);stroke-width:5;stroke-linecap:round}
+.sack-in{fill:rgba(60,35,10,.25)}
+.jumps{display:flex;gap:.4em;flex-wrap:wrap;margin-bottom:.5em}
+.jump{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:.3em .8em;cursor:pointer;font-weight:700;font-size:.9em}
+.jump.on{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+
+/* nav bar */
+footer.navbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.8em;align-items:center;padding:.55em 1em;background:var(--panel);border-top:1px solid var(--line)}
+.mid{display:flex;flex-direction:column;align-items:center;gap:.3em;min-width:0}
+.slabel{font-weight:700;font-size:.85em;color:var(--muted);text-align:center}
+.dots{display:flex;gap:.3em;flex-wrap:wrap;justify-content:center}
+.dot{width:.7em;height:.7em;border-radius:50%;border:0;padding:0;background:var(--line);cursor:pointer}
+.dot.past{background:var(--muted)}
+.dot.cur{background:var(--acc);transform:scale(1.4)}
+.nbtn{font-size:1.02em;padding:.55em 1.1em;border-radius:12px}
+
+@media (max-width:900px){
+  .duo{grid-template-columns:minmax(0,1fr)}
+  .qp-body{grid-template-columns:minmax(0,1fr)}
+  .kbd{display:none}
+  .qbar{max-height:34vh}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation-duration:.01s!important}}
+.col.sticky{position:sticky;top:0;align-self:start}
+/* inline math lines (keeps superscripts attached) */
+.ln .body .eq,.qp-math .eq{display:block;line-height:1.7}
+.ln .body .eq .fr,.qp-math .eq .fr{margin:0 .2em}
+.duo>.col:first-child{position:sticky;top:0;align-self:start}
+.twrap{position:sticky;top:-.8em;z-index:3;background:var(--bg);padding:.8em 0 .5em;margin-top:-.8em}
+@media (max-width:900px){.duo>.col:first-child,.col.sticky,.twrap{position:static}}
+.jumps{position:sticky;top:-.8em;z-index:3;background:var(--bg);padding:.8em 0 .45em;margin:-.8em 0 0}
+/* collapsible question */
+.qwrap{position:relative;z-index:6;border-bottom:1px solid var(--line);background:var(--panel)}
+.qwrap .qbar{border-bottom:0}
+.qwrap.closed .qbar{display:none}
+.qnotch{position:absolute;left:50%;bottom:-1.35em;transform:translateX(-50%);width:3.4em;height:1.35em;padding:0;display:grid;place-items:center;
+  border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;background:var(--panel);color:var(--muted);cursor:pointer}
+.qnotch:hover{color:var(--ink);background:var(--soft)}
+.qnotch:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.qnotch svg{width:1.3em;height:.65em;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.qwrap.closed .qnotch svg{transform:rotate(180deg)}
+.stage{padding-top:1.6em}
+/* desktop, tabs 3-6: everything is locked in place except the step list */
+html,body{overflow:hidden}
+nav.tabs{position:relative}
+.coinwrap{display:block}
+@media (min-width:901px){
+  .stage.lock{overflow:hidden;display:flex;flex-direction:column;padding-bottom:.8em}
+  .stage.lock>.legend{flex:none}
+  .stage.lock>.duo{flex:1 1 0;min-height:0;grid-template-rows:minmax(0,1fr);align-items:stretch}
+  .stage.lock .duo>.col{position:static!important;align-self:stretch!important;min-height:0;overflow:hidden}
+  .stage.lock .vwrap,.stage.lock .coinwrap{flex:1 1 0;min-height:0;position:relative}
+  .stage.lock .vwrap svg,.stage.lock .coinsvg{position:absolute;top:0;left:0;right:0;margin:0 auto;width:100%;height:100%}
+  .stage.lock .vwrap svg{max-width:560px}
+  .stage.lock .coinsvg{max-width:620px}
+  .stage.lock .twrap,.stage.lock .jumps{position:static;margin:0;padding:0 0 .5em;flex:none}
+  .stage.lock .work{flex:1 1 0;min-height:0;overflow-y:auto;position:relative;padding:.25em .35em .6em}
+  #cwork{flex:1 1 0;min-height:0;display:flex;flex-direction:column}
+}
+
+/* ---- site styling: Space Mono for interface text, gold accent for active/primary ---- */
+.tab,.btn,.jump,.kbd,.slabel,.ln .cap,.stat.h,.tcap{font-family:var(--mono)}
+.tab.on{background:var(--acc);color:var(--onAcc)}
+.jump.on{background:var(--acc);color:var(--onAcc);border-color:var(--acc)}
+.btn:hover,.jump:hover{border-color:var(--acc);color:var(--acc)}
+.btn.primary{background:transparent;border-color:var(--acc);color:var(--acc)}
+.btn.primary:hover:not(:disabled){background:var(--accHot)}
+.qbar .qn{background:var(--acc);color:var(--onAcc)}
+.btn:focus-visible,.tab:focus-visible,.dot:focus-visible,.jump:focus-visible,.qnotch:focus-visible{outline-color:var(--acc)}
+.sup,sup{font-family:var(--serif)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><svg viewBox="-16 -16 32 32"><circle r="13" fill="var(--blue)"/><rect x="-4" y="-4" width="18" height="18" rx="3" fill="var(--green)"/></svg>Probability Practice</div>
+    <nav class="tabs" id="tabs" aria-label="Questions"></nav>
+    <div class="tools">
+      <button class="btn" id="themeBtn" aria-label="Toggle dark mode">&#9790;</button>
+      <span class="kbd">&larr; &rarr; &middot; R to restart</span>
+    </div>
+  </header>
+  <div class="qwrap" id="qwrap"><section class="qbar" id="qbar" aria-label="Question"></section>
+    <button class="qnotch" id="qnotch" aria-label="Show or hide the question" aria-expanded="true"><svg viewBox="0 0 24 12" aria-hidden="true"><path d="M5 9 L12 3 L19 9"/></svg></button></div>
+  <main class="stage" id="stage" aria-live="polite"></main>
+  <footer class="navbar">
+    <button class="btn nbtn" id="prev">&larr; Previous</button>
+    <div class="mid"><div class="slabel" id="slabel"></div><div class="dots" id="dots"></div></div>
+    <button class="btn primary nbtn" id="next">Next &rarr;</button>
+  </footer>
+</div>
+<script>
+(function(){
+'use strict';
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const st={tab:0,step:0,theme:'dark',qOpen:true};
+const C='<sup>C</sup>';
+function fmt(x){ return (x/100).toFixed(2).replace(/0+$/,'').replace(/\.$/,''); }   // 50 -> 0.5, 15 -> 0.15, 100 -> 1
+function fmt2(x){ return (x/100).toFixed(2); }                                       // 30 -> 0.30
+const fr=(a,b)=>`<span class="fr"><span>${a}</span><span>${b}</span></span>`;
+const tk=(t,col)=>`<span class="tk" style="--c:var(--${col})">${t}</span>`;
+const eq=h=>`<div class="eq">${h}</div>`;
+const note=h=>`<div class="note">${h}</div>`;
+
+/* work panel: lines = [{at, cap, html, part?}] */
+function work(lines,s,part){
+  const shown=lines.filter(l=>l.at<=s&&(part===undefined||l.part===part));
+  if(!shown.length) return `<div class="work"><div class="hint">Press <b>Next</b> (or the right arrow key) to begin.</div></div>`;
+  return `<div class="work">${shown.map((l,i)=>`<div class="ln${i===shown.length-1?' now':''}"><div class="cap">${l.cap}</div><div class="body">${l.html}</div></div>`).join('')}</div>`;
+}
+const answer=(h,sub)=>`<div class="ans">${h}${sub?`<small>${sub}</small>`:''}</div>`;
+/* appear-step helper: hidden before, "fresh" on the step it appears, plain afterwards */
+const vis=(s,at)=> s<at?'hide': s===at?'fresh':'';
+
+/* ---------- Venn diagram (two circles in a box) ---------- */
+function regionShape(k,attrs){
+  switch(k){
+    case 'ab':  return `<circle cx="180" cy="165" r="95" clip-path="url(#cpB)" ${attrs}/>`;
+    case 'anb': return `<circle cx="180" cy="165" r="95" mask="url(#mkB)" ${attrs}/>`;
+    case 'nab': return `<circle cx="280" cy="165" r="95" mask="url(#mkA)" ${attrs}/>`;
+    default:    return `<rect x="10" y="10" width="440" height="300" rx="12" mask="url(#mkAB)" ${attrs}/>`;
+  }
+}
+/* o: {titleA,titleB,subA,subB,subClsA,subClsB, vals:{anb,ab,nab,nn:{txt,cls}}, layers:[{keys,col}], extra:'svg text'} */
+function venn(o){
+  const mk=(id,inner)=>`<mask id="${id}" maskUnits="userSpaceOnUse" x="0" y="0" width="460" height="320"><rect width="460" height="320" fill="#fff"/>${inner}</mask>`;
+  const cA='<circle cx="180" cy="165" r="95" fill="#000"/>', cB='<circle cx="280" cy="165" r="95" fill="#000"/>';
+  const layers=(o.layers||[]).map(l=>l.keys.map(k=>regionShape(k,`style="fill:var(--${l.col});fill-opacity:.36"`)).join('')).join('');
+  const v=o.vals||{}; const t=(k,x,y)=>v[k]?`<text class="vv ${v[k].cls||''}" x="${x}" y="${y}">${v[k].txt}</text>`:'';
+  return `<svg viewBox="0 0 460 320" role="img" aria-label="Venn diagram">
+  <defs><clipPath id="cpB"><circle cx="280" cy="165" r="95"/></clipPath>${mk('mkB',cB)}${mk('mkA',cA)}${mk('mkAB',cA+cB)}</defs>
+  <rect class="vframe" x="10" y="10" width="440" height="300" rx="12"/>
+  ${layers}
+  <circle class="vcA" cx="180" cy="165" r="95"/><circle class="vcB" cx="280" cy="165" r="95"/>
+  <text class="vt om" x="22" y="40">&Omega;</text>
+  <text class="vt" x="135" y="38" style="fill:var(--blue)">${o.titleA}</text>
+  <text class="vt" x="325" y="38" style="fill:var(--green)">${o.titleB}</text>
+  ${o.subA?`<text class="vsub ${o.subClsA||''}" x="135" y="58">${o.subA}</text>`:''}
+  ${o.subB?`<text class="vsub ${o.subClsB||''}" x="325" y="58">${o.subB}</text>`:''}
+  ${t('anb',133,174)}${t('ab',230,174)}${t('nab',327,174)}${t('nn',408,292)}
+  ${o.extra||''}
+  </svg>`;
+}
+/* contingency table: cells {ab,anb,nab,nn,a,na,b,nb,tot:{txt,cls}}, hot:[keys] */
+function ctab(cells,hot){
+  const c=(k,extra='')=>{ const d=cells[k]||{txt:'',cls:'hide'}; return `<td class="${extra} ${d.cls||''} ${(hot||[]).includes(k)?'hot':''}">${d.txt}</td>`; };
+  return `<table class="ct"><thead><tr><th></th><th>B</th><th>B${C}</th><th class="tot">Total</th></tr></thead><tbody>
+   <tr><th>A</th>${c('ab')}${c('anb')}${c('a','tot')}</tr>
+   <tr><th>A${C}</th>${c('nab')}${c('nn')}${c('na','tot')}</tr>
+   <tr><th class="tot">Total</th>${c('b','tot')}${c('nb','tot')}${c('tot','tot')}</tr></tbody></table>`;
+}
+/* ---------- tab registry ---------- */
+const TABS=[];
+const qh=(n,body)=>`<span class="qn">${n}</span>${body}`;
+
+/* ---------- Q1: die ---------- */
+function q1(s){
+  const grid=hot=>{ const td=n=>`<td class="${hot.includes(n)?'hot':''}">${n}</td>`;
+    return `<table class="die"><tr>${[1,3,5].map(td).join('')}</tr><tr>${[2,4,6].map(td).join('')}</tr></table>`; };
+  const part=(letter,title,start,len,hotSet,build)=>{
+    const k=s-start+1, active=s>=start&&s<start+len;
+    const n=(at,h)=> k>=at ? `<div class="note${active&&k===at?'':' old'}">${h}</div>`:'';
+    const e=(at,h)=> k>=at ? `<div class="eq${active?'':' old'}">${h}</div>`:'';
+    return `<div class="qpart${active?' active':''}"><div class="qp-h">${letter}. ${title}</div>
+      <div class="qp-body"><div class="qp-math">${build(k,n,e)}</div>${grid(k>=1?hotSet:[])}</div></div>`;
+  };
+  const F=fr('# of even outcomes','total # of outcomes');
+  const A=part('a','Show an even number?',1,3,[2,4,6],(k,n,e)=>
+    (k>=3? e(2,`P(even) = ${F} = ${fr(3,6)} = <b>0.5</b>`) : e(2,`P(even) = ${F}`)));
+  const B=part('b','Show an odd number?',4,4,[1,3,5],(k,n,e)=>
+    (k>=4? e(2,`P(odd) = P(even${C}) = 1 &minus; P(even) = 1 &minus; 0.5 = <b>0.5</b>`)
+     : k>=3? e(2,`P(odd) = P(even${C}) = 1 &minus; P(even)`)
+     : e(2,`P(odd) = P(even${C})`))+
+    n(2,'Odd means &ldquo;not even&rdquo;.'));
+  const C4=part('c','Show a number that is at most 4?',8,3,[1,2,3,4],(k,n,e)=>
+    (k>=3? e(2,`P(at most 4) = ${fr('# of outcomes that are at most 4','total # of outcomes')} = ${fr(4,6)} = ${fr(2,3)} &asymp; <b>0.667</b>`)
+     : e(2,`P(at most 4) = ${fr('# of outcomes that are at most 4','total # of outcomes')}`)));
+  return `<div class="qparts">${A}${B}${C4}</div>`;
+}
+TABS.push({name:'Die',steps:10,html:q1,
+  q:qh('1','<p>If you roll a die once, what&rsquo;s the probability that it will&hellip;</p><p class="sub">a. Show an even number? &nbsp; b. Show an odd number? &nbsp; c. Show a number that is at most 4?</p>')});
+
+/* ---------- Q2: always-true statement ---------- */
+const MX='<svg class="mk" viewBox="0 0 32 32" aria-label="Wrong"><circle cx="16" cy="16" r="15" fill="var(--bad)"/><path d="M10.5 10.5L21.5 21.5M21.5 10.5L10.5 21.5" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg>';
+const MC='<svg class="mk" viewBox="0 0 32 32" aria-label="Correct"><circle cx="16" cy="16" r="15" fill="var(--ok)"/><path d="M9 16.5L14 21.5L23 11" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const Q2OPTS=[
+  {l:'A',t:'If A and B are independent, then they are also disjoint.',ok:false,
+   why:'Independent events can happen together (two coin flips can both land heads). Disjoint events never can.'},
+  {l:'B',t:'P(A|B) + P(B|A) = 1',ok:false,
+   why:'If A and B are independent with P(A) = 0.5 and P(B) = 0.3, the sum is 0.8, not 1.'},
+  {l:'C',t:'If P(A|B) = P(B|A), then A and B are independent',ok:false,
+   why:'Two disjoint events both have P(A|B) = 0 = P(B|A), but they are not independent.'},
+  {l:'D',t:'If A and B are disjoint, then A and B cannot occur at the same time.',ok:true,
+   why:'Disjoint means the events share no outcomes, so they can never happen together.'}
+];
+function q2(s){
+  return `<div class="opts">${Q2OPTS.map((o,i)=>{
+    const shown=s>=i+1;
+    return `<div class="opt${shown?(o.ok?' ok':' bad'):''}" style="--c:var(--${o.ok?'ok':'bad'})"><div class="let">${o.l}</div><div class="tx">${o.t}</div><div>${shown?(o.ok?MC:MX):''}</div>${shown?`<div class="why">${o.why}</div>`:''}</div>`;
+  }).join('')}</div>`;
+}
+TABS.push({name:'Concepts',steps:4,html:q2,
+  q:qh('2','<p>Determine which of the following statements is <b>always</b> true.</p>')});
+/* ---------- Q3 and Q4: two independent events, Venn + table ---------- */
+function scenario(cfg){
+  const pA=cfg.pA, pB=cfg.pB, ab=pA*pB/100, anb=pA-ab, nab=pB-ab, nn=100-(ab+anb+nab), pAc=100-pA, pBc=100-pB;
+  const f=fmt, say=cfg.say, orBc=cfg.target==='AcBc';
+  const AB='A &cap; B', AnB=`A &cap; B${C}`, nAB=`A${C} &cap; B`, nAnB=`A${C} &cap; B${C}`;
+  const hotSet=orBc?['anb','nab','nn']:['anb','ab','nab'];
+  const L=[];
+  L.push({at:1,cap:cfg.cap1,html:eq(`P(A) = <b>${f(pA)}</b>`)+eq(`P(B) = <b>${f(pB)}</b>`)});
+  L.push({at:2,cap:'Independent events: multiply',html:eq(`P(${AB}) = P(A) &times; P(B) = ${f(pA)} &times; ${f(pB)} = <b>${f(ab)}</b>`)});
+  L.push({at:3,cap:'Split each circle into two pieces',
+    html:eq(`P(${AnB}) = P(A) &minus; P(${AB}) = ${f(pA)} &minus; ${f(ab)} = <b>${f(anb)}</b>`)+
+         eq(`P(${nAB}) = P(B) &minus; P(${AB}) = ${f(pB)} &minus; ${f(ab)} = <b>${f(nab)}</b>`)});
+  L.push({at:4,cap:'Everything adds up to 1',html:eq(`P(${nAnB}) = 1 &minus; (${f(ab)} + ${f(anb)} + ${f(nab)}) = 1 &minus; ${f(ab+anb+nab)} = <b>${f(nn)}</b>`)});
+  L.push({at:5,cap:'Table only: fill in the other totals',
+    html:eq(`P(A${C}) = 1 &minus; P(A) = 1 &minus; ${f(pA)} = <b>${f(pAc)}</b>`)+eq(`P(B${C}) = 1 &minus; P(B) = 1 &minus; ${f(pB)} = <b>${f(pBc)}</b>`)});
+  if(orBc){
+    const tot=anb+nab+nn;
+    L.push({at:6,cap:`Highlight P(A${C} &cup; B${C})`,
+      html:eq(`P(A${C} &cup; B${C}) = P(${AnB}) + P(${nAB}) + P(${nAnB})`)+eq(`= ${f(anb)} + ${f(nab)} + ${f(nn)} = <b>${f(tot)}</b>`)});
+    L.push({at:7,cap:'Check with the union rule',
+      html:eq(`P(A${C} &cup; B${C}) = P(A${C}) + P(B${C}) &minus; P(${nAnB})`)+eq(`= ${f(pAc)} + ${f(pBc)} &minus; ${f(nn)} = <b>${f(pAc+pBc-nn)}</b>`)});
+  } else {
+    const tot=anb+ab+nab;
+    L.push({at:6,cap:'Highlight P(A &cup; B)',
+      html:eq(`P(A &cup; B) = P(${AnB}) + P(${AB}) + P(${nAB})`)+eq(`= ${f(anb)} + ${f(ab)} + ${f(nab)} = <b>${f(tot)}</b>`)});
+    L.push({at:7,cap:'Check with the union rule',
+      html:eq(`P(A &cup; B) = P(A) + P(B) &minus; P(${AB})`)+eq(`= ${f(pA)} + ${f(pB)} &minus; ${f(ab)} = <b>${f(pA+pB-ab)}</b>`)});
+  }
+  const html=s=>{
+    const vals={ab:{txt:f(ab),cls:vis(s,2)},anb:{txt:f(anb),cls:vis(s,3)},nab:{txt:f(nab),cls:vis(s,3)},nn:{txt:f(nn),cls:vis(s,4)}};
+    const cells={ab:{txt:f(ab),cls:vis(s,2)},anb:{txt:f(anb),cls:vis(s,3)},nab:{txt:f(nab),cls:vis(s,3)},nn:{txt:f(nn),cls:vis(s,4)},
+      a:{txt:f(pA),cls:vis(s,1)},b:{txt:f(pB),cls:vis(s,1)},tot:{txt:'1',cls:vis(s,1)},na:{txt:f(pAc),cls:vis(s,5)},nb:{txt:f(pBc),cls:vis(s,5)}};
+    const hot=s>=6?hotSet:[];
+    const v=venn({titleA:'A',titleB:'B',subA:`P(A) = ${f(pA)}`,subB:`P(B) = ${f(pB)}`,subClsA:vis(s,1),subClsB:vis(s,1),vals,layers:hot.length?[{keys:hot,col:'acc'}]:[]});
+    return `${cfg.legend||''}<div class="duo"><div class="col"><div class="vwrap">${v}</div></div>
+      <div class="col"><div class="twrap">${ctab(cells,hot)}</div>
+      ${work(L,s)}</div></div>`;
+  };
+  return {name:cfg.name,steps:7,html,q:cfg.q};
+}
+TABS.push(scenario({name:'Venn 1',pA:50,pB:30,target:'AcBc',cap1:'Fill in what we know',
+  say:{ab:'In both A and B',anb:'In A, outside B',nab:'In B, outside A',nn:'Outside both circles'},
+  ans:`P(A${C} &cup; B${C}) = 0.85`,
+  q:qh('3','<p>Two events A and B are independent. The probability that event A occurs is 50%. The probability that event B occurs is 30%. Completely fill the following Venn diagram and then calculate the following probability: P(A<sup>C</sup> &cup; B<sup>C</sup>)</p>')}));
+TABS.push(scenario({name:'DVRs',pA:70,pB:60,target:'AorB',cap1:'Fill in what the problem tells us',
+  say:{ab:'Both DVRs record (we assume independence)',anb:'Only the first DVR records',nab:'Only the second DVR records',nn:'Neither DVR records'},
+  legend:`<div class="legend"><span class="chip"><i style="--c:var(--blue)"></i><b>A</b> = first DVR records</span><span class="chip"><i style="--c:var(--green)"></i><b>B</b> = second DVR records</span></div>`,
+  ans:'P(first or second records) = 0.88',
+  q:qh('4','<p>You will miss an important TV program while taking your statistics exam, so you set both your DVRs to record it. The first one records 70% of the time, and the second one records 60% of the time. What&rsquo;s the probability that the first one records or the second one records the TV program? (Assume independence)</p>')}));
+
+/* ---------- Q5: GameStop ---------- */
+(function(){
+  const ER=tk('P(ER)','blue'), SOS=tk('P(SoS)','green'), UN=tk('P(ER &cup; SoS)','purple'), IN=tk('P(ER &cap; SoS)','acc');
+  const n=(t,c)=>tk(t,c);
+  const L=[
+   {at:1,cap:'Write down what we know',html:eq(n('P(ER) = 0.45','blue'))+eq(n('P(SoS) = 0.30','green'))+eq(n('P(ER &cup; SoS) = 0.70','purple'))},
+   {at:2,cap:'The union rule',html:eq(`${UN} = ${ER} + ${SOS} &minus; ${IN}`)},
+   {at:3,cap:'Plug in the knowns',html:eq(`${n('0.70','purple')} = ${n('0.45','blue')} + ${n('0.30','green')} &minus; ${IN}`)},
+   {at:4,cap:'Add the two known numbers',html:eq(`${n('0.70','purple')} = 0.75 &minus; ${IN}`)},
+   {at:5,cap:'Move the unknown to the other side',html:eq(`${n('0.70','purple')} + ${IN} = 0.75`)+note('Add P(ER &cap; SoS) to both sides.')},
+   {at:6,cap:'Get the unknown by itself',html:eq(`${IN} = 0.75 &minus; ${n('0.70','purple')} = <b>0.05</b>`)+note('Subtract 0.70 from both sides.')},
+   {at:7,cap:'Check by filling in the Venn diagram',
+     html:eq(`ER only: 0.45 &minus; 0.05 = <b>0.40</b>`)+eq(`SoS only: 0.30 &minus; 0.05 = <b>0.25</b>`)+eq(`Neither: 1 &minus; 0.70 = <b>0.30</b>`)}
+  ];
+  const html=s=>{
+    const vals={ab:{txt:'0.05',cls:vis(s,6)},anb:{txt:'0.40',cls:vis(s,7)},nab:{txt:'0.25',cls:vis(s,7)},nn:{txt:'0.30',cls:vis(s,7)}};
+    const layers=[]; if(s>=1) layers.push({keys:['anb','ab','nab'],col:'purple'}); if(s>=6) layers.push({keys:['ab'],col:'acc'});
+    const extra=s>=1?`<text class="vlab" x="230" y="296" style="fill:var(--purple)">P(ER &cup; SoS) = 0.70</text>`:'';
+    const v=venn({titleA:'Elden Ring',titleB:'Sea of Stars',subA:'P(ER) = 0.45',subB:'P(SoS) = 0.30',subClsA:vis(s,1),subClsB:vis(s,1),vals,layers,extra});
+    return `<div class="duo"><div class="col"><div class="vwrap">${v}</div></div><div class="col">${work(L,s)}${s>=6?answer('5% of customers bought both games'):''}</div></div>`;
+  };
+  TABS.push({name:'GameStop',steps:7,html,
+    q:qh('5','<p>A recent survey conducted by GameStop found that 45% of their customers bought Elden Ring, 30% bought Sea of Stars, and 70% bought at least one of the two video games. What percentage of their customers bought both Elden Ring and Sea of Stars?</p>')});
+})();
+/* ---------- Q6: coins ---------- */
+(function(){
+  const NS='http://www.w3.org/2000/svg';
+  const TYPES={Q:{n:'quarter',r:15,lab:'25&cent;',fill:'--blue',edge:'--blueEdge',txt:'#fff'},
+               D:{n:'dime',r:11,lab:'10&cent;',fill:'--yellow',edge:'--yellowEdge',txt:'#2a2000'},
+               N:{n:'nickel',r:13,lab:'5&cent;',fill:'--green',edge:'--greenEdge',txt:'#fff'}};
+  const COINS=[];
+  for(let i=0;i<10;i++) COINS.push({id:'Q'+i,t:'Q',x:72+(i%5)*34,y:150+Math.floor(i/5)*36});
+  for(let i=0;i<8;i++)  COINS.push({id:'D'+i,t:'D',x:95+(i%4)*30,y:232+Math.floor(i/4)*30});
+  for(let i=0;i<5;i++)  COINS.push({id:'N'+i,t:'N',x:76+i*32,y:302});
+  const SLOT={d1:[375,150],d2:[515,150]}, BIG=1.7;
+  const HL_ALL={Q:'A',D:'P',N:'P'};
+
+  /* steps[1..19]; each: part, out{coin:slot}, hl{type:'A'|'P'}, dim, ignore(slot counted as still in sack), label, n1/n2 (notes for empty slots), cap, html */
+  const F=fr;
+  const STEPS=[null];
+  const add=o=>STEPS.push(o);
+  /* ----- part a: with replacement ----- */
+  add({part:'a',out:{},hl:{Q:'A'},dim:true,label:'In the sack right now',cap:'Setup',
+    html:note('<b>With replacement:</b> the first coin goes back before the second draw.')+eq('P(both quarters) = P(1st is Q &cap; 2nd is Q)')});
+  add({part:'a',out:{Q0:'d1'},hl:{Q:'A'},dim:true,ignore:'d1',label:'Sack before Draw 1',cap:'Draw 1',
+    html:eq(`P(1st is Q) = ${F('# of quarters','total # of coins')} = ${F(10,23)}`)});
+  add({part:'a',out:{},hl:{Q:'A'},dim:true,label:'In the sack right now',n1:'quarter|put back',cap:'Put it back (replacement)',
+    html:note('Put the coin <b>back</b>. The sack is full again: 10 quarters out of 23 coins.')});
+  add({part:'a',out:{Q6:'d2'},hl:{Q:'A'},dim:true,ignore:'d2',label:'Sack before Draw 2',n1:'quarter|put back',cap:'Draw 2',
+    html:eq(`P(2nd is Q) = ${F(10,23)}`)});
+  add({part:'a',out:{},hl:{Q:'A'},dim:true,label:'In the sack right now',n1:'quarter|put back',n2:'quarter|put back',cap:'Multiply',
+    html:eq('P(both Q) = P(1st is Q) &times; P(2nd is Q)')+eq(`= ${F(10,23)} &times; ${F(10,23)} = ${F(100,529)} &asymp; <b>0.189</b>`)});
+  /* ----- part b: without replacement ----- */
+  add({part:'b',out:{},hl:{Q:'A'},dim:true,label:'In the sack right now',cap:'Setup',
+    html:note('<b>Without replacement:</b> a coin we take out stays out.')});
+  add({part:'b',out:{Q0:'d1'},hl:{Q:'A'},dim:true,ignore:'d1',label:'Sack before Draw 1',cap:'Draw 1',
+    html:eq(`P(1st is Q) = ${F(10,23)}`)});
+  add({part:'b',out:{Q0:'d1'},hl:{Q:'A'},dim:true,label:'Sack now: 22 coins left',cap:'Count what is left',
+    html:eq('quarters left: 10 &minus; 1 = <b>9</b>')+eq('total coins left: 23 &minus; 1 = <b>22</b>')});
+  add({part:'b',out:{Q0:'d1',Q1:'d2'},hl:{Q:'A'},dim:true,ignore:'d2',label:'Sack before Draw 2',cap:'Draw 2',
+    html:eq(`P(2nd is Q | 1st was Q) = ${F(9,22)}`)});
+  add({part:'b',out:{Q0:'d1',Q1:'d2'},hl:{Q:'A'},dim:true,label:'Sack now: 21 coins left',cap:'Multiply',
+    html:eq('P(both Q) = P(1st is Q) &times; P(2nd is Q | 1st was Q)')+eq(`= ${F(10,23)} &times; ${F(9,22)} = ${F(90,506)} = ${F(45,253)} &asymp; <b>0.178</b>`)});
+  /* ----- part c: exactly one quarter, without replacement ----- */
+  add({part:'c',out:{},hl:HL_ALL,dim:false,label:'In the sack right now',cap:'Setup',
+    html:eq('Path 1: a quarter, then <b>not</b> a quarter')+eq('Path 2: <b>not</b> a quarter, then a quarter')+
+         note('Not a quarter = dime or nickel: 8 + 5 = <b>13 coins</b>')});
+  add({part:'c',out:{Q0:'d1'},hl:HL_ALL,dim:false,ignore:'d1',label:'Sack before Draw 1',cap:'Path 1 &middot; Draw 1: a quarter',
+    html:eq(`P(1st is Q) = ${F(10,23)}`)});
+  add({part:'c',out:{Q0:'d1'},hl:{D:'P',N:'P'},dim:true,label:'Sack now: 22 coins left',cap:'Path 1 &middot; Count what is left',
+    html:eq('not-quarters left: <b>13</b>')+eq('total coins left: <b>22</b>')});
+  add({part:'c',out:{Q0:'d1',D0:'d2'},hl:{D:'P',N:'P'},dim:true,ignore:'d2',label:'Sack before Draw 2',cap:'Path 1 &middot; Draw 2: not a quarter',
+    html:eq(`P(2nd not Q | 1st was Q) = ${F(13,22)}`)+eq(`Path 1: ${F(10,23)} &times; ${F(13,22)} = <b>${F(130,506)}</b>`)});
+  add({part:'c',out:{},hl:HL_ALL,dim:false,label:'In the sack right now',n1:'Path 1:|quarter',n2:'Path 1:|dime',cap:'Path 2 &middot; Start over',
+    html:note('Put both coins back.')});
+  add({part:'c',out:{N0:'d1'},hl:{D:'P',N:'P'},dim:true,ignore:'d1',label:'Sack before Draw 1',cap:'Path 2 &middot; Draw 1: not a quarter',
+    html:eq(`P(1st not Q) = ${F(13,23)}`)});
+  add({part:'c',out:{N0:'d1'},hl:{Q:'A'},dim:true,label:'Sack now: 22 coins left',cap:'Path 2 &middot; Count what is left',
+    html:eq('quarters left: <b>10</b>')+eq('total coins left: <b>22</b>')});
+  add({part:'c',out:{N0:'d1',Q1:'d2'},hl:{Q:'A'},dim:true,ignore:'d2',label:'Sack before Draw 2',cap:'Path 2 &middot; Draw 2: a quarter',
+    html:eq(`P(2nd is Q | 1st not Q) = ${F(10,22)}`)+eq(`Path 2: ${F(13,23)} &times; ${F(10,22)} = <b>${F(130,506)}</b>`)});
+  add({part:'c',out:{},hl:HL_ALL,dim:false,label:'In the sack right now',cap:'Add the two paths',
+    html:eq('P(exactly one Q) = Path 1 + Path 2')+note('The two paths are <b>disjoint</b>, meaning one pair of draws can&rsquo;t follow both paths. That is why we can add their probabilities: P(Path 1 or Path 2) = P(Path 1) + P(Path 2)')+eq(`= ${F(130,506)} + ${F(130,506)} = ${F(260,506)} = ${F(130,253)} &asymp; <b>0.514</b>`)});
+
+  /* work lines: one per step, tagged with its part */
+  const LINES=STEPS.map((s,i)=>s?{at:i,part:s.part,cap:s.cap,html:s.html}:null).filter(Boolean);
+  const PARTS=[{k:'a',label:'Part a &middot; with replacement',step:1},{k:'b',label:'Part b &middot; without replacement',step:6},{k:'c',label:'Part c &middot; exactly one quarter',step:11}];
+
+  let R=null;   // DOM refs for the mounted tab
+  function setPos(g,x,y,sc){ g.setAttribute('transform',`translate(${x.toFixed(2)} ${y.toFixed(2)}) scale(${sc.toFixed(3)})`); g._p=[x,y,sc]; }
+  function tween(g,to,ms){
+    const from=g._p, t0=performance.now(); cancelAnimationFrame(g._a);
+    const f=now=>{ const u=Math.min(1,(now-t0)/ms), e=1-Math.pow(1-u,3);
+      setPos(g,from[0]+(to[0]-from[0])*e,from[1]+(to[1]-from[1])*e,from[2]+(to[2]-from[2])*e); if(u<1) g._a=requestAnimationFrame(f); };
+    g._a=requestAnimationFrame(f);
+  }
+  function mount(stage){
+    const slots=COINS.map(c=>`<circle class="slot" cx="${c.x}" cy="${c.y}" r="${TYPES[c.t].r}"/>`).join('');
+    const coins=COINS.map(c=>{ const T=TYPES[c.t];
+      return `<g class="coin" data-id="${c.id}"><circle class="face" r="${T.r}" style="fill:var(${T.fill});stroke:var(${T.edge})"/><circle class="ring" r="${T.r-3}"/><text y="4" style="fill:${T.txt};font-size:${c.t==='Q'?11:9}px">${T.lab}</text></g>`; }).join('');
+    const svg=`<svg class="coinsvg" viewBox="0 0 600 380" role="img" aria-label="A sack of coins and two draw spots">
+      <path class="sack-body" d="M95 78 C60 110 20 150 22 230 C24 310 60 352 140 352 C220 352 256 310 258 230 C260 150 220 110 185 78 Z"/>
+      <path class="sack-top" d="M95 78 L78 48 L108 62 L140 40 L172 62 L202 48 L185 78 Z"/>
+      <path class="sack-rope" d="M96 84 Q140 100 184 84"/>
+      <circle class="dslot" cx="${SLOT.d1[0]}" cy="${SLOT.d1[1]}" r="50"/><circle class="dslot" cx="${SLOT.d2[0]}" cy="${SLOT.d2[1]}" r="50"/>
+      <g>${slots}</g><g id="coinLayer">${coins}</g>
+      <text class="dlab" x="${SLOT.d1[0]}" y="84">Draw 1</text><text class="dlab" x="${SLOT.d2[0]}" y="84">Draw 2</text>
+      <text class="dnote" id="n1" x="${SLOT.d1[0]}" y="222"></text><text class="dnote" id="n2" x="${SLOT.d2[0]}" y="222"></text>
+      <text class="stat h" id="slab" x="305" y="278"></text>
+      <text class="stat" x="305" y="302">Quarters</text><text class="stat tt" id="cQ" x="560" y="302" text-anchor="end"></text>
+      <text class="stat" x="305" y="323">Dimes</text><text class="stat tt" id="cD" x="560" y="323" text-anchor="end"></text>
+      <text class="stat" x="305" y="344">Nickels</text><text class="stat tt" id="cN" x="560" y="344" text-anchor="end"></text>
+      <line x1="305" x2="560" y1="352" y2="352" stroke="var(--ink)" stroke-width="2"/>
+      <text class="stat tt" x="305" y="373">Total coins</text><text class="stat tt" id="cT" x="560" y="373" text-anchor="end"></text>
+    </svg>`;
+    stage.innerHTML=`<div class="legend"><span class="chip"><i style="--c:var(--blue)"></i><b>10</b> quarters</span><span class="chip"><i style="--c:var(--yellow)"></i><b>8</b> dimes</span><span class="chip"><i style="--c:var(--green)"></i><b>5</b> nickels</span><span class="chip"><b>23</b> coins in all</span></div>
+      <div class="duo"><div class="col sticky"><div class="coinwrap">${svg}</div></div><div class="col"><div class="jumps" id="jumps"></div><div id="cwork"></div></div></div>`;
+    R={stage,coins:{},fresh:true};
+    $$('#coinLayer .coin').forEach(g=>{ R.coins[g.dataset.id]=g; });
+    COINS.forEach(c=>setPos(R.coins[c.id],c.x,c.y,1));
+  }
+  function update(s){
+    const S=STEPS[s]||{out:{},hl:null,dim:false,label:'In the sack right now',part:null};
+    const out=S.out||{}, counts={Q:0,D:0,N:0};
+    COINS.forEach(c=>{ const g=R.coins[c.id], slot=out[c.id];
+      const home=[c.x,c.y,1], to=slot?[SLOT[slot][0],SLOT[slot][1],BIG]:home;
+      const moved=!g._to||g._to.join()!==to.join(); g._to=to;
+      if(moved){ if(R.fresh) setPos(g,to[0],to[1],to[2]); else { if(slot) g.parentNode.appendChild(g); tween(g,to,650); } }
+      const hl=S.hl&&S.hl[c.t];
+      g.classList.toggle('dim',!!S.dim&&!hl&&!slot);
+      if(!slot||S.ignore===slot) counts[c.t]++;
+    });
+    R.fresh=false;
+    const tot=counts.Q+counts.D+counts.N;
+    $('#slab').textContent=S.label; $('#cQ').textContent=counts.Q; $('#cD').textContent=counts.D; $('#cN').textContent=counts.N; $('#cT').textContent=tot;
+    ['d1','d2'].forEach((sl,i)=>{ const id=Object.keys(out).find(k=>out[k]===sl);
+      const el=$('#n'+(i+1)), x=el.getAttribute('x'), lines=(id? TYPES[id[0]].n : (S[i?'n2':'n1']||'')).split('|');
+      el.innerHTML=lines.map((t,j)=>`<tspan x="${x}" dy="${j?'1.2em':'0'}">${t}</tspan>`).join(''); });
+    $('#jumps').innerHTML=PARTS.map(p=>`<button class="jump${S.part===p.k?' on':''}" data-jump="${p.step}">${p.label}</button>`).join('');
+    $('#cwork').innerHTML=work(LINES,s,S.part||undefined);
+  }
+  TABS.push({name:'Coins',steps:STEPS.length-1,mount,update,jumps:true,
+    partOf:s=>STEPS[s]?STEPS[s].part:null,
+    q:qh('6','<p>A bag found on the street contained 10 quarters, 8 dimes, and 5 nickels. You decide to select two of these coins from the bag at random. Let X be the number of quarters selected.</p><p class="sub">a. What is the probability that both coins selected are quarters if we select <b>with</b> replacement?<br>b. What is the probability that both coins selected are quarters if we select <b>without</b> replacement?<br>c. What is the probability that exactly one coin selected is a quarter if we select <b>without</b> replacement?</p>')});
+})();
+/* ---------- engine ---------- */
+let mountedTab=-1;
+const desk=()=>window.matchMedia?window.matchMedia('(min-width:901px)').matches:window.innerWidth>900;
+function revealIn(c,el){ const top=el.offsetTop, bot=top+el.offsetHeight; let to=null;
+  if(top<c.scrollTop) to=top-8; else if(bot>c.scrollTop+c.clientHeight) to=bot-c.clientHeight+8;
+  if(to!==null) c.scrollTo({top:Math.max(0,to),behavior:'smooth'}); }
+function render(opts){
+  opts=opts||{};
+  $('#qwrap').classList.toggle('closed',!st.qOpen); $('#qnotch').setAttribute('aria-expanded',String(st.qOpen));
+  const T=TABS[st.tab];
+  $('#tabs').innerHTML=TABS.map((t,i)=>`<button class="tab ${i===st.tab?'on':''}" data-tab="${i}" aria-current="${i===st.tab}"><b>${i+1}</b>${t.name}</button>`).join('');
+  const on=$('#tabs .tab.on'), nav=$('#tabs'); if(on){ const o=on.offsetLeft; if(o<nav.scrollLeft) nav.scrollLeft=o-8; else if(o+on.offsetWidth>nav.scrollLeft+nav.clientWidth) nav.scrollLeft=o+on.offsetWidth-nav.clientWidth+8; }
+  $('#qbar').innerHTML=T.q;
+  const stage=$('#stage');
+  const lock=st.tab>=2&&desk();                       /* tabs 3-6 on desktop: only the step list scrolls */
+  const ow=stage.querySelector('.work'), keepW=(ow&&!opts.top)?ow.scrollTop:0;
+  stage.classList.toggle('lock',lock);
+  if(T.mount){
+    if(mountedTab!==st.tab||opts.remount){ T.mount(stage); mountedTab=st.tab; stage.scrollTop=0; }
+    T.update(st.step);
+  } else {
+    mountedTab=-1; const keep=stage.scrollTop; stage.innerHTML=T.html(st.step); stage.scrollTop=opts.top?0:keep;
+  }
+  const nw=stage.querySelector('.work'), now=stage.querySelector('.ln.now');
+  if(lock){ stage.scrollTop=0; if(nw){ nw.scrollTop=keepW; if(now&&st.step>0) revealIn(nw,now); } }
+  else if(now&&st.step>0&&!opts.top) now.scrollIntoView({block:'nearest',behavior:'smooth'});
+  /* nav */
+  const last=st.tab===TABS.length-1, atEnd=st.step===T.steps;
+  $('#prev').disabled=st.tab===0&&st.step===0;
+  $('#next').disabled=last&&atEnd;
+  $('#next').innerHTML=atEnd&&!last?'Next question &rarr;':last&&atEnd?'Done':'Next &rarr;';
+  $('#prev').innerHTML=st.step===0&&st.tab>0?'&larr; Previous question':'&larr; Previous';
+  let lab= st.step===0?`Question ${st.tab+1} &middot; press Next to start`:`Question ${st.tab+1} &middot; step ${st.step} of ${T.steps}`;
+  if(T.partOf&&st.step>0){ const p=T.partOf(st.step); lab+=` &middot; part ${p}`; }
+  $('#slabel').innerHTML=lab;
+  $('#dots').innerHTML=Array.from({length:T.steps+1},(_,i)=>`<button class="dot${i<st.step?' past':''}${i===st.step?' cur':''}" data-step="${i}" aria-label="Go to step ${i}"></button>`).join('');
+  try{ history.replaceState(null,'','#q'+(st.tab+1)); }catch(e){}
+}
+function go(tab,step,opts){ if(step===0) st.qOpen=true; else if(st.step===0||tab!==st.tab) st.qOpen=false;
+  st.tab=Math.max(0,Math.min(TABS.length-1,tab)); st.step=Math.max(0,Math.min(TABS[st.tab].steps,step)); render(opts); }
+function next(){ const T=TABS[st.tab]; if(st.step<T.steps) go(st.tab,st.step+1); else if(st.tab<TABS.length-1) go(st.tab+1,0,{top:true}); }
+function prev(){ if(st.step>0) go(st.tab,st.step-1); else if(st.tab>0) go(st.tab-1,TABS[st.tab-1].steps,{top:true}); }
+
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const tab=t.closest('[data-tab]'); if(tab){ go(+tab.dataset.tab,0,{top:true}); return; }
+  const dot=t.closest('[data-step]'); if(dot){ go(st.tab,+dot.dataset.step); return; }
+  const j=t.closest('[data-jump]'); if(j){ go(st.tab,+j.dataset.jump); return; }
+  if(t.closest('#qnotch')){ st.qOpen=!st.qOpen; render(); return; }
+  if(t.closest('#next')) next();
+  else if(t.closest('#prev')) prev();
+  else if(t.closest('#themeBtn')){ st.theme=st.theme==='light'?'dark':'light'; document.documentElement.dataset.theme=st.theme; $('#themeBtn').innerHTML=st.theme==='light'?'&#9790;':'&#9728;'; }
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'){ next(); e.preventDefault(); }
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){ prev(); e.preventDefault(); }
+  else if(e.key==='r'||e.key==='R'){ go(st.tab,0); }
+});
+
+window.addEventListener('resize',()=>{ if((st.tab>=2&&desk())!==$('#stage').classList.contains('lock')) render({}); });
+
+/* ---------- init ---------- */
+document.documentElement.dataset.theme='dark'; $('#themeBtn').innerHTML='&#9728;';
+let start=0; try{ const m=/^#q(\d)$/.exec(location.hash); if(m&&TABS[+m[1]-1]) start=+m[1]-1; }catch(e){}
+go(start,0,{top:true});
+})();
+</script>
+</body>
+</html>
