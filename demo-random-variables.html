@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ben_sacks | Random Variables Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400..900;1,8..60,400..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --mono:'Space Mono',ui-monospace,Menlo,Consolas,monospace;
+  --bg:#1e1e1e; --panel:#232323; --ink:#e9e9e9; --muted:#a0a0a0; --line:#3d3d3d; --soft:#2c2c2c;
+  --blue:#4a8cff; --blueEdge:#a9ccff; --green:#2ecc71; --greenEdge:#a6efc4;
+  --acc:#e3b505; --accSoft:rgba(227,181,5,.38); --accHot:rgba(227,181,5,.22); --accInk:#f2cc3a; --onAcc:#1e1e1e;
+  --red:#ff5a4f; --ok:#3ddc84; --bad:#ff6b6b;
+  --shadow:none;
+  color-scheme:dark;
+}
+[data-theme=light]{
+  --bg:#f3f1ea; --panel:#ffffff; --ink:#1e1e1e; --muted:#5f5f5f; --line:#d6d3c8; --soft:#eceae1;
+  --blue:#1565e0; --blueEdge:#0b419a; --green:#0f9d58; --greenEdge:#086a3a;
+  --acc:#d9a800; --accSoft:rgba(217,168,0,.38); --accHot:rgba(217,168,0,.26); --accInk:#6b5200; --onAcc:#1e1e1e;
+  --red:#d93025; --ok:#0b7f44; --bad:#c62828;
+  --shadow:0 1px 2px rgba(20,25,40,.05),0 6px 18px rgba(20,25,40,.06);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{font-family:var(--serif);font-variant-numeric:lining-nums;background:var(--bg);color:var(--ink);
+  font-size:clamp(15px,.8vw + 5px,21px);line-height:1.4;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+sup{font-size:.7em;line-height:0}
+.app{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;height:100vh;height:100dvh}
+
+/* top bar */
+header.top{display:flex;align-items:center;gap:.6em;padding:.45em .9em;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:-.01em;white-space:nowrap;font-size:1.02em;display:flex;align-items:center;gap:.4em}
+.brand svg{width:1.3em;height:1.3em}
+nav.tabs{display:flex;gap:.2em;overflow-x:auto;flex:1 1 300px;min-width:0;scrollbar-width:thin;padding:.1em 0;position:relative}
+.tab{border:0;background:transparent;padding:.35em .7em;border-radius:9px;cursor:pointer;white-space:nowrap;font-weight:600;color:var(--muted);font-size:.86em;font-family:var(--mono)}
+.tab b{font-weight:800;margin-right:.3em;opacity:.55}
+.tab:hover{background:var(--soft);color:var(--ink)}
+.tab.on{background:var(--acc);color:var(--onAcc)}
+.tab.on b{opacity:.8}
+.tools{display:flex;align-items:center;gap:.4em;font-size:.82em}
+.kbd{font-size:.72em;color:var(--muted);white-space:nowrap;font-family:var(--mono)}
+.btn{border:1px solid var(--line);background:var(--panel);padding:.38em .8em;border-radius:10px;cursor:pointer;font-weight:600;line-height:1.2;font-family:var(--mono)}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.btn.primary{background:transparent;border-color:var(--acc);color:var(--acc)}
+.btn.primary:hover:not(:disabled){background:var(--accHot)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn:focus-visible,.tab:focus-visible,.dot:focus-visible,.jump:focus-visible,.qnotch:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+
+/* question bar */
+.qwrap{position:relative;z-index:6;border-bottom:1px solid var(--line);background:var(--panel)}
+.qbar{background:var(--panel);padding:.6em 1.2em;max-height:30vh;overflow:auto}
+.qbar .qn{display:inline-grid;place-items:center;min-width:1.7em;height:1.7em;padding:0 .4em;border-radius:999px;background:var(--acc);color:var(--onAcc);font-weight:800;font-size:.8em;margin-right:.55em;vertical-align:middle}
+.qbar p{margin:.15em 0}
+.qbar .sub{margin:.2em 0 0 2.4em;color:var(--muted)}
+.qwrap.closed .qbar{display:none}
+.qnotch{position:absolute;left:50%;bottom:-1.35em;transform:translateX(-50%);width:3.4em;height:1.35em;padding:0;display:grid;place-items:center;
+  border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;background:var(--panel);color:var(--muted);cursor:pointer}
+.qnotch:hover{color:var(--ink);background:var(--soft)}
+.qnotch svg{width:1.3em;height:.65em;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.qwrap.closed .qnotch svg{transform:rotate(180deg)}
+
+/* stage */
+.stage{overflow:auto;padding:1.6em 1.2em 1em;min-height:0}
+.duo{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:1em 1.4em;align-items:start}
+.col{display:flex;flex-direction:column;gap:.8em;min-width:0}
+.hint{padding:1em;border:2px dashed var(--line);border-radius:14px;color:var(--muted);font-weight:600;text-align:center}
+
+/* work panel */
+.work{display:flex;flex-direction:column;gap:.55em}
+.ln{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.55em .85em;box-shadow:var(--shadow);opacity:.82}
+.ln.now{opacity:1;border-color:var(--acc);box-shadow:0 0 0 3px var(--accHot),var(--shadow);animation:rise .35s ease}
+.ln .cap{font-size:.74em;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.25em;font-family:var(--mono)}
+.eq{font-size:1.15em;font-weight:700;margin:.2em 0;display:block;line-height:1.6}
+.eq b{font-weight:800}
+.cd{font-family:var(--mono);font-weight:700;font-size:.88em;color:var(--ink)}
+.note{color:var(--muted);font-weight:600;font-size:.92em;margin:.25em 0}
+.note b{color:var(--ink)}
+.tag{background:var(--accHot);border-bottom:2px solid var(--acc);padding:.02em .35em;border-radius:7px;font-weight:700}
+.ans{background:color-mix(in srgb,var(--ok) 12%,var(--panel));border:2px solid var(--ok);border-radius:14px;padding:.5em .9em;font-weight:800;font-size:1.12em;margin-top:.4em;animation:rise .35s ease}
+.ans small{display:block;font-weight:600;font-size:.7em;color:var(--muted)}
+.rem{border-left:4px solid var(--acc);background:var(--accHot);padding:.4em .7em;border-radius:0 10px 10px 0;font-weight:700;font-size:.92em;margin:.2em 0 .3em}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+/* key history */
+.krow{margin:.3em 0}
+.kl{font-size:.8em;color:var(--muted);font-weight:700;margin-bottom:.1em}
+.keys{display:flex;flex-wrap:wrap;gap:.15em .3em;align-items:flex-end}
+.kw{display:inline-flex;flex-direction:column;align-items:center}
+.kw small{font:700 .66em var(--mono);line-height:1.3;color:var(--muted);min-height:1.3em}
+.kw small.s2{color:#7db4ff}
+.kw small.sa{color:#8cd14a}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:2.2em;padding:.25em .55em;border-radius:.5em;background:#2b2b2b;color:#f1f1f1;border:1px solid #666;font:700 .8em var(--mono);line-height:1.1;box-shadow:0 2px 0 #000}
+.k.k2{background:#8fc1f7;color:#10243f;border-color:#5a95d6}
+.k.ka{background:#8cc63f;color:#12260a;border-color:#5f9322}
+.k.kn{background:#f1f1f1;color:#111;border-color:#bbb}
+
+/* chips and legend */
+.chip2{display:inline-block;padding:.1em .7em;border-radius:999px;font:700 .78em var(--mono);border:1px solid var(--line)}
+.chip2.dis{background:color-mix(in srgb,var(--blue) 22%,transparent);border-color:var(--blue);color:var(--blueEdge)}
+[data-theme=light] .chip2.dis{color:#0b419a}
+.chip2.con{background:color-mix(in srgb,var(--green) 22%,transparent);border-color:var(--green);color:var(--greenEdge)}
+[data-theme=light] .chip2.con{color:#086a3a}
+.legend2{display:flex;flex-wrap:wrap;gap:.4em .8em;align-items:center;margin-bottom:.8em;font-weight:600;color:var(--muted)}
+
+/* Q1 cards */
+.icgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9em;max-width:1100px;margin:0 auto}
+.ic{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:.6em .9em .5em;box-shadow:var(--shadow)}
+.ic.fresh{border-color:var(--acc);box-shadow:0 0 0 3px var(--accHot),var(--shadow);animation:rise .35s ease}
+.ic.ph{display:flex;align-items:center;gap:.6em;border-style:dashed;color:var(--muted);font-weight:700;min-height:9em;justify-content:center}
+.ich{display:flex;align-items:center;gap:.5em;flex-wrap:wrap}
+.il{display:inline-grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;background:var(--acc);color:var(--onAcc);font-weight:800;font-size:.85em}
+.ic.ph .il{background:var(--soft);color:var(--muted)}
+.ich .chip2{margin-left:auto}
+.vsvg{display:block;width:100%;max-width:420px;height:auto;margin:.2em auto}
+.vsvg .ax{stroke:var(--muted);stroke-width:2}
+.vsvg .tl{font:700 11px var(--mono);fill:var(--muted)}
+.vsvg .tr{font:700 11px var(--mono);fill:var(--red)}
+.vsvg .tg2{font:700 12px var(--mono);fill:var(--ink)}
+.iw{margin:.2em 0 .1em;font-weight:600}
+
+/* histogram and table */
+.hist{display:block;width:100%;height:auto}
+.hist .gl{stroke:var(--line);stroke-width:1}
+.hist .axl{stroke:var(--ink);stroke-width:1.5}
+.hist .al{font:700 11px var(--mono);fill:var(--muted)}
+.hist .at{font:700 11px var(--mono);fill:var(--ink)}
+.hist .vl{font:700 10px var(--serif);fill:var(--ink)}
+.hist .vl.hot{fill:var(--accInk)}
+.hist .bar{fill:var(--blue);opacity:.8}
+.hist .bar.hot{fill:var(--acc);opacity:1;stroke:var(--accInk);stroke-width:1.5}
+.hist .bar.hot.new{animation:fadein .35s ease}
+.hw{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.5em .6em .3em;box-shadow:var(--shadow)}
+.hcap{text-align:center;font:700 .9em var(--mono);color:var(--accInk);min-height:1.5em}
+.pair{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:.8em;align-items:stretch}
+.pair>div:first-child{display:flex}
+table.pt{border-collapse:collapse;font-size:1.1em;font-weight:700;width:100%;height:100%}
+table.pt th,table.pt td{border:2px solid var(--ink);padding:.25em .5em;text-align:center;background:var(--panel);min-width:2.4em}
+table.pt th{background:var(--soft);font-family:var(--mono);font-size:.8em}
+table.pt td.fresh{animation:fadein .6s ease;background:var(--accSoft)}
+
+/* checklist */
+.chk{display:flex;flex-direction:column;gap:.45em}
+.ci{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.7em;align-items:start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.5em .85em;opacity:.6}
+.ci.on{opacity:.92;border-color:var(--ok)}
+.ci.now{opacity:1;box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 30%,transparent);animation:rise .35s ease}
+.bx{width:1.5em;height:1.5em;border:2px solid var(--muted);border-radius:6px;display:grid;place-items:center;font-weight:900;margin-top:.1em}
+.ci.on .bx{background:var(--ok);border-color:var(--ok);color:#fff}
+.cw{color:var(--muted);font-weight:600;font-size:.92em;margin-top:.1em}
+
+/* TI-84 screen */
+.calc{background:#1a1a1a;border-radius:16px;padding:.7em .7em .8em;width:100%;max-width:420px;margin:0 auto;box-shadow:0 2px 0 #000,0 8px 22px rgba(0,0,0,.35)}
+.cs{container-type:inline-size;aspect-ratio:4/3;background:#fafafa;color:#000;border-radius:4px;overflow:hidden;display:flex;flex-direction:column}
+.sbar{flex:none;height:9.4cqw;background:#3d3d3d;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 2cqw;font:700 4.5cqw var(--mono);letter-spacing:-.03em;white-space:nowrap}
+.bat{width:5.5cqw;height:3.2cqw;border:.5cqw solid #fff;border-radius:.6cqw;padding:.3cqw;display:inline-block}
+.bat b{display:block;height:100%;background:#2ecc71}
+.sbody{flex:1;min-height:0;padding:1.2cqw 3.5cqw;font:700 5.7cqw/6.25cqw var(--mono);position:relative;overflow:hidden}
+.sbody.flush{padding:0}
+.r{height:6.25cqw;white-space:pre;overflow:hidden}
+.r.rt{text-align:right}
+.r.ctr{text-align:center}
+.sbody i{font-style:normal;background:#000;color:#fff;padding:0 .12em}
+.sbody u.hl{text-decoration:none;background:rgba(227,181,5,.6);box-shadow:0 0 0 .5cqw #e3b505;border-radius:.6cqw;padding:0 .1em}
+.sb{font-size:.62em;vertical-align:-.15em}
+.ov{display:inline-block;line-height:.85;border-top:.15em solid currentColor}
+.lh,.lrow{display:grid;grid-template-columns:repeat(5,1fr);height:6.25cqw}
+.lc{border-right:.5cqw solid #000;padding:0 1cqw;font-size:5cqw;line-height:6.25cqw;overflow:hidden;white-space:nowrap}
+.lh .lc{border-bottom:.5cqw solid #000;font-size:5.4cqw}
+.lrow .lc{border-bottom:.3cqw solid #d0d0d0}
+.lc.on{background:#000;color:#fff}
+.lbot{position:absolute;left:3cqw;bottom:1cqw;font-size:5.4cqw;line-height:6.25cqw}
+
+/* nav bar */
+footer.navbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.8em;align-items:center;padding:.55em 1em;background:var(--panel);border-top:1px solid var(--line)}
+.mid{display:flex;flex-direction:column;align-items:center;gap:.3em;min-width:0}
+.slabel{font:700 .85em var(--mono);color:var(--muted);text-align:center}
+.dots{display:flex;gap:.3em;flex-wrap:wrap;justify-content:center;max-width:100%}
+.dot{width:.7em;height:.7em;border-radius:50%;border:0;padding:0;background:var(--line);cursor:pointer}
+.dot.past{background:var(--muted)}
+.dot.cur{background:var(--acc);transform:scale(1.4)}
+.nbtn{font-size:1.02em;padding:.55em 1.1em;border-radius:12px}
+.jumps{display:flex;gap:.4em;flex-wrap:wrap;flex:none}
+.jump{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:.3em .8em;cursor:pointer;font:700 .85em var(--mono)}
+.jump:hover{border-color:var(--acc);color:var(--acc)}
+.jump.on{background:var(--acc);color:var(--onAcc);border-color:var(--acc)}
+
+@media (min-width:901px){
+  .stage.lock{overflow:hidden;display:flex;flex-direction:column;padding-bottom:.8em}
+  .stage.lock>.duo{flex:1 1 0;min-height:0;grid-template-rows:minmax(0,1fr);align-items:stretch}
+  .stage.lock .duo>.col{min-height:0}
+  .stage.lock .col.left{overflow-y:auto;overflow-x:hidden;padding:.2em .3em .6em .2em}
+  .stage.lock .col.right{overflow:hidden}
+  .stage.lock .work{flex:1 1 0;min-height:0;overflow-y:auto;position:relative;padding:.25em .35em .6em}
+}
+@media (max-width:900px){
+  .duo{grid-template-columns:minmax(0,1fr)}
+  .icgrid{grid-template-columns:minmax(0,1fr)}
+  .kbd{display:none}
+  .qbar{max-height:34vh}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01s!important;animation-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><svg viewBox="-16 -16 32 32"><rect x="-13" y="-2" width="7" height="13" rx="1.5" fill="var(--blue)"/><rect x="-3.5" y="-12" width="7" height="23" rx="1.5" fill="var(--acc)"/><rect x="6" y="2" width="7" height="9" rx="1.5" fill="var(--green)"/></svg>Random Variables Practice</div>
+    <nav class="tabs" id="tabs" aria-label="Questions"></nav>
+    <div class="tools">
+      <button class="btn" id="themeBtn" aria-label="Toggle dark mode">&#9790;</button>
+      <span class="kbd">&larr; &rarr; &middot; R to restart</span>
+    </div>
+  </header>
+  <div class="qwrap" id="qwrap"><section class="qbar" id="qbar" aria-label="Question"></section>
+    <button class="qnotch" id="qnotch" aria-label="Show or hide the question" aria-expanded="true"><svg viewBox="0 0 24 12" aria-hidden="true"><path d="M5 9 L12 3 L19 9"/></svg></button></div>
+  <main class="stage" id="stage" aria-live="polite"></main>
+  <footer class="navbar">
+    <button class="btn nbtn" id="prev">&larr; Previous</button>
+    <div class="mid"><div class="slabel" id="slabel"></div><div class="dots" id="dots"></div></div>
+    <button class="btn primary nbtn" id="next">Next &rarr;</button>
+  </footer>
+</div>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const st={tab:0,step:0,theme:'dark',qOpen:true,prevHot3:[]};
+
+/* ---------- small helpers ---------- */
+const eq=h=>`<div class="eq">${h}</div>`;
+const note=h=>`<div class="note">${h}</div>`;
+const cm=t=>`<span class="cd">${t}</span>`;
+const tag=h=>`<span class="tag">${h}</span>`;
+const answer=(h,sub)=>`<div class="ans">${h}${sub?`<small>${sub}</small>`:''}</div>`;
+const card=(cap,body,now)=>`<div class="ln${now?' now':''}"><div class="cap">${cap}</div><div class="body">${body}</div></div>`;
+function workCards(cards){
+  if(!cards.length) return `<div class="work"><div class="hint">Press <b>Next</b> (or the right arrow key) to begin.</div></div>`;
+  return `<div class="work">${cards.map((c,i)=>card(c.cap,c.html,i===cards.length-1)).join('')}</div>`;
+}
+const duo=(l,r)=>`<div class="duo"><div class="col left">${l}</div><div class="col right">${r}</div></div>`;
+const qh=(n,body)=>`<span class="qn">${n}</span>${body}`;
+const rng=(a,b)=>Array.from({length:b-a+1},(_,i)=>a+i);
+
+/* ---------- math ---------- */
+function choose(n,k){ let r=1; for(let i=1;i<=k;i++) r=r*(n-k+i)/i; return r; }
+const bpdf=(n,p,k)=>(k<0||k>n)?0:choose(n,k)*Math.pow(p,k)*Math.pow(1-p,n-k);
+const bcdf=(n,p,k)=>{ let s=0; for(let i=0;i<=k;i++) s+=bpdf(n,p,i); return s; };
+const ti=x=>String(parseFloat(x.toPrecision(10)));
+const f4=x=>x.toFixed(4);
+
+/* ---------- key history chips ---------- */
+const kw=(lab,sec,secCls,cls)=>`<span class="kw"><small class="${secCls||''}">${sec||'&nbsp;'}</small><span class="k ${cls||''}">${lab}</span></span>`;
+const K=(lab,sec,secCls)=>kw(lab,sec,secCls,'');
+const K2=()=>kw('2nd','','','k2');
+const KA=()=>kw('alpha','','','ka');
+const KN=t=>kw(t,'','','kn');
+const AR={r:'&#9654;',d:'&#9660;',u:'&#9650;',l:'&#9664;'};
+const KR=d=>K(AR[d]);
+const KENTER=()=>K('enter');
+const keys=(...a)=>`<div class="keys">${a.join('')}</div>`;
+const row=(lab,...a)=>`<div class="krow"><div class="kl">${lab}</div>${keys(...a)}</div>`;
+
+/* ---------- TI-84 screen rebuild ---------- */
+const sub=n=>`<span class="sb">${n}</span>`;
+const Lx=n=>`L${sub(n)}`;
+const XB='<span class="ov">x</span>';
+const R=(h,c)=>`<div class="r${c?' '+c:''}">${h}</div>`;
+const inv=t=>`<i>${t}</i>`;
+const hl=t=>`<u class="hl">${t}</u>`;
+function scr(body,flush){
+  return `<div class="calc"><div class="cs"><div class="sbar"><span>NORMAL FLOAT AUTO REAL DEGREE MP</span><span class="bat"><b></b></span></div><div class="sbody${flush?' flush':''}">${body}</div></div></div>`;
+}
+const S_STAT=()=>scr(R(inv('EDIT')+' CALC TESTS')+R(inv('1')+':Edit...')+R('2:SortA(')+R('3:SortD(')+R('4:ClrList')+R('5:SetUpEditor'));
+function S_LIST(l1,l2,cur,bottom){
+  const cols=[l1,l2,[],[],[]], rows=8;
+  let h='<div class="lh">'+[1,2,3,4,5].map(n=>`<div class="lc">${Lx(n)}</div>`).join('')+'</div>';
+  for(let r=0;r<rows;r++){
+    h+='<div class="lrow">'+cols.map((c,ci)=>{
+      const t=r<c.length?c[r]:(r===c.length?'------':'');
+      const on=cur&&cur[0]===ci&&cur[1]===r;
+      return `<div class="lc${on?' on':''}">${t}</div>`;
+    }).join('')+'</div>';
+  }
+  return scr(h+`<div class="lbot">${bottom}</div>`,true);
+}
+const S_CALC=()=>scr(R('EDIT '+inv('CALC')+' TESTS')+R(inv('1')+':1-Var Stats')+R('2:2-Var Stats')+R('3:Med-Med')+R('4:LinReg(ax+b)')+R('5:QuadReg')+R('6:CubicReg')+R('7:QuartReg')+R('8:LinReg(a+bx)')+R('9&darr;LnReg'));
+const S_1VAR=()=>scr(R(inv('1-Var Stats'),'ctr')+R('List:'+Lx(1))+R('FreqList:'+Lx(2))+R(inv('Calculate')));
+const S_OUT=()=>scr(R(inv('1-Var Stats'),'ctr')+R(hl(XB+'=0.85'))+R('&Sigma;x=0.85')+R('&Sigma;x&sup2;=1.55')+R('Sx=')+R(hl('&sigma;x=0.9096702699'))+R('n=1')+R('minX=0')+R('&darr;Q'+sub(1)+'=0'));
+const S_VARS=()=>scr(R(inv('XY')+' &Sigma; EQ TEST PTS')+R('1:n')+R('2:'+XB)+R('3:Sx')+R(inv('4')+hl(':&sigma;x'))+R('5:minX')+R('6:maxX')+R('7:<span class="ov">y</span>')+R('8:Sy')+R('9:&sigma;y'));
+function S_DISTR(sel){
+  const items=[['7','&uarr;&chi;&sup2;pdf(',0],['8',':&chi;&sup2;cdf(',0],['9',':Fpdf(',0],['0',':Fcdf(',0],['A',':binompdf(',1],['B',':binomcdf(',1],['C',':invBinom(',0],['D',':poissonpdf(',0],['E','&darr;poissoncdf(',0]];
+  return scr(R(inv('DISTR')+' DRAW')+items.map(it=>{
+    const on=it[0]===sel;
+    return R(on?inv(it[0])+hl(it[1]):it[0]+it[1]);
+  }).join(''));
+}
+function S_FORM(name,n,p,x){ return scr(R(inv(name),'ctr')+R('trials:'+n)+R('p:'+p)+R('x value:'+x)+R(inv('Paste'))); }
+function S_HOME(entries){
+  const lines=[]; entries.forEach(e=>{ lines.push(R(e[0])); lines.push(R(e[1],'rt')); });
+  return scr(lines.slice(-10).join(''));
+}
+
+/* ---------- histogram ---------- */
+function hist(o){
+  const w=o.w,h=o.h,l=o.l||44,r=10,t=20,b=38,pw=w-l-r,ph=h-t-b,n=o.vals.length,bw=pw/n,gap=bw*.16;
+  const y=v=>t+ph-(v/o.ymax)*ph;
+  let s=`<svg class="hist" viewBox="0 0 ${w} ${h}" role="img" aria-label="${o.aria}">`;
+  o.ticks.forEach(v=>{ s+=`<line class="gl" x1="${l}" x2="${w-r}" y1="${y(v)}" y2="${y(v)}"/><text class="al" x="${l-6}" y="${y(v)+4}" text-anchor="end">${v}</text>`; });
+  o.vals.forEach((v,i)=>{
+    const hot=o.hot&&o.hot.includes(i), x=l+i*bw+gap/2, bh=Math.max((v/o.ymax)*ph,0);
+    s+=`<rect class="bar${hot?' hot':''}${hot&&!(o.prevHot||[]).includes(i)?' new':''}" x="${x.toFixed(2)}" y="${y(v).toFixed(2)}" width="${(bw-gap).toFixed(2)}" height="${bh.toFixed(2)}" rx="2"/>`;
+    s+=`<text class="al" x="${(l+i*bw+bw/2).toFixed(2)}" y="${h-b+15}" text-anchor="middle">${i}</text>`;
+    if(o.showVal(v)) s+=`<text class="vl${hot?' hot':''}" x="${(l+i*bw+bw/2).toFixed(2)}" y="${(y(v)-4).toFixed(2)}" text-anchor="middle">${o.fmt(v)}</text>`;
+  });
+  s+=`<line class="axl" x1="${l}" x2="${w-r}" y1="${t+ph}" y2="${t+ph}"/><line class="axl" x1="${l}" x2="${l}" y1="${t}" y2="${t+ph}"/>`;
+  s+=`<text class="at" x="${l+pw/2}" y="${h-4}" text-anchor="middle">${o.xt}</text>`;
+  s+=`<text class="at" transform="translate(11 ${t+ph/2}) rotate(-90)" text-anchor="middle">P(X = x)</text></svg>`;
+  return s;
+}
+
+const TABS=[];
+
+/* =====================================================
+   Q1: discrete or continuous
+   ===================================================== */
+const ITEMS1=[
+ {l:'a',t:'Number of video games owned',type:'D',why:'You count them. The possible values are 0, 1, 2, 3 and so on, so you can list them. Nobody owns 2.5 games.'},
+ {l:'b',t:'Shoe size',type:'D',why:'Sizes jump in steps of one half, so the possible values can be listed. There is no size 8.37 in the store.'},
+ {l:'c',t:'Time spent studying for an exam',type:'C',why:'Time is measured, not counted. Between any two times there is another one, like 2.5 hours or 2.51 hours.'},
+ {l:'d',t:'Students in a classroom',type:'D',why:'You count students. A room has 24 or 25 students, never 24.5.'}
+];
+const SV1={
+ a:`<svg viewBox="0 0 300 100" class="vsvg" role="img" aria-label="Separate dots at 0 through 5 games"><line class="ax" x1="14" x2="286" y1="58" y2="58"/>${rng(0,5).map(i=>`<circle cx="${30+i*48}" cy="58" r="8" fill="var(--blue)"/><text class="tl" x="${30+i*48}" y="86" text-anchor="middle">${i}</text>`).join('')}<circle cx="150" cy="58" r="8" fill="none" stroke="var(--red)" stroke-width="2" stroke-dasharray="3 3"/><path d="M146 54L154 62M154 54L146 62" stroke="var(--red)" stroke-width="2" stroke-linecap="round"/><text class="tr" x="150" y="34" text-anchor="middle">2.5 games?</text></svg>`,
+ b:`<svg viewBox="0 0 300 100" class="vsvg" role="img" aria-label="Shoe sizes in half steps"><line class="ax" x1="14" x2="286" y1="58" y2="58"/>${rng(0,6).map(i=>`<circle cx="${30+i*40}" cy="58" r="7" fill="var(--blue)"/><text class="tl" x="${30+i*40}" y="86" text-anchor="middle">${7+i*.5}</text>`).join('')}<circle cx="130" cy="58" r="7" fill="none" stroke="var(--red)" stroke-width="2" stroke-dasharray="3 3"/><path d="M126 54L134 62M134 54L126 62" stroke="var(--red)" stroke-width="2" stroke-linecap="round"/><text class="tr" x="130" y="34" text-anchor="middle">8.25?</text></svg>`,
+ c:`<svg viewBox="0 0 300 100" class="vsvg" role="img" aria-label="A continuous line of study time in hours"><rect x="20" y="50" width="260" height="16" rx="8" fill="var(--green)" fill-opacity=".3" stroke="var(--green)" stroke-width="2"/>${rng(0,6).map(i=>`<line x1="${20+i*43.33}" x2="${20+i*43.33}" y1="66" y2="72" stroke="var(--muted)" stroke-width="2"/><text class="tl" x="${20+i*43.33}" y="86" text-anchor="middle">${i}</text>`).join('')}<circle cx="122.7" cy="58" r="11" fill="var(--green)" stroke="var(--greenEdge)" stroke-width="2"/><text class="tg2" x="122.7" y="32" text-anchor="middle">2.37 hours</text><text class="tl" x="284" y="98" text-anchor="end">hours</text></svg>`,
+ d:`<svg viewBox="0 0 300 100" class="vsvg" role="img" aria-label="A row of students you can count">${rng(0,7).map(i=>{const x=26+i*35;return `<circle cx="${x}" cy="40" r="8" fill="var(--blue)"/><rect x="${x-10}" y="51" width="20" height="26" rx="9" fill="var(--blue)"/><text class="tl" x="${x}" y="94" text-anchor="middle">${i+1}</text>`;}).join('')}</svg>`
+};
+const card1=(it,fresh)=>`<div class="ic${fresh?' fresh':''}"><div class="ich"><span class="il">${it.l}</span><b>${it.t}</b><span class="chip2 ${it.type==='D'?'dis':'con'}">${it.type==='D'?'Discrete':'Continuous'}</span></div>${SV1[it.l]}<p class="iw">${it.why}</p></div>`;
+function q1(s){
+  return `<div class="legend2"><span class="chip2 dis">Discrete</span> countable, you could list the values <span class="chip2 con">Continuous</span> measured, any value in an interval</div>
+  <div class="icgrid">${ITEMS1.map((it,i)=>s>=i+1?card1(it,s===i+1):`<div class="ic ph"><span class="il">${it.l}</span><span>${it.t}</span></div>`).join('')}</div>`;
+}
+TABS.push({name:'Variables',steps:4,html:q1,
+  q:qh('1','<p>Identify whether the following variables are discrete or continuous.</p><p class="sub">a. Number of video games owned &nbsp; b. Shoe size &nbsp; c. Time spent studying for an exam &nbsp; d. Students in a classroom</p>')});
+
+/* =====================================================
+   Q2: probability distribution table and calculator
+   ===================================================== */
+const V2=[.45,.30,.20,.05];
+const SC2={
+  3:()=>S_STAT(),
+  4:()=>S_LIST([0,1,2,3],[],[0,4],Lx(1)+'(5)='),
+  5:()=>S_LIST([0,1,2,3],['0.45','0.3','0.2','0.05'],[1,4],Lx(2)+'(5)='),
+  6:()=>S_CALC(),
+  7:()=>S_1VAR(),
+  8:()=>S_OUT(),
+  9:()=>S_VARS(),
+  10:()=>S_HOME([['&sigma;x&sup2;','0.8275']])
+};
+const LINES2=[
+ {at:1,cap:'Part a &middot; Fill in the table',html:note('Each probability goes next to its x value.')+note('The histogram gets one bar per x value, as tall as its probability.')},
+ {at:2,cap:'Check the table',html:eq('0.45 + 0.30 + 0.20 + 0.05 = <b>1</b>')+note('Every probability is between 0 and 1 and they add to 1, so this is a valid distribution.')},
+ {at:3,cap:'Part b &middot; Open the list editor',html:row('Press',K('stat'),KENTER())+note('That picks 1:Edit... in the STAT menu. If L<sub>1</sub> or L<sub>2</sub> already has numbers, move up to the list name, press <b>clear</b>, then <b>enter</b>.')},
+ {at:4,cap:'Type the x values into L<sub>1</sub>',html:row('Type each value, then enter',KN('0'),KENTER(),KN('1'),KENTER(),KN('2'),KENTER(),KN('3'),KENTER())},
+ {at:5,cap:'Type the probabilities into L<sub>2</sub>',html:row('Move to the top of L<sub>2</sub>',KR('u'),KR('u'),KR('u'),KR('u'),KR('r'))+row('Type each probability, then enter',KN('0.45'),KENTER(),KN('0.3'),KENTER(),KN('0.2'),KENTER(),KN('0.05'),KENTER())},
+ {at:6,cap:'Open 1-Var Stats',html:row('Open the CALC menu',K('stat'),KR('r'),KENTER())+note('Press STAT again, use the right arrow to move to CALC, and press enter to pick 1:1-Var Stats.')},
+ {at:7,cap:'Tell it where the data is',html:row('List is L<sub>1</sub>, FreqList is L<sub>2</sub>',K2(),K('1','L1','s2'),KR('d'),K2(),K('2','L2','s2'),KR('d'),KENTER())+note('The x values are the data. The probabilities act as the frequencies. The last arrow lands on Calculate.')},
+ {at:8,cap:'Read the output',html:eq(tag(XB+' = 0.85')+' is the <b>mean</b>, &mu; = E(X)')+eq(tag('&sigma;x = 0.9097')+' is the <b>standard deviation</b>')+note('Use &sigma;x, not Sx. Sx is blank here because n = 1, since the probabilities add to 1.')+answer('Mean = 0.85<br>Standard deviation &asymp; 0.9097')},
+ {at:9,cap:'Variance &middot; start from the standard deviation',html:eq('Variance = &sigma;<sup>2</sup>')+row('Leave the output, then pull &sigma;x from the VARS menu',K2(),K('mode','quit','s2'),K('vars'),KN('5'),KN('4'))+note('VARS, 5:Statistics, then 4:&sigma;x. Using the stored &sigma;x keeps every digit, so the answer is not thrown off by rounding.')},
+ {at:10,cap:'Square it',html:row('Square, then calculate',K('x&sup2;'),KENTER())+eq('&sigma;<sup>2</sup> = <b>0.8275</b>')+note('Quick check by hand. &Sigma;x&sup2; &minus; &mu;<sup>2</sup> = 1.55 &minus; 0.85<sup>2</sup> = 0.8275.')+answer('Mean = 0.85<br>Standard deviation &asymp; 0.9097<br>Variance = 0.8275')}
+];
+function q2(s){
+  const vals=s>=1?V2:[0,0,0,0];
+  const ptab=`<table class="pt"><thead><tr><th>x</th><th>P(X = x)</th></tr></thead><tbody>${V2.map((v,i)=>`<tr><td>${i}</td><td class="${s===1?'fresh':''}">${s>=1?v.toFixed(2):''}</td></tr>`).join('')}</tbody></table>`;
+  const h=hist({vals,w:260,h:150,l:60,ymax:.5,ticks:[0,.25,.5],showVal:v=>v>0,fmt:v=>v.toFixed(2),xt:'x (consoles owned)',aria:'Histogram of the number of gaming consoles owned'});
+  let left=`<div class="pair"><div>${ptab}</div><div class="hw">${h}</div></div>`;
+  let sc=null; for(let j=s;j>=3&&!sc;j--) if(SC2[j]) sc=SC2[j]();
+  if(sc) left+=sc;
+  return duo(left,workCards(LINES2.filter(l=>l.at<=s)));
+}
+TABS.push({name:'Table &amp; Stats',steps:10,html:q2,
+  q:qh('2','<p>A consumer magazine has estimated that the probabilities of owning 0, 1, 2, or 3 gaming consoles are 0.45, 0.30, 0.20, and 0.05, respectively.</p><p class="sub">a. Construct a probability distribution table for the number of gaming consoles owned.<br>b. Calculate the mean, standard deviation, and variance for the distribution.</p>')});
+
+/* =====================================================
+   shared: binomial condition checklist
+   ===================================================== */
+const COND=['There are n trials or observations.','The trials are independent.','Each trial has two possible outcomes.','Fixed probabilities p and q = 1 &minus; p.'];
+function checklist(whys,s){
+  return `<div class="chk">${COND.map((t,i)=>{
+    const on=s>=i+1, now=s===i+1;
+    return `<div class="ci${on?' on':''}${now?' now':''}"><span class="bx">${on?'&#10003;':''}</span><div><b>${i+1}. ${t}</b>${on?`<div class="cw">${whys[i]}</div>`:''}</div></div>`;
+  }).join('')}</div>`;
+}
+
+/* =====================================================
+   Q3: batteries
+   ===================================================== */
+const W3=['We test a sample of 15 batteries, so n = 15.',
+ 'A random sample from a large factory. One battery being faulty does not change the chance for another.',
+ 'Each battery is either faulty or not faulty.',
+ 'p = 0.10 for faulty, so q = 1 &minus; 0.10 = 0.90 for not faulty. Same for every battery.'];
+const P3=[
+ {k:'a',words:'Exactly 3 of the 15 batteries are faulty.',ineq:'P(X = 3)',mod:null,rule:['P(X = k)','binompdf(n, p, k)'],name:'binompdf',kArg:3,pre:false,hot:[3],val:bpdf(15,.1,3)},
+ {k:'b',words:'At most 4 means 4 or fewer.',ineq:'P(X &le; 4)',mod:null,rule:['P(X &le; k)','binomcdf(n, p, k)'],name:'binomcdf',kArg:4,pre:false,hot:rng(0,4),val:bcdf(15,.1,4)},
+ {k:'c',words:'Fewer than 4 of the 15 batteries are faulty.',ineq:'P(X &lt; 4)',mod:{to:'P(X &le; 3)',why:'Fewer than 4 means 3 or fewer. X only takes whole numbers, so X &lt; 4 is the same as X &le; 3.'},rule:['P(X &le; k)','binomcdf(n, p, k)'],name:'binomcdf',kArg:3,pre:false,hot:rng(0,3),val:bcdf(15,.1,3)},
+ {k:'d',words:'At least 2 means 2 or more.',ineq:'P(X &ge; 2)',mod:null,rule:['P(X &ge; k)','1 &minus; binomcdf(n, p, k &minus; 1)'],extra:'Here k = 2, so k &minus; 1 = 1.',name:'binomcdf',kArg:1,pre:true,hot:rng(2,15),val:1-bcdf(15,.1,1)},
+ {k:'e',words:'More than 2 of the 15 batteries are faulty.',ineq:'P(X &gt; 2)',mod:{to:'P(X &ge; 3)',why:'More than 2 means 3 or more. X only takes whole numbers, so X &gt; 2 is the same as X &ge; 3.'},rule:['P(X &ge; k)','1 &minus; binomcdf(n, p, k &minus; 1)'],extra:'Here k = 3, so k &minus; 1 = 2.',name:'binomcdf',kArg:2,pre:true,hot:rng(3,15),val:1-bcdf(15,.1,2)}
+];
+P3.forEach(p=>{
+  p.eqf=p.mod?p.mod.to:p.ineq;
+  p.shown=(p.pre?'1 &minus; ':'')+`${p.name}(15, 0.10, ${p.kArg})`;
+  p.expr=(p.pre?'1-':'')+`${p.name}(15,0.10,${p.kArg})`;
+  p.result=ti(p.val);
+});
+const STEPS3=[null];
+for(let i=1;i<=5;i++) STEPS3.push({part:'S',kind:i<5?'chk':'concl'});
+const FIRST3={S:1};
+P3.forEach(p=>{
+  FIRST3[p.k]=STEPS3.length;
+  ['ineq',p.mod?'mod':null,'formula','menu','form','run'].filter(Boolean).forEach(kind=>STEPS3.push({part:p.k,kind}));
+});
+function screen3(i){
+  const stp=STEPS3[i]; if(!stp||stp.part==='S') return null;
+  const idx=P3.findIndex(p=>p.k===stp.part), p=P3[idx];
+  if(stp.kind==='menu') return S_DISTR(p.name==='binompdf'?'A':'B');
+  if(stp.kind==='form') return S_FORM(p.name,15,'0.10',p.kArg);
+  if(stp.kind==='run') return S_HOME(P3.slice(0,idx+1).map(q=>[q.expr,q.result]));
+  return null;
+}
+function batteries(s){
+  const faulty=[3,10]; let g='';
+  for(let i=0;i<15;i++){
+    const x=10+i*36, bad=faulty.includes(i);
+    const fill=s>=3?(bad?'var(--red)':'var(--ok)'):'var(--soft)';
+    g+=`<rect x="${x+9}" y="52" width="8" height="6" rx="1" fill="var(--muted)"/><rect x="${x}" y="58" width="26" height="54" rx="4" fill="${fill}" stroke="var(--ink)" stroke-width="2"/>`;
+    g+=s>=3?(bad?`<path d="M${x+7} 78L${x+19} 94M${x+19} 78L${x+7} 94" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`:''):`<text class="al" x="${x+13}" y="90" text-anchor="middle">${i+1}</text>`;
+  }
+  let o=`<svg class="hist" viewBox="0 0 560 270" role="img" aria-label="A sample of 15 batteries">`+g;
+  if(s>=1) o+=`<path d="M10 40V32H550V40" fill="none" stroke="var(--acc)" stroke-width="2.5"/><text class="at" x="280" y="22" text-anchor="middle" style="fill:var(--accInk)">n = 15 batteries</text>`;
+  if(s>=2) for(let i=1;i<15;i++) o+=`<line x1="${10+i*36-5}" x2="${10+i*36-5}" y1="58" y2="112" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  if(s>=2) o+=`<text class="al" x="280" y="132" text-anchor="middle">each battery is tested on its own</text>`;
+  if(s>=3) o+=`<rect x="130" y="150" width="14" height="14" fill="var(--ok)" stroke="var(--ink)" stroke-width="1.5"/><text class="at" x="150" y="162">not faulty</text><rect x="300" y="150" width="14" height="14" fill="var(--red)" stroke="var(--ink)" stroke-width="1.5"/><text class="at" x="320" y="162">faulty</text>`;
+  if(s>=4) o+=`<rect x="10" y="190" width="54" height="30" fill="var(--red)"/><rect x="64" y="190" width="486" height="30" fill="var(--ok)"/><text class="at" x="37" y="240" text-anchor="middle">p = 0.10</text><text class="at" x="307" y="240" text-anchor="middle">q = 0.90</text><text class="al" x="280" y="262" text-anchor="middle">the same for every battery</text>`;
+  return o+'</svg>';
+}
+function card3(stp,p){
+  const kk=stp.kind;
+  if(kk==='ineq') return {cap:'Write the inequality',html:note(p.words)+eq(`<b>${p.ineq}</b>`)+note('The gold bars on the histogram are the outcomes included.')};
+  if(kk==='mod') return {cap:'Rewrite it so it matches a formula',html:eq(`${p.ineq} = <b>${p.mod.to}</b>`)+note(p.mod.why)};
+  if(kk==='formula') return {cap:'Write the calculator formula',html:note('Our formula is <b>'+p.rule[0]+' = '+cm(p.rule[1])+'</b>.')+(p.extra?note(p.extra):'')+eq(`${p.eqf} = <b>${cm(p.shown)}</b>`)};
+  if(kk==='menu') return {cap:'Plug it in &middot; find the function',
+    html:`<div class="rem">Press 2nd + mode (quit) to get back to the home screen before each question.</div>`
+      +row('Go to the home screen',K2(),K('mode','quit','s2'))
+      +(p.pre?row('Type the start of the expression',KN('1'),K('&minus;')):'')
+      +row('Open the DISTR menu',K2(),K('vars','distr','s2'))
+      +row(`Pick ${cm(p.name+'(')}`,KA(),p.name==='binompdf'?K('math','A','sa'):K('apps','B','sa'))
+      +note('You can also scroll down to it and press enter.')};
+  if(kk==='form') return {cap:'Plug it in &middot; fill in the form',
+    html:row('Type each value, then press the down arrow',KN('15'),KR('d'),KN('0.10'),KR('d'),KN(String(p.kArg)),KR('d'))
+      +note(`trials is n = 15, p is 0.10, and x value is ${p.kArg}. Stop with the cursor on Paste.`)};
+  return {cap:'Paste and calculate',
+    html:row('Paste it onto the home screen',KENTER())+row('Press enter again to calculate',KENTER())
+      +note('The home screen keeps your earlier answers, so yours will look a lot like this.')
+      +answer(`${p.ineq} = ${f4(p.val)}`,'rounded to four decimal places')};
+}
+const V3=rng(0,15).map(i=>bpdf(15,.1,i));
+function q3(s){
+  const cur=s>0?STEPS3[s]:null, partK=cur?cur.part:'S';
+  const pd=partK!=='S'?P3.find(p=>p.k===partK):null;
+  let left;
+  if(s<=4){ st.prevHot3=[]; left=`<div class="hw">${batteries(s)}</div>`; }
+  else{
+    const cap=pd?(cur.kind==='ineq'?pd.ineq:pd.eqf):'X ~ Binomial(n = 15, p = 0.10)';
+    left=`<div class="hw">${hist({vals:V3,w:560,h:230,ymax:.37,ticks:[0,.1,.2,.3],hot:pd?pd.hot:[],prevHot:st.prevHot3,showVal:v=>v>=.005,fmt:v=>v.toFixed(3),xt:'x (number of faulty batteries)',aria:'Histogram of the binomial distribution with n 15 and p 0.10'})}<div class="hcap">${cap}</div></div>`;
+    st.prevHot3=pd?pd.hot:[];
+    let sc=null; for(let j=s;j>=1&&!sc;j--) sc=screen3(j);
+    if(sc) left+=sc;
+  }
+  let right;
+  if(partK==='S'){
+    right=`<div class="work">${checklist(W3,s)}${s>=5?card('Conclusion',eq('X ~ Binomial(n = 15, p = 0.10)')+note('X is the number of faulty batteries in the sample. All four conditions hold, so X is binomial. Here is its probability distribution.'),true):''}${s===0?'<div class="hint">Press <b>Next</b> (or the right arrow key) to begin.</div>':''}</div>`;
+  } else {
+    const cards=[]; for(let i=1;i<=s;i++){ if(STEPS3[i].part===partK) cards.push(card3(STEPS3[i],pd)); }
+    right=workCards(cards);
+  }
+  const jumps=`<div class="jumps">${[{k:'S',label:'Setup'}].concat(P3.map(p=>({k:p.k,label:'Part '+p.k}))).map(j=>`<button class="jump${partK===j.k?' on':''}" data-jump="${FIRST3[j.k]}">${j.label}</button>`).join('')}</div>`;
+  return duo(left,jumps+right);
+}
+TABS.push({name:'Batteries',steps:STEPS3.length-1,html:q3,
+  partLabel:s=>{ const p=STEPS3[s].part; return p==='S'?'setup':'part '+p; },
+  q:qh('3','<p>A quality control expert at a large factory estimates that 10% of all the batteries produced at the factory are faulty. He takes a random sample of 15 of the batteries.</p><p class="sub">a. P(3 of the 15 are faulty) &nbsp; b. P(at most 4 faulty) &nbsp; c. P(fewer than 4 faulty) &nbsp; d. P(at least 2 faulty) &nbsp; e. P(more than 2 faulty)</p>')});
+
+/* =====================================================
+   Q4: Netflix
+   ===================================================== */
+const W4=['We randomly select 500 households, so n = 500.',
+ 'A random sample from all U.S. households, so one household&rsquo;s answer does not change another&rsquo;s.',
+ 'Each household either has a Netflix subscription or does not.',
+ 'p = 0.84 for having Netflix, so q = 1 &minus; 0.84 = 0.16 for not having it. Same for every household.'];
+const MEAN4=500*.84, VAR4=500*.84*.16, SD4=Math.sqrt(VAR4);
+function dots(s){
+  let g='';
+  for(let i=0;i<500;i++){
+    const c=i%40, r=Math.floor(i/40), rnd=((i*2654435761)>>>0)/4294967296;
+    let fill='var(--soft)', stroke='var(--muted)';
+    if(s>=6){ if(i<420){fill='var(--blue)';stroke='var(--blueEdge)';} else {fill='var(--line)';stroke='var(--muted)';} }
+    else if(s>=3){ if(rnd<.84){fill='var(--blue)';stroke='var(--blueEdge)';} else {fill='var(--line)';} }
+    g+=`<circle cx="${10+c*10}" cy="${10+r*10}" r="3.8" fill="${fill}" stroke="${stroke}" stroke-width=".8"/>`;
+  }
+  let o=`<svg class="hist" viewBox="0 0 420 190" role="img" aria-label="500 households shown as dots">${g}`;
+  if(s>=1) o+=`<text class="at" x="210" y="152" text-anchor="middle" style="fill:var(--accInk)">n = 500 households</text>`;
+  if(s>=3) o+=`<circle cx="120" cy="170" r="5" fill="var(--blue)"/><text class="al" x="130" y="174">Netflix</text><circle cx="230" cy="170" r="5" fill="var(--line)" stroke="var(--muted)"/><text class="al" x="240" y="174">no Netflix</text>`;
+  if(s>=6) o+=`<text class="at" x="210" y="186" text-anchor="middle">on average 420 of 500 (84%)</text>`;
+  return o+'</svg>';
+}
+function bell(){
+  const x0=390,x1=450,sx=x=>20+(x-x0)/(x1-x0)*380, fy=x=>120-100*Math.exp(-Math.pow(x-420,2)/(2*VAR4));
+  let pts='',band=`${sx(420-SD4).toFixed(1)},120 `;
+  for(let x=x0;x<=x1;x+=.5) pts+=`${sx(x).toFixed(1)},${fy(x).toFixed(1)} `;
+  for(let x=420-SD4;x<=420+SD4;x+=.5) band+=`${sx(x).toFixed(1)},${fy(x).toFixed(1)} `;
+  band+=`${sx(420+SD4).toFixed(1)},${fy(420+SD4).toFixed(1)} ${sx(420+SD4).toFixed(1)},120`;
+  let o=`<svg class="hist" viewBox="0 0 420 170" role="img" aria-label="Spread of the count around 420">`;
+  o+=`<polygon points="${band}" fill="var(--acc)" fill-opacity=".45"/><polyline points="${pts}" fill="none" stroke="var(--blue)" stroke-width="2.5"/><line class="axl" x1="20" x2="400" y1="120" y2="120"/>`;
+  [400,410,420,430,440].forEach(v=>{ o+=`<line class="axl" x1="${sx(v)}" x2="${sx(v)}" y1="120" y2="126"/><text class="al" x="${sx(v)}" y="140" text-anchor="middle">${v}</text>`; });
+  o+=`<line x1="${sx(420)}" x2="${sx(420)}" y1="14" y2="120" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="4 3"/><text class="at" x="${sx(420)}" y="10" text-anchor="middle">mean 420</text>`;
+  o+=`<text class="at" x="210" y="162" text-anchor="middle" style="fill:var(--accInk)">gold band is about 8 on each side of 420</text></svg>`;
+  return o;
+}
+function q4(s){
+  let left=`<div class="hw">${dots(s)}</div>`;
+  if(s>=8) left+=`<div class="hw">${bell()}</div>`;
+  const cards=[];
+  if(s>=5) cards.push({cap:'Conclusion',html:eq('X ~ Binomial(n = 500, p = 0.84)')+note('X is the number of households with a Netflix subscription. All four conditions hold, so we can use the binomial properties.')
+    +eq('E(X) = n &times; p')+eq('Var(X) = n &times; p &times; q')+eq('StdDev(X) = &radic;(n &times; p &times; q)')});
+  if(s>=6) cards.push({cap:'Expected number',html:eq('E(X) = n &times; p')+eq('= 500 &times; 0.84 = <b>420</b>')+note('On average, 420 of the 500 households have a Netflix subscription.')+answer('E(X) = 420 households')});
+  if(s>=7) cards.push({cap:'Variance',html:eq('Var(X) = n &times; p &times; q')+eq('= 500 &times; 0.84 &times; 0.16 = <b>67.2</b>')+answer('Var(X) = 67.2')});
+  if(s>=8) cards.push({cap:'Standard deviation',html:eq('StdDev(X) = &radic;(n &times; p &times; q) = &radic;67.2')+eq('&asymp; <b>8.1976</b>')
+    +row('On the calculator',K2(),K('x&sup2;','&radic;','s2'),KN('67.2'),KENTER())
+    +note('A typical sample lands within about 8 households of 420.')+answer('StdDev(X) &asymp; '+f4(SD4))});
+  const right=`<div class="work">${checklist(W4,s)}${cards.map((c,i)=>card(c.cap,c.html,i===cards.length-1)).join('')}${s===0?'<div class="hint">Press <b>Next</b> (or the right arrow key) to begin.</div>':''}</div>`;
+  return duo(left,right);
+}
+TABS.push({name:'Netflix',steps:8,html:q4,
+  q:qh('4','<p>As reported by Television Bureau of Advertising, Inc. in Trends in Television, 84% of U.S. households have a Netflix subscription. If 500 households are randomly selected, what is the expected number of households that have a Netflix subscription? Also, what are the standard deviation and variance? Show your work.</p>')});
+
+/* ---------- engine ---------- */
+const desk=()=>window.matchMedia?window.matchMedia('(min-width:901px)').matches:window.innerWidth>900;
+function revealIn(c,el){
+  const top=el.offsetTop, bot=top+el.offsetHeight; let to=null;
+  if(top<c.scrollTop) to=top-8; else if(bot>c.scrollTop+c.clientHeight) to=bot-c.clientHeight+8;
+  if(to!==null) c.scrollTo({top:Math.max(0,to),behavior:'smooth'});
+}
+function render(opts){
+  opts=opts||{};
+  $('#qwrap').classList.toggle('closed',!st.qOpen); $('#qnotch').setAttribute('aria-expanded',String(st.qOpen));
+  const T=TABS[st.tab];
+  $('#tabs').innerHTML=TABS.map((t,i)=>`<button class="tab ${i===st.tab?'on':''}" data-tab="${i}" aria-current="${i===st.tab}"><b>${i+1}</b>${t.name}</button>`).join('');
+  const on=$('#tabs .tab.on'), nav=$('#tabs');
+  if(on){ const o=on.offsetLeft; if(o<nav.scrollLeft) nav.scrollLeft=o-8; else if(o+on.offsetWidth>nav.scrollLeft+nav.clientWidth) nav.scrollLeft=o+on.offsetWidth-nav.clientWidth+8; }
+  $('#qbar').innerHTML=T.q;
+  const stage=$('#stage');
+  const lock=st.tab>=1&&desk();
+  const ow=stage.querySelector('.work'), keepW=(ow&&!opts.top)?ow.scrollTop:0;
+  const ol=stage.querySelector('.col.left'), keepL=(ol&&!opts.top)?ol.scrollTop:0;
+  const keep=stage.scrollTop;
+  stage.classList.toggle('lock',lock);
+  stage.innerHTML=T.html(st.step);
+  const nw=stage.querySelector('.work'), now=stage.querySelector('.ln.now,.ic.fresh,.ci.now'), nl=stage.querySelector('.col.left');
+  if(lock){
+    stage.scrollTop=0;
+    if(nl) nl.scrollTop=keepL;
+    if(nw){ nw.scrollTop=keepW; if(now&&st.step>0&&nw.contains(now)) revealIn(nw,now); }
+  } else {
+    stage.scrollTop=opts.top?0:keep;
+    if(now&&st.step>0&&!opts.top) now.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+  const last=st.tab===TABS.length-1, atEnd=st.step===T.steps;
+  $('#prev').disabled=st.tab===0&&st.step===0;
+  $('#next').disabled=last&&atEnd;
+  $('#next').innerHTML=atEnd&&!last?'Next question &rarr;':last&&atEnd?'Done':'Next &rarr;';
+  $('#prev').innerHTML=st.step===0&&st.tab>0?'&larr; Previous question':'&larr; Previous';
+  let lab=st.step===0?`Question ${st.tab+1} &middot; press Next to start`:`Question ${st.tab+1} &middot; step ${st.step} of ${T.steps}`;
+  if(T.partLabel&&st.step>0) lab+=` &middot; ${T.partLabel(st.step)}`;
+  $('#slabel').innerHTML=lab;
+  $('#dots').innerHTML=Array.from({length:T.steps+1},(_,i)=>`<button class="dot${i<st.step?' past':''}${i===st.step?' cur':''}" data-step="${i}" aria-label="Go to step ${i}"></button>`).join('');
+  try{ history.replaceState(null,'','#q'+(st.tab+1)); }catch(e){}
+}
+function go(tab,step,opts){
+  if(step===0) st.qOpen=true; else if(st.step===0||tab!==st.tab) st.qOpen=false;
+  st.tab=Math.max(0,Math.min(TABS.length-1,tab)); st.step=Math.max(0,Math.min(TABS[st.tab].steps,step)); render(opts);
+}
+function next(){ const T=TABS[st.tab]; if(st.step<T.steps) go(st.tab,st.step+1); else if(st.tab<TABS.length-1) go(st.tab+1,0,{top:true}); }
+function prev(){ if(st.step>0) go(st.tab,st.step-1); else if(st.tab>0) go(st.tab-1,TABS[st.tab-1].steps,{top:true}); }
+
+document.addEventListener('click',e=>{
+  const t=e.target;
+  const tab=t.closest('[data-tab]'); if(tab){ go(+tab.dataset.tab,0,{top:true}); return; }
+  const dot=t.closest('[data-step]'); if(dot){ go(st.tab,+dot.dataset.step); return; }
+  const j=t.closest('[data-jump]'); if(j){ go(st.tab,+j.dataset.jump,{top:true}); return; }
+  if(t.closest('#qnotch')){ st.qOpen=!st.qOpen; render(); return; }
+  if(t.closest('#next')) next();
+  else if(t.closest('#prev')) prev();
+  else if(t.closest('#themeBtn')){ st.theme=st.theme==='light'?'dark':'light'; document.documentElement.dataset.theme=st.theme; $('#themeBtn').innerHTML=st.theme==='light'?'&#9790;':'&#9728;'; }
+});
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'){ next(); e.preventDefault(); }
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){ prev(); e.preventDefault(); }
+  else if(e.key==='r'||e.key==='R'){ go(st.tab,0); }
+});
+window.addEventListener('resize',()=>{ if((st.tab>=1&&desk())!==$('#stage').classList.contains('lock')) render({}); });
+
+document.documentElement.dataset.theme='dark'; $('#themeBtn').innerHTML='&#9728;';
+let start=0; try{ const m=/^#q(\d)$/.exec(location.hash); if(m&&TABS[+m[1]-1]) start=+m[1]-1; }catch(e){}
+go(start,0,{top:true});
+})();
+</script>
+</body>
+</html>
