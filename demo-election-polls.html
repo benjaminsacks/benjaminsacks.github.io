@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400..900;1,8..60,400..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <style>
 :root{
   --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
@@ -66,7 +68,11 @@ nav.tabs{display:flex;gap:.2em;overflow-x:auto;flex:1 1 300px;min-width:0;scroll
 .anim .ln.now{animation:rise .35s ease}
 .ln .cap{font:700 .72em var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:.35em}
 .ln p{margin:.3em 0}
-.eq{font-size:1.04em;font-weight:600;margin:.35em 0;display:block;line-height:1.7;padding:.25em .7em;background:var(--soft);border-radius:10px;overflow-x:auto}
+.eq{margin:.45em 0;padding:.35em .7em;background:var(--soft);border-radius:10px;overflow-x:auto;overflow-y:hidden;font-size:1.02em}
+.eq .katex-display{margin:.15em 0}
+.katex{font-size:1.08em;text-transform:none}
+.fo{text-align:center;color:var(--ink);font-size:13px;line-height:1.2}
+.cv.sortable canvas{cursor:pointer}
 .cd{font-family:var(--mono);font-weight:700;font-size:.82em}
 .note{color:var(--muted);font-size:.92em;margin:.35em 0}
 .note b{color:var(--ink)}
@@ -81,12 +87,15 @@ nav.tabs{display:flex;gap:.2em;overflow-x:auto;flex:1 1 300px;min-width:0;scroll
 
 /* viz panel */
 .viz{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-width:0}
-.vcap{padding:.5em .9em;border-bottom:1px solid var(--line);font:700 .76em var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accInk);display:flex;justify-content:space-between;gap:1em;flex-wrap:wrap}
+.vcap{padding:.5em .9em;border-bottom:1px solid var(--line);font:700 .76em var(--mono);letter-spacing:.03em;color:var(--accInk);display:flex;justify-content:space-between;gap:1em;flex-wrap:wrap}
 .vcap span:last-child{color:var(--muted);text-transform:none}
 .vbody{padding:.8em .9em;min-width:0}
 .ctl{display:flex;flex-wrap:wrap;gap:.4em .5em;align-items:center;padding:.6em .9em;border-top:1px solid var(--line)}
 .ctl .lab{font:700 .74em var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-right:.1em}
 .ctl .sp{flex:1}
+.sl{display:flex;align-items:center;gap:.5em;flex:1 1 15em;min-width:0}
+.sl input{flex:1;min-width:6em;accent-color:var(--acc)}
+.sl b{font:700 .8em var(--mono);min-width:5.2em;color:var(--accInk)}
 .ctl .btn{font-size:.82em}
 .readout{font:700 .84em var(--mono);color:var(--ink);display:flex;flex-wrap:wrap;gap:.3em 1.1em}
 .readout b{color:var(--accInk)}
@@ -187,16 +196,20 @@ footer.navbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.8e
 const $=s=>document.querySelector(s);
 
 /* ---------- the election ---------- */
-const N=10000, NBLUE=5400, P=NBLUE/N;      // 10,000 voters, 54% will vote Blue
-const COLS=100;
+const N=10000, TARGET=5400, COLS=100;       // 10,000 voters, 54% will vote Blue
 const f2=x=>x.toFixed(2), f3=x=>x.toFixed(3), f4=x=>x.toFixed(4);
-const PH='p&#770;';                          // p-hat
+const raw=String.raw;
+function tex(s,disp){ try{ return window.katex?katex.renderToString(s,{displayMode:!!disp,throwOnError:false}):s; }catch(e){ return s; } }
+const T=s=>tex(s), PH=tex('\\hat p');            // p-hat
 const Rd='<span class="cr">Red</span>', Bl='<span class="cb">Blue</span>';
 
 function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 const pop=new Uint8Array(N);                 // 1 = votes Blue
-for(let i=0;i<NBLUE;i++) pop[i]=1;
+for(let i=0;i<TARGET;i++) pop[i]=1;
 { const r=mulberry(119); for(let i=N-1;i>0;i--){ const j=Math.floor(r()*(i+1)); const t=pop[i]; pop[i]=pop[j]; pop[j]=t; } }
+
+const NBLUE=pop.reduce((a,b)=>a+b,0), P=NBLUE/N;   // p is computed from the voters, not typed in
+const sortedOrder=Uint16Array.from({length:N},(_,i)=>i).sort((a,b)=>pop[b]-pop[a]||a-b);   // Blue first
 
 /* ---------- math ---------- */
 function Phi(z){ const t=1/(1+0.2316419*Math.abs(z)); const d=0.3989422804014327*Math.exp(-z*z/2);
@@ -216,12 +229,12 @@ const simMean=s=>s.sum/s.total/s.n;
 const simSD=s=>Math.sqrt(Math.max(0,s.sumsq/s.total-Math.pow(s.sum/s.total,2)))/s.n;
 
 /* ---------- state ---------- */
-const st={g:0,theme:'dark',anim:true};
+const st={g:0,theme:'dark',anim:true,sorted:false};
 let one={cur:null,hist:[]};                         // chapter 2: single polls on the population
 let sim=mkSim(100);                                 // chapter 3: stacking polls
 let big=null;                                       // chapter 4: 10,000 polls of n = 100
 const prob={dir:'le',c:0.5};                        // chapter 4: "try it"
-const ci={n:100,level:0.95,single:null,tally:{n:0,hit:0},run:[],cum:{n:0,hit:0}};
+const ci={n:100,level:0.95,single:null,tally:{n:0,hit:0},zs:null,run:[]};   // zs: fixed random draws behind the 100 polls
 const ss={level:0.95,me:0.03};
 let view={mode:'grey',mask:null};
 
@@ -236,22 +249,37 @@ function takePoll(){
 }
 
 /* ---------- confidence-interval polls ---------- */
-function mkCI(k,n){ const ph=k/n, se=seOf(ph,n), me=Z[ci.level]*se;
+function invPhi(p){   // inverse normal CDF (Acklam), used for z* at any confidence level
+  const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.357751867269,-30.66479806614716,2.506628277459239],
+        b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],
+        c=[-0.007784894002430293,-0.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],
+        d=[0.007784695709041462,0.3224671290700398,2.445134137142996,3.754408661907416];
+  const pl=0.02425; let q,r;
+  if(p<pl){ q=Math.sqrt(-2*Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  if(p>1-pl){ q=Math.sqrt(-2*Math.log(1-p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  q=p-0.5; r=q*q; return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+}
+const zOf=level=>invPhi(1-(1-level)/2);
+const randn=()=>Math.sqrt(-2*Math.log(1-Math.random()))*Math.cos(2*Math.PI*Math.random());
+const posToN=v=>Math.round(25*Math.pow(40,v/1000)), nToPos=n=>Math.round(1000*Math.log(n/25)/Math.log(40));   // log slider, 25 to 1,000
+function mkCI(k,n){ const ph=k/n, se=seOf(ph,n), me=Z[0.95]*se;
   return {k,n,ph,se,me,lo:ph-me,hi:ph+me,hit:(ph-me<=P && P<=ph+me)}; }
-function newSingle(){ ci.single=mkCI(binomK(ci.n),ci.n); ci.tally.n++; if(ci.single.hit) ci.tally.hit++; }
-function runForest(){ ci.run=[]; for(let i=0;i<100;i++){ const c=mkCI(binomK(ci.n),ci.n); ci.run.push(c); ci.cum.n++; if(c.hit) ci.cum.hit++; } }
-function resetCI(){ ci.single=null; ci.tally={n:0,hit:0}; ci.run=[]; ci.cum={n:0,hit:0}; }
+function newSingle(){ ci.single=mkCI(binomK(100),100); ci.tally.n++; if(ci.single.hit) ci.tally.hit++; }
+function newZs(){ ci.zs=Array.from({length:100},randn); }
+// the 100 polls: same random draws, rescaled by the current n; intervals recomputed from the current confidence level
+function forestRun(){ if(!ci.zs) newZs(); const zc=zOf(ci.level), sd=seOf(P,ci.n);
+  return ci.zs.map(z=>{ const ph=Math.min(.99,Math.max(.01,P+sd*z)), se=seOf(ph,ci.n), me=zc*se;
+    return {ph,se,me,lo:ph-me,hi:ph+me,hit:(ph-me<=P && P<=ph+me)}; }); }
 const needN=(level,me)=>Math.ceil(Z[level]*Z[level]*0.25/(me*me)-1e-9);
 
 /* ---------- html helpers ---------- */
-const eq=h=>`<span class="eq">${h}</span>`;
+const eq=s=>`<div class="eq">${tex(s,true)}</div>`;
 const note=h=>`<div class="note">${h}</div>`;
 const cd=t=>`<span class="cd">${t}</span>`;
 const tag=h=>`<span class="tag">${h}</span>`;
 const rem=h=>`<div class="rem">${h}</div>`;
 const ans=(h,sub)=>`<div class="ans">${h}${sub?`<small>${sub}</small>`:''}</div>`;
 const seg=(act,key,opts,cur)=>opts.map(o=>`<button class="btn${o[0]===cur?' on':''}" data-act="${act}" data-v="${o[0]}">${o[1]}</button>`).join('');
-const popTxt=s=>pctTxt(s);
 
 /* ---------- viz: population canvas ---------- */
 function vizPop(o){
@@ -259,15 +287,16 @@ function vizPop(o){
   let side='';
   if(o.sample){
     const k=o.sample.k, n=100;
-    side=`<div><h4>The poll &middot; n = 100</h4><div class="pbox">${Array.from({length:n},(_,i)=>`<i class="${i<k?'b':'r'}"></i>`).join('')}</div></div>
+    side=`<div><h4>The poll (100 voters)</h4><div class="pbox">${Array.from({length:n},(_,i)=>`<i class="${i<k?'b':'r'}"></i>`).join('')}</div></div>
       <div class="legend"><span><i style="background:var(--blue)"></i>Blue: ${k}</span><span><i style="background:var(--red)"></i>Red: ${n-k}</span></div>`;
   } else if(o.mode==='truth'){
     side=`<div class="legend"><span><i style="background:var(--blue)"></i>Blue: ${NBLUE.toLocaleString()}</span><span><i style="background:var(--red)"></i>Red: ${(N-NBLUE).toLocaleString()}</span></div>`;
   } else {
     side=`<div class="legend"><span><i style="background:var(--muted);opacity:.5"></i>undecided to us</span></div>`;
   }
+  if(o.mode==='truth') side+=`<button class="btn" data-act="sort">${st.sorted?'Shuffle voters':'Sort by vote'}</button>`;
   return {cap:o.cap,tail:o.tail||'10,000 voters',
-    body:`<div class="popwrap"><div class="cv"><canvas id="pop" aria-label="10,000 voters drawn as dots"></canvas>${o.q?`<div class="qmark"><span>${o.q}</span></div>`:''}</div><div class="side">${side}</div></div>`,
+    body:`<div class="popwrap"><div class="cv${o.mode==='truth'?' sortable':''}"><canvas id="pop" aria-label="10,000 voters drawn as dots"></canvas>${o.q?`<div class="qmark"><span>${o.q}</span></div>`:''}</div><div class="side">${side}</div></div>`,
     ctl:o.ctl||''};
 }
 function drawPop(){
@@ -278,13 +307,13 @@ function drawPop(){
   const col={b:cs.getPropertyValue('--blue').trim(),r:cs.getPropertyValue('--red').trim(),m:cs.getPropertyValue('--muted').trim(),a:cs.getPropertyValue('--acc').trim()};
   const cell=c.width/COLS, pad=cell*.15, sz=cell-2*pad, m=view.mask;
   for(let i=0;i<N;i++){
-    const x=(i%COLS)*cell+pad, y=Math.floor(i/COLS)*cell+pad;
+    const x=(i%COLS)*cell+pad, y=Math.floor(i/COLS)*cell+pad, v=(view.mode!=='grey'&&st.sorted)?sortedOrder[i]:i;
     if(view.mode==='grey'){ g.globalAlpha=.4; g.fillStyle=col.m; }
-    else { g.globalAlpha=(m && !m[i])?.2:1; g.fillStyle=pop[i]?col.b:col.r; }
+    else { g.globalAlpha=(m && !m[v])?.2:1; g.fillStyle=pop[v]?col.b:col.r; }
     g.fillRect(x,y,sz,sz);
   }
   if(m){ g.globalAlpha=1; g.strokeStyle=col.a; g.lineWidth=Math.max(1.5,cell*.28);
-    for(let i=0;i<N;i++) if(m[i]){ const x=(i%COLS)*cell, y=Math.floor(i/COLS)*cell; g.strokeRect(x-cell*.35,y-cell*.35,cell*1.7,cell*1.7); } }
+    for(let i=0;i<N;i++) if(m[st.sorted?sortedOrder[i]:i]){ const x=(i%COLS)*cell, y=Math.floor(i/COLS)*cell; g.strokeRect(x-cell*.35,y-cell*.35,cell*1.7,cell*1.7); } }
   g.globalAlpha=1;
 }
 
@@ -312,7 +341,7 @@ function histSVG(o){
     s+=`<path class="curve" d="${d}"/>`; }
   s+=`<line class="ax" x1="${L}" x2="${W-R}" y1="${base}" y2="${base}"/>`;
   (o.marks||[]).forEach(m=>{ s+=`<line class="mk" x1="${X(m.x)}" x2="${X(m.x)}" y1="${T-4}" y2="${base}"/><text class="ml" x="${X(m.x)}" y="${T-9}">${m.label}</text>`; });
-  s+=`<text class="at" x="${W/2}" y="${H-6}">sample proportion  p&#770;  (share of Blue in each poll)</text></svg>`;
+  s+=`<text class="at" x="${W/2}" y="${H-6}">share of Blue in each poll (sample proportion)</text></svg>`;
   return s;
 }
 
@@ -329,7 +358,7 @@ function singleSVG(c,reveal){
   if(c){ const y=92; const miss=reveal&&!c.hit;
     s+=`<line class="${reveal?(miss?'miss':'hit'):'cap'}" style="stroke-width:5;opacity:1" x1="${X(c.lo)}" x2="${X(c.hi)}" y1="${y}" y2="${y}"/>`
       +`<line class="cap" x1="${X(c.lo)}" x2="${X(c.lo)}" y1="${y-14}" y2="${y+14}"/><line class="cap" x1="${X(c.hi)}" x2="${X(c.hi)}" y1="${y-14}" y2="${y+14}"/>`
-      +`<circle class="pd" cx="${X(c.ph)}" cy="${y}" r="8"/><text class="ml" x="${X(c.ph)}" y="${y-22}">p&#770; = ${f2(c.ph)}</text>`;
+      +`<circle class="pd" cx="${X(c.ph)}" cy="${y}" r="8"/><foreignObject x="${X(c.ph)-60}" y="${y-52}" width="120" height="30"><div xmlns="http://www.w3.org/1999/xhtml" class="fo">${tex('\\hat p='+f2(c.ph))}</div></foreignObject>`;
     if(c.hi>c.lo) s+=`<text class="tk" x="${X(c.lo)}" y="${y+34}">${f3(c.lo)}</text><text class="tk" x="${X(c.hi)}" y="${y+34}">${f3(c.hi)}</text>`; }
   s+=`<text class="at" x="${W/2}" y="${H-4}">proportion who will vote Blue</text></svg>`;
   return s;
@@ -357,113 +386,113 @@ function addButtons(){ return `<span class="lab">Add polls</span>`+[1,10,100,100
 const chapters=[
  {num:'01',name:'The Race',steps:[
   {cap:'The setup',
-   html:()=>`<p>A small district is about to vote. There are two candidates, ${Rd} and ${Bl}, and <b>10,000 voters</b>. Each voter will pick exactly one of them.</p><p>Every dot on the right is one voter.</p>`,
+   html:()=>`<p>A district is about to vote. Two candidates, ${Rd} and ${Bl}. <b>10,000 voters</b>, one dot each.</p>`,
    viz:()=>vizPop({mode:'grey',cap:'The district',tail:'10,000 voters'})},
   {cap:'The question',
-   html:()=>`<p>What we want to know is the <b>proportion of all voters who will vote ${Bl}</b>. It&rsquo;s a single, fixed number that describes the whole population, so we call it a ${tag('parameter')} and write it <b>p</b>.</p><p>Election night is far away and we can&rsquo;t ask all 10,000 people. So p is <b>unknown</b>.</p>`,
+   html:()=>`<p>We want ${T('p')}, the <b>proportion of all voters who will vote ${Bl}</b>. It describes the whole population, so it&rsquo;s a ${tag('parameter')}.</p>${note('We can&rsquo;t ask 10,000 people, so for now p is unknown.')}`,
    viz:()=>vizPop({mode:'grey',q:'p = ?',cap:'The district',tail:'p is hidden'})},
-  {cap:'God&rsquo;s-eye view',
-   html:()=>`<p>For this demo only, let&rsquo;s peek behind the curtain. Of the 10,000 voters, <b>5,400</b> will vote ${Bl}.</p>${eq('p = 5,400 / 10,000 = <b>0.54</b>')}<p>${Bl} is going to win with 54%. But a pollster can&rsquo;t see this picture. They have to <i>learn</i> p some other way.</p>`,
-   viz:()=>vizPop({mode:'truth',cap:'The truth (nobody can see this)',tail:'p = 0.54'})},
+  {cap:'Count the votes',
+   html:()=>`<p>For this demo only, peek behind the curtain. To get ${T('p')}, count the Blue voters and divide by everyone:</p>${eq(raw`p=\frac{\text{Blue voters}}{\text{all voters}}=\frac{${NBLUE}}{${N}}=${f2(P)}`)}${note('Click the grid to sort the voters by vote.')}`,
+   viz:()=>vizPop({mode:'truth',cap:'The truth (nobody can see this)',tail:`p = ${f2(P)}`})},
   {cap:'The plan',
-   html:()=>`<p>The pollster will <b>randomly select 100 voters</b> and ask who they&rsquo;ll vote for. The share of ${Bl} supporters <i>in the sample</i> is the ${tag('sample proportion')}:</p>${eq(`${PH} = x / n`)}<p>where <b>x</b> is the number of ${Bl} supporters and <b>n</b> = 100 is the sample size. A number computed from a sample is a ${tag('statistic')}.</p>${note('Parameter: describes the <b>population</b> (p). Statistic: describes a <b>sample</b> (p&#770;).')}`,
-   viz:()=>vizPop({mode:'truth',cap:'The truth (nobody can see this)',tail:'p = 0.54'})}
+   html:()=>`<p>A pollster asks a <b>random 100 voters</b>. The share of Blue in that sample is the ${tag('sample proportion')}:</p>${eq(raw`\hat p=\frac{x}{n}=\frac{\text{Blue in sample}}{\text{sample size}}`)}${note(`${T('p')} describes the population (a parameter). ${PH} describes a sample (a <b>statistic</b>).`)}`,
+   viz:()=>vizPop({mode:'truth',cap:'The truth (nobody can see this)',tail:`p = ${f2(P)}`})}
  ]},
  {num:'02',name:'One Poll',steps:[
   {cap:'Poll #1',
    enter:()=>{ if(!one.cur) takePoll(); },
    html:()=>{ const k=one.cur.k, ph=k/100, d=ph-P;
-     return `<p>Let&rsquo;s run the poll. 100 voters are picked at random (the highlighted dots) and asked.</p>${eq(`x = <b>${k}</b> said ${Bl}, so ${PH} = ${k} / 100 = <b>${f2(ph)}</b>`)}<p>The truth is p = 0.54, so this poll ${Math.abs(d)<0.0049?'happens to nail it':`is off by <b>${f2(Math.abs(d))}</b> (${d>0?'too high':'too low'})`}. That gap is <b>sampling error</b>.</p>${ph<0.5?rem(`This poll shows ${Rd} ahead, even though ${Bl} will win.`):''}`; },
+     return `<p>100 random voters are asked (highlighted).</p>${eq(raw`\hat p=\frac{x}{n}=\frac{${k}}{100}=${f2(ph)}`)}<p>The truth is ${f2(P)}, so this poll is ${Math.abs(d)<0.0049?'right on':`off by <b>${f2(Math.abs(d))}</b>`}. That gap is <b>sampling error</b>.</p>${ph<0.5?rem(`This poll shows ${Rd} ahead, even though ${Bl} will win.`):''}`; },
    viz:()=>vizPop({mode:'truth',mask:one.cur.mask,sample:one.cur,cap:'Poll #1',tail:'highlighted = asked'})},
   {cap:'Poll again',
-   html:()=>{ const h=one.hist; const lo=Math.min(...h), hi=Math.max(...h);
-     return `<p>Now a second pollster does the same thing with a <i>different</i> random 100 voters. Then a third. Click <b>Take another poll</b> a few times.</p>`+(h.length<2?note('Same election, same voters. What will happen to p&#770;?'):
-       `<p>Same population, same p = 0.54, yet ${PH} keeps changing: so far from <b>${f2(lo)}</b> to <b>${f2(hi)}</b> over ${h.length} polls.</p>${rem(`${PH} varies from sample to sample. That is <b>sampling variability</b>: ${PH} is itself a random quantity.`)}`); },
-   viz:()=>{ const h=one.hist, last=h.length-1;
+   html:()=>{ const h=one.hist, lo=Math.min(...h), hi=Math.max(...h);
+     return `<p>A second pollster asks a <i>different</i> random 100. Click <b>Take another poll</b> a few times.</p>`+(h.length<2?'':
+       `<p>Same voters, same p, but ${PH} ranges from <b>${f2(lo)}</b> to <b>${f2(hi)}</b> over ${h.length} polls.</p>${rem(`${PH} changes from sample to sample: <b>sampling variability</b>.`)}`); },
+   viz:()=>{ const h=one.hist;
      const chips=h.slice(-24).map((v,i,a)=>`<span class="chip${i===a.length-1?' last':''}">${f2(v)}</span>`).join('');
      return vizPop({mode:'truth',mask:one.cur.mask,sample:one.cur,cap:`Poll #${h.length}`,tail:'highlighted = asked',
-       ctl:`<button class="btn primary" data-act="poll">Take another poll</button><span class="lab">p&#770; so far</span><div class="chips">${chips}</div>`}); }},
+       ctl:`<button class="btn primary" data-act="poll">Take another poll</button><span class="lab">${PH} so far</span><div class="chips">${chips}</div>`}); }},
   {cap:'Can we trust a poll?',
-   html:()=>`<p>A poll is only as good as the way it was taken. Two things need to hold:</p><ul class="chk"><li><span><b>Random.</b> Every voter has a fair chance of being picked.</span></li><li><span><b>Independent.</b> One answer doesn&rsquo;t affect another, and when sampling without replacement, n is no more than 10% of the population: 100 &le; 1,000.</span></li></ul><p>When both hold, the way ${PH} bounces around is <i>predictable</i>. To see how, we need many polls.</p>`,
+   html:()=>`<p>Only if the sample is:</p><ul class="chk"><li><span><b>Random:</b> every voter has a fair chance.</span></li><li><span><b>Independent:</b> n is at most 10% of the population (100 &le; 1,000).</span></li></ul><p>Then ${PH} varies in a <i>predictable</i> way. To see it, we need many polls.</p>`,
    viz:()=>vizPop({mode:'truth',mask:one.cur.mask,sample:one.cur,cap:`Poll #${one.hist.length}`,tail:'highlighted = asked'})}
  ]},
  {num:'03',name:'Many Polls',steps:[
   {cap:'Stack them up',
    enter:()=>{ if(sim.n!==100){ sim=mkSim(100); } if(sim.total===0) simAdd(sim,1); },
-   html:()=>`<p>One ${PH} is a single draw. Let&rsquo;s record each poll&rsquo;s ${PH} on a number line and <b>stack one square per poll</b>.</p><p>Click <b>+1</b> a few times to add more polls to the pile.</p>`,
+   html:()=>`<p>Put each poll&rsquo;s ${PH} on a number line, <b>one square per poll</b>. Click <b>+1</b> a few times.</p>`,
    viz:()=>vizHist({cap:'Poll results, stacked',sim,marks:[{x:P,label:'true p = 0.54'}],ctl:addButtons()})},
   {cap:'Keep polling',
-   html:()=>`<p>Imagine hundreds of pollsters, each asking a different random 100 voters. Use <b>+10</b>, <b>+100</b> and <b>+1,000</b> and watch what happens to the shape.</p>`+(sim.total<100?note('Add some more polls to see the pattern.'):`<ul class="chk"><li><span>The squares pile up around <b>0.54</b>, the true p.</span></li><li><span>Far-off results (below 0.40 or above 0.70) are rare.</span></li><li><span>The shape is roughly <b>symmetric and bell-shaped</b>.</span></li></ul>`),
+   html:()=>`<p>Now add <b>+10</b>, <b>+100</b>, <b>+1,000</b>.</p>`+(sim.total<100?note('Add more polls to see the pattern.'):`<ul class="chk"><li><span>Centered at <b>0.54</b>, the true p</span></li><li><span>Symmetric and <b>bell-shaped</b></span></li><li><span>Extreme results are rare</span></li></ul>`),
    viz:()=>vizHist({cap:'Poll results, stacked',sim,marks:[{x:P,label:'true p = 0.54'}],ctl:addButtons()})},
   {cap:'The sampling distribution',
    enter:()=>{ if(sim.n!==100) sim=mkSim(100); if(sim.total<1000) simAdd(sim,1000-sim.total); },
-   html:()=>`<p>This histogram approximates the ${tag('sampling distribution of '+PH)}: how ${PH} behaves across <i>all</i> possible polls of 100 voters. (We topped it up to at least 1,000 polls.)</p>${eq(`<b>Center:</b> mean of ${PH} = p = 0.54`)}${eq(`<b>Spread:</b> SE = &radic;( p(1&minus;p) / n ) = &radic;( 0.54 &middot; 0.46 / 100 ) = <b>${f4(seOf(P,100))}</b>`)}${eq(`<b>Shape:</b> approximately <b>normal</b>`)}<p>The normal curve is a good fit when np &ge; 10 and n(1&minus;p) &ge; 10. Here np = 54 and n(1&minus;p) = 46, so we&rsquo;re fine.</p>${sim.total>=1000?note(`Our simulated polls: mean ${f3(simMean(sim))}, SD ${f4(simSD(sim))}. The theory matches.`):''}`,
+   html:()=>`<p>This is the ${tag('sampling distribution of '+PH)}: how ${PH} behaves across all possible polls of 100.</p>${eq(raw`\text{center}=p=${f2(P)}`)}${eq(raw`SE=\sqrt{\frac{p(1-p)}{n}}=\sqrt{\frac{${f2(P)}(${f2(1-P)})}{100}}=${f4(seOf(P,100))}`)}<p><b>Shape:</b> approximately normal, since ${T('np=54\\ge10')} and ${T('n(1-p)=46\\ge10')}.</p>${sim.total>=1000?note(`Simulated: mean ${f3(simMean(sim))}, SD ${f4(simSD(sim))}.`):''}`,
    viz:()=>vizHist({cap:'Sampling distribution of p&#770;',sim,curve:{mu:P,sd:seOf(P,100)},marks:[{x:P,label:'p = 0.54'}],ctl:addButtons()})},
   {cap:'Sample size matters',
    enter:()=>{ if(sim.total<2000) simAdd(sim,2000-sim.total); },
    html:()=>{ const n=sim.n, se=seOf(P,n);
-     return `<p>What if the pollster asks more (or fewer) voters? Pick a sample size on the right. Each choice re-runs 3,000 polls.</p>${eq(`n = ${n}: SE = &radic;( 0.54 &middot; 0.46 / ${n} ) = <b>${f4(se)}</b>`)}<ul class="chk"><li><span>The center stays at 0.54 however large n is: ${PH} isn&rsquo;t biased.</span></li><li><span><b>Bigger n &rarr; smaller SE &rarr; tighter pile.</b></span></li><li><span>Quadrupling n cuts the SE in half.</span></li></ul>`; },
+     return `<p>Pick a poll size. Each choice re-runs 3,000 polls.</p>${eq(raw`SE=\sqrt{\frac{${f2(P)}(${f2(1-P)})}{${n}}}=${f4(se)}`)}<ul class="chk"><li><span>The center stays at 0.54.</span></li><li><span><b>Bigger n, smaller SE, tighter pile.</b> Quadrupling n halves the SE.</span></li></ul>`; },
    viz:()=>{ const v=vizHist({cap:'Sampling distribution of p&#770;',sim,curve:{mu:P,sd:seOf(P,sim.n)},marks:[{x:P,label:'p = 0.54'}]});
      v.ctl=`<span class="lab">Voters per poll</span>`+seg('setn','n',[[25,'n = 25'],[100,'n = 100'],[400,'n = 400'],[1000,'n = 1,000']],sim.n); return v; }}
  ]},
  {num:'04',name:'Probabilities',steps:[
   {cap:'The normal model',
-   html:()=>`<p>Because the sampling distribution is approximately normal, we can answer &ldquo;how likely?&rdquo; questions with the normal model. For polls of n = 100:</p>${eq(`${PH} &asymp; Normal( mean = <b>0.54</b>, SD = <b>${f4(seOf(P,100))}</b> )`)}<p>The bars are 10,000 simulated polls; the curve is the model.</p>`,
+   html:()=>`<p>Since the sampling distribution is approximately normal, we can find probabilities with the normal model:</p>${eq(raw`\hat p\approx N(\text{mean}=${f2(P)},\ \text{SD}=${f4(seOf(P,100))})`)}${note('Bars: 10,000 simulated polls. Curve: the model.')}`,
    viz:()=>vizHist({cap:'10,000 polls of 100 voters',sim:bigSim(),curve:{mu:P,sd:seOf(P,100)},marks:[{x:P,label:'p = 0.54'}]})},
   {cap:'Can a poll get it wrong?',
    html:()=>{ const se=seOf(P,100), z=(0.5-P)/se, pr=Phi(z), b=bigSim(); let emp=0; b.bins.forEach((c,m)=>{ if(binCtr(m,100)<0.4999) emp+=c; });
-     return `<p>Blue really has 54%. If a pollster surveys 100 voters, what&rsquo;s the probability the poll shows ${Rd} ahead, i.e. ${PH} &lt; 0.50?</p>${eq(`z = (0.50 &minus; 0.54) / ${f4(se)} = <b>${f2(z)}</b>`)}${eq(`P( ${PH} &lt; 0.50 ) = P( Z &lt; ${f2(z)} ) = <b>${f4(pr)}</b>`)}<p>TI-84: ${cd(`normalcdf(-1E99, 0.50, 0.54, ${f4(se)})`)} (2nd &rarr; vars &rarr; 2)</p>${ans(`&asymp; ${(pr*100).toFixed(1)}%`,'about 1 poll in 5 would call the wrong winner')}${note(`In our 10,000 simulated polls, ${(emp/b.total*100).toFixed(1)}% fell below 0.50. Close, but not identical: the bars are discrete (${PH} moves in steps of 0.01) while the curve is smooth.`)}`; },
-   viz:()=>vizHist({cap:'P( p̂ < 0.50 )',sim:bigSim(),curve:{mu:P,sd:seOf(P,100)},areaRange:[0,0.5],shade:c=>c<0.4999,marks:[{x:0.5,label:'0.50'}]})},
+     return `<p>Blue has 54%. What&rsquo;s the chance a poll of 100 shows ${Rd} ahead, ${T('\\hat p<0.50')}?</p>${eq(raw`z=\frac{0.50-${f2(P)}}{${f4(se)}}=${f2(z)}`)}${eq(raw`P(\hat p<0.50)=P(Z<${f2(z)})=${f4(pr)}`)}<p class="note">TI-84: ${cd(`normalcdf(-1E99, 0.50, 0.54, ${f4(se)})`)}</p>${ans(`about ${(pr*100).toFixed(0)}%`,'roughly 1 poll in 5 calls the wrong winner')}${note(`Simulation: ${(emp/b.total*100).toFixed(1)}%. Close; the bars are steps of 0.01, the curve is smooth.`)}`; },
+   viz:()=>vizHist({cap:'Shaded: p&#770; < 0.50',sim:bigSim(),curve:{mu:P,sd:seOf(P,100)},areaRange:[0,0.5],shade:c=>c<0.4999,marks:[{x:0.5,label:'0.50'}]})},
   {cap:'The middle 95%',
    html:()=>{ const se=seOf(P,100), z=Z[0.95], lo=P-z*se, hi=P+z*se, b=bigSim(); let emp=0; b.bins.forEach((c,m)=>{ const x=binCtr(m,100); if(x>=lo&&x<=hi) emp+=c; });
-     return `<p>Flip the question. Between what two values do the <b>middle 95%</b> of polls fall?</p>${eq(`lower: invNorm(0.025, 0.54, ${f4(se)}) = <b>${f4(lo)}</b>`)}${eq(`upper: invNorm(0.975, 0.54, ${f4(se)}) = <b>${f4(hi)}</b>`)}<p>That&rsquo;s 0.54 &plusmn; 1.96 &times; ${f4(se)} = 0.54 &plusmn; ${f4(z*se)}. About <b>95% of polls land within ${f3(z*se)} of the truth</b>.</p>${note(`Simulated: ${(emp/b.total*100).toFixed(1)}% of the 10,000 polls fell in this range.`)}`; },
+     return `<p>Flip it: which two values contain the <b>middle 95%</b> of polls?</p>${eq(raw`0.54\pm1.96(${f4(se)})=(${f3(lo)},\ ${f3(hi)})`)}<p class="note">TI-84: ${cd('invNorm(0.025, 0.54, '+f4(se)+')')} and ${cd('invNorm(0.975, 0.54, '+f4(se)+')')}</p><p>95% of polls land within <b>${f3(z*se)}</b> of the truth.</p>${note(`Simulation: ${(emp/b.total*100).toFixed(1)}%.`)}`; },
    viz:()=>{ const se=seOf(P,100), z=Z[0.95], lo=P-z*se, hi=P+z*se;
-     return vizHist({cap:'The middle 95% of p̂',sim:bigSim(),curve:{mu:P,sd:se},areaRange:[lo,hi],shade:c=>c>=lo&&c<=hi,marks:[{x:lo,label:f3(lo)},{x:hi,label:f3(hi)}]}); }},
+     return vizHist({cap:'The middle 95% of p&#770;',sim:bigSim(),curve:{mu:P,sd:se},areaRange:[lo,hi],shade:c=>c>=lo&&c<=hi,marks:[{x:lo,label:f3(lo)},{x:hi,label:f3(hi)}]}); }},
   {cap:'Try it yourself',
    html:()=>{ const se=seOf(P,100), c=prob.c, z=(c-P)/se, le=prob.dir==='le', pr=le?Phi(z):1-Phi(z), b=bigSim(); let emp=0; b.bins.forEach((n,m)=>{ const x=binCtr(m,100); if(le?x<=c+1e-9:x>=c-1e-9) emp+=n; });
-     return `<p>Choose a cutoff and a direction on the right, then compare the model with the simulation.</p>${eq(`P( ${PH} ${le?'&le;':'&ge;'} ${f2(c)} ) = P( Z ${le?'&le;':'&ge;'} ${f2(z)} ) = <b>${f4(pr)}</b>`)}${note(`Simulated: <b>${(emp/b.total*100).toFixed(1)}%</b> of 10,000 polls. Model: <b>${(pr*100).toFixed(1)}%</b>.`)}${note('Try a cutoff far from 0.54 (like 0.68 or higher): the answer gets very small.')}`; },
+     return `<p>Pick a direction and cutoff.</p>${eq(raw`P(\hat p ${le?'\\le':'\\ge'} ${f2(c)})=P(Z${le?'\\le':'\\ge'}${f2(z)})=${f4(pr)}`)}${note(`Model: <b>${(pr*100).toFixed(1)}%</b>. Simulation: <b>${(emp/b.total*100).toFixed(1)}%</b>.`)}`; },
    viz:()=>{ const se=seOf(P,100), c=prob.c, le=prob.dir==='le';
-     const v=vizHist({cap:`P( p̂ ${le?'≤':'≥'} ${f2(c)} )`,sim:bigSim(),curve:{mu:P,sd:se},areaRange:le?[0,c]:[c,1],shade:x=>le?x<=c+1e-9:x>=c-1e-9,marks:[{x:c,label:f2(c)}]});
+     const v=vizHist({cap:`Shaded: ${le?'p&#770; ≤':'p&#770; ≥'} ${f2(c)}`,sim:bigSim(),curve:{mu:P,sd:se},areaRange:le?[0,c]:[c,1],shade:x=>le?x<=c+1e-9:x>=c-1e-9,marks:[{x:c,label:f2(c)}]});
      v.ctl=`<span class="lab">Direction</span>`+seg('dir','dir',[['le','at most'],['ge','at least']],prob.dir)+`<span class="lab">Cutoff</span><button class="btn" data-act="cut" data-v="-0.05">&minus;0.05</button><button class="btn" data-act="cut" data-v="-0.01">&minus;0.01</button><button class="btn" data-act="cut" data-v="0.01">+0.01</button><button class="btn" data-act="cut" data-v="0.05">+0.05</button>`; return v; }}
  ]},
  {num:'05',name:'Confidence Intervals',steps:[
   {cap:'Real life',
    enter:()=>{ if(!ci.single) newSingle(); },
-   html:()=>{ const c=ci.single; return `<p>Here&rsquo;s the catch: in real life <b>nobody knows p</b>, and we get <b>one poll</b>, not thousands. Say we poll ${c.n} voters:</p>${eq(`${PH} = ${c.k} / ${c.n} = <b>${f2(c.ph)}</b>`)}<p>Is p exactly ${f2(c.ph)}? Almost certainly not (remember the last two chapters). What <i>can</i> we say about p?</p>${note('Instead of a single guess, we give a <b>range of plausible values</b>.')}`; },
+   html:()=>{ const c=ci.single; return `<p>In real life nobody knows p, and we get <b>one poll</b>:</p>${eq(raw`\hat p=\frac{${c.k}}{${c.n}}=${f2(c.ph)}`)}<p>p is probably not exactly ${f2(c.ph)}. So we report a <b>range of plausible values</b> instead.</p>`; },
    viz:()=>({cap:'One poll, true p unknown',tail:`n = ${ci.single.n}`,body:singleSVG(ci.single,false),ctl:`<button class="btn primary" data-act="newci">New poll</button>`})},
   {cap:'Building the interval',
-   html:()=>{ const c=ci.single, z=Z[ci.level]; return `<p>From last chapter: <b>${pctTxt(ci.level)}</b> of polls land within ${f3(z)} standard errors of p. Turn that around: if ${PH} is within ${f3(z)} SE of p, then <b>p is within ${f3(z)} SE of ${PH}</b>.</p><p>So draw an interval around ${PH}. We don&rsquo;t know p, so we estimate the SE using ${PH}:</p>${eq(`SE = &radic;( ${PH}(1&minus;${PH}) / n ) = &radic;( ${f2(c.ph)} &middot; ${f2(1-c.ph)} / ${c.n} ) = <b>${f4(c.se)}</b>`)}${eq(`ME = z* &middot; SE = ${f3(z)} &middot; ${f4(c.se)} = <b>${f4(c.me)}</b>`)}${eq(`CI = ${PH} &plusmn; ME = <b>(${f3(c.lo)}, ${f3(c.hi)})</b>`)}${note(`TI-84: STAT &rarr; TESTS &rarr; A:1-PropZInt( x = ${c.k}, n = ${c.n}, C-Level = ${ci.level} )`)}`; },
-   viz:()=>({cap:`${pctTxt(ci.level)} confidence interval`,tail:`n = ${ci.single.n}`,body:singleSVG(ci.single,false),ctl:`<button class="btn primary" data-act="newci">New poll</button>`})},
+   html:()=>{ const c=ci.single, z=Z[0.95]; return `<p>${'95%'} of polls land within ${f3(z)} SE of p. Flip it: p is within ${f3(z)} SE of ${PH}. We estimate SE using ${PH}:</p>${eq(raw`SE=\sqrt{\frac{\hat p(1-\hat p)}{n}}=\sqrt{\frac{${f2(c.ph)}(${f2(1-c.ph)})}{${c.n}}}=${f4(c.se)}`)}${eq(raw`ME=z^*\cdot SE=${f3(z)}(${f4(c.se)})=${f4(c.me)}`)}${eq(raw`CI=\hat p\pm ME=(${f3(c.lo)},\ ${f3(c.hi)})`)}<p class="note">TI-84: STAT &rarr; TESTS &rarr; A:1-PropZInt</p>`; },
+   viz:()=>({cap:`${'95%'} confidence interval`,tail:`n = ${ci.single.n}`,body:singleSVG(ci.single,false),ctl:`<button class="btn primary" data-act="newci">New poll</button>`})},
   {cap:'Did we capture p?',
-   html:()=>{ const c=ci.single, t=ci.tally; return `<p>Now we&rsquo;ll lift the curtain: the true p is <b>0.54</b>. This interval ${c.hit?`<b style="color:var(--ok)">does capture</b>`:`<b style="color:var(--acc)">misses</b>`} it.</p><p>Click <b>New poll</b> a bunch of times and keep an eye on the tally.</p>${ans(`${t.hit} of ${t.n} intervals captured p`,t.n?`${(t.hit/t.n*100).toFixed(0)}% so far (the method promises ${pctTxt(ci.level)} in the long run)`:'')}`; },
+   html:()=>{ const c=ci.single, t=ci.tally; return `<p>Reveal: the true p is <b>0.54</b>. This interval ${c.hit?`<b style="color:var(--ok)">captures</b>`:`<b style="color:var(--acc)">misses</b>`} it. Click <b>New poll</b> a bunch of times.</p>${ans(`${t.hit} of ${t.n} captured p`,t.n?`${(t.hit/t.n*100).toFixed(0)}% so far; the method promises ${'95%'} in the long run`:'')}`; },
    viz:()=>({cap:'Reveal',tail:`n = ${ci.single.n}`,body:singleSVG(ci.single,true),ctl:`<button class="btn primary" data-act="newci">New poll</button><span class="sp"></span><div class="readout"><span>captured: <b>${ci.tally.hit} / ${ci.tally.n}</b></span></div>`})},
   {cap:'100 polls, 100 intervals',
-   enter:()=>{ if(!ci.run.length) runForest(); },
-   html:()=>{ const r=ci.run, hit=r.filter(c=>c.hit).length, cu=ci.cum;
-     return `<p>Let&rsquo;s do it 100 times at once. Each row is a separate poll with its own interval. <span class="tag">Gold</span> rows missed p.</p>${ans(`${hit} of ${r.length} captured p`,`all runs so far: ${cu.hit} of ${cu.n} (${(cu.hit/cu.n*100).toFixed(1)}%)`)}<p>This is what &ldquo;${pctTxt(ci.level)} confident&rdquo; means: <b>if we repeated the polling many times, about ${pctTxt(ci.level)} of the intervals would capture the true p</b>. The confidence is in the <i>method</i>. Once we have one interval, p is either in it or not.</p>${rem('We are '+pctTxt(ci.level)+' confident that the true population proportion is within the interval obtained.')}`; },
-   viz:()=>({cap:'100 polls, 100 intervals',tail:`n = ${ci.n}, ${pctTxt(ci.level)}`,body:forestSVG(),ctl:`<button class="btn primary" data-act="forest">Run 100 more polls</button>`})},
+   enter:()=>{ if(!ci.zs) newZs(); },
+   html:()=>{ const r=ci.run, hit=r.filter(c=>c.hit).length;
+     return `<p>Each row is a separate poll of ${ci.n}. <span class="tag">Gold</span> rows missed p.</p>${ans(`${hit} of ${r.length} captured p`,`${pctTxt(ci.level)} confidence`)}${rem(`We are ${pctTxt(ci.level)} confident that the true population proportion is within the interval obtained.`)}<p class="note">The confidence is in the <i>method</i>: about ${pctTxt(ci.level)} of intervals capture p. Any one interval either does or doesn&rsquo;t.</p>`; },
+   viz:()=>({cap:'100 polls, 100 intervals',tail:`n = ${ci.n}, ${pctTxt(ci.level)}`,body:`<div id="fbody">${forestSVG()}</div>`,ctl:`<button class="btn primary" data-act="forest">New set of 100 polls</button>`})},
   {cap:'What changes the width?',
-   html:()=>{ const r=ci.run, w=r.reduce((a,c)=>a+2*c.me,0)/r.length;
-     return `<p>Change the confidence level or the sample size and watch the intervals.</p><ul class="chk"><li><span><b>Higher confidence &rarr; wider.</b> A bigger z* means a bigger margin of error (z* = 1.282, 1.645, 1.960, 2.576 for 80, 90, 95, 99%).</span></li><li><span><b>Larger n &rarr; narrower.</b> n &uarr; &rarr; SE &darr; &rarr; ME &darr; &rarr; width &darr;.</span></li></ul>${ans(`average width: ${f3(w)}`,`${pctTxt(ci.level)} confidence, n = ${ci.n}`)}${note(`Coverage stays near the confidence level in every case: <b>${ci.cum.hit} of ${ci.cum.n}</b> (${(ci.cum.hit/ci.cum.n*100).toFixed(1)}%). Wider intervals buy more confidence, not more accuracy.`)}`; },
-   viz:()=>({cap:'100 polls, 100 intervals',tail:`n = ${ci.n}, ${pctTxt(ci.level)}`,body:forestSVG(),
-     ctl:`<span class="lab">Confidence</span>`+seg('level','level',[[0.8,'80%'],[0.9,'90%'],[0.95,'95%'],[0.99,'99%']],ci.level)+`<span class="lab">n</span>`+seg('cin','n',[[25,'25'],[100,'100'],[400,'400'],[1000,'1,000']],ci.n)+`<span class="sp"></span><button class="btn primary" data-act="forest">Run 100 more</button>`})},
+   html:()=>{ const r=ci.run, w=r.reduce((a,c)=>a+2*c.me,0)/r.length, hit=r.filter(c=>c.hit).length;
+     return `<p>Drag the sliders. The same 100 polls stay put; only the interval widths are recalculated.</p><ul class="chk"><li><span><b>Higher confidence, wider interval</b> (bigger z*).</span></li><li><span><b>Larger n, narrower interval</b> (smaller SE).</span></li></ul>${ans(`average width: ${f3(w)}`,`z* = ${f3(zOf(ci.level))}, n = ${ci.n}`)}${note(`${hit} of 100 captured p.`)}`; },
+   viz:()=>({cap:'100 polls, 100 intervals',tail:`n = ${ci.n}, ${pctTxt(ci.level)}`,body:`<div id="fbody">${forestSVG()}</div>`,
+     ctl:`<label class="sl"><span class="lab">Confidence</span><input type="range" id="slC" min="80" max="99" step="1" value="${Math.round(ci.level*100)}" aria-label="Confidence level"><b id="vC">${pctTxt(ci.level)}</b></label><label class="sl"><span class="lab">Poll size</span><input type="range" id="slN" min="0" max="1000" step="1" value="${nToPos(ci.n)}" aria-label="Sample size"><b id="vN">n = ${ci.n}</b></label>`})},
   {cap:'How many voters?',
-   html:()=>{ const z=Z[ss.level], n=needN(ss.level,ss.me), raw=z*z*0.25/(ss.me*ss.me);
-     return `<p>Flip it once more: instead of asking &ldquo;how wide is my interval?&rdquo; ask <b>&ldquo;how many voters must I poll for a margin of error I can live with?&rdquo;</b></p><p>Before polling we have no ${PH}, so use the worst case ${PH} = 0.5 (it makes the SE as large as possible):</p>${eq(`ME = z*&radic;( 0.5 &middot; 0.5 / n ) &nbsp;&rArr;&nbsp; n = z*&sup2; &middot; 0.25 / ME&sup2;`)}${eq(`n = (${f3(z)})&sup2; &middot; 0.25 / (${ss.me})&sup2; = ${raw.toFixed(1)}`)}${ans(`n = ${n.toLocaleString()} voters`,'always round UP: you can&rsquo;t poll a fraction of a person')}${note('Cutting the margin of error in half takes <b>four times</b> as many voters.')}`; },
+   html:()=>{ const z=Z[ss.level], n=needN(ss.level,ss.me), rawN=z*z*0.25/(ss.me*ss.me);
+     return `<p>To get a margin of error we can live with, how many should we poll? Before polling there&rsquo;s no ${PH}, so use the worst case 0.5:</p>${eq(raw`n=\frac{z^{*2}(0.5)(0.5)}{ME^2}=\frac{(${f3(z)})^2(0.25)}{(${ss.me})^2}=${rawN.toFixed(1)}`)}${ans(`n = ${n.toLocaleString()} voters`,'always round up')}${note('Half the margin of error needs <b>four times</b> the voters.')}`; },
    viz:()=>{ const rows=[0.1,0.05,0.03,0.02,0.01], mx=needN(ss.level,0.01);
      const bars=rows.map(m=>{ const n=needN(ss.level,m); return `<button class="nb${m===ss.me?' on':''}" data-act="me" data-v="${m}"><span>&plusmn;${m*100}%</span><span class="trk"><span class="fil" style="width:${Math.max(.5,n/mx*100)}%"></span></span><span class="v">${n.toLocaleString()}</span></button>`; }).join('');
      return {cap:'Voters needed for a margin of error',tail:`${pctTxt(ss.level)} confidence`,body:`<div class="nbars">${bars}</div>`,
        ctl:`<span class="lab">Confidence</span>`+seg('sslevel','level',[[0.9,'90%'],[0.95,'95%'],[0.99,'99%']],ss.level)+`<span class="lab" style="margin-left:.6em">Click a row to pick the margin of error</span>`}; }},
   {cap:'The whole story',
-   html:()=>`<p>We started with 10,000 voters and one unknown number, and ended up able to say how wrong a poll is likely to be. Here is the path we took.</p><p>Next up: apply the same recipe to your own problems (a gym, a phone plan, a latte survey).</p>`,
+   html:()=>`<p>From 10,000 voters and one unknown number to a statement about how far off a poll is likely to be.</p>`,
    viz:()=>({cap:'Recap',tail:'Chapters 1 to 5',body:`<table class="sum">
-     <tr><td>PARAMETER</td><td><b>p</b> = 0.54, the true share of ${Bl} voters. Fixed, unknown.</td></tr>
-     <tr><td>STATISTIC</td><td>${PH} = x / n, the share in <i>one</i> poll. Changes from poll to poll.</td></tr>
-     <tr><td>SAMPLING DIST.</td><td>All the ${PH}&rsquo;s from polls of size n: centered at p, SE = &radic;( p(1&minus;p)/n ), approximately normal.</td></tr>
-     <tr><td>PROBABILITY</td><td>Use normalcdf and invNorm on Normal( p, SE ).</td></tr>
-     <tr><td>CONFIDENCE INT.</td><td>${PH} &plusmn; z*&radic;( ${PH}(1&minus;${PH})/n ). About C% of such intervals capture p.</td></tr>
-     <tr><td>WIDTH</td><td>&uarr; confidence &rarr; wider. &uarr; n &rarr; narrower.</td></tr>
-     <tr><td>SAMPLE SIZE</td><td>n = z*&sup2; &middot; 0.25 / ME&sup2;, rounded up.</td></tr></table>`})}
+     <tr><td>PARAMETER</td><td>${tex(raw`p=\frac{\text{Blue voters}}{\text{all voters}}`)} Fixed, unknown.</td></tr>
+     <tr><td>STATISTIC</td><td>${tex(raw`\hat p=\frac{x}{n}`)} Changes poll to poll.</td></tr>
+     <tr><td>SAMPLING DIST.</td><td>Center ${T('p')}, ${tex(raw`SE=\sqrt{\tfrac{p(1-p)}{n}}`)}, approximately normal.</td></tr>
+     <tr><td>PROBABILITY</td><td>normalcdf and invNorm on the normal model.</td></tr>
+     <tr><td>CONFIDENCE INT.</td><td>${tex(raw`\hat p\pm z^*\sqrt{\tfrac{\hat p(1-\hat p)}{n}}`)}</td></tr>
+     <tr><td>WIDTH</td><td>More confidence: wider. Larger n: narrower.</td></tr>
+     <tr><td>SAMPLE SIZE</td><td>${tex(raw`n=\tfrac{z^{*2}(0.25)}{ME^2}`)} rounded up.</td></tr></table>`})}
  ]}
 ];
 const steps=[]; chapters.forEach((c,ci_)=>c.steps.forEach((s,i)=>steps.push(Object.assign({ch:ci_,i},s))));
@@ -472,28 +501,38 @@ const steps=[]; chapters.forEach((c,ci_)=>c.steps.forEach((s,i)=>steps.push(Obje
 function refreshAfter(){ render(false); }
 const actions={
   poll:()=>{ takePoll(); },
+  sort:()=>{ st.sorted=!st.sorted; },
   add:v=>{ simAdd(sim,+v); },
   clearsim:()=>{ sim=mkSim(sim.n); },
   setn:v=>{ sim=mkSim(+v); simAdd(sim,3000); },
   dir:v=>{ prob.dir=v; },
   cut:v=>{ prob.c=Math.min(0.9,Math.max(0.2,Math.round((prob.c+ +v)*100)/100)); },
   newci:()=>{ newSingle(); },
-  forest:()=>{ runForest(); },
-  level:v=>{ ci.level=+v; resetCI(); runForest(); },
-  cin:v=>{ ci.n=+v; resetCI(); runForest(); },
+  forest:()=>{ newZs(); },
   sslevel:v=>{ ss.level=+v; },
   me:v=>{ ss.me=+v; }
 };
 
 /* ---------- rendering ---------- */
+function leftHTML(){
+  const s=steps[st.g], ch=chapters[s.ch], cards=steps.filter(x=>x.ch===s.ch && x.i<=s.i);
+  return cards.map((c,k)=>`<div class="ln${k===cards.length-1?' now':''}"><div class="cap">${ch.num} // ${c.cap}</div>${c.html()}</div>`).join('');
+}
+// sliders: update the story cards and the interval chart in place, so the slider being dragged is never rebuilt
+function liveCI(){
+  ci.run=forestRun(); $('#stage').classList.remove('anim');
+  $('#colL').innerHTML=leftHTML(); $('#fbody').innerHTML=forestSVG();
+  $('#vC').textContent=pctTxt(ci.level); $('#vN').textContent='n = '+ci.n; $('#vtail').textContent=`n = ${ci.n}, ${pctTxt(ci.level)}`;
+}
 function render(anim){
   const s=steps[st.g], ch=chapters[s.ch];
   if(anim) steps.filter(x=>x.ch===s.ch && x.i<=s.i).forEach(x=>{ if(x.enter) x.enter(); });
-  const cards=steps.filter(x=>x.ch===s.ch && x.i<=s.i);
-  const left=cards.map((c,k)=>`<div class="ln${k===cards.length-1?' now':''}"><div class="cap">${ch.num} // ${c.cap}</div>${c.html()}</div>`).join('');
-  const v=s.viz();
+  if(s.ch===4) ci.run=forestRun();
+  const left=leftHTML();
+  const v=s.viz(); const fx=h=>(h||'').replace(/p&#770;/g,PH);
+  v.cap=fx(v.cap); v.tail=fx(v.tail); v.ctl=fx(v.ctl); v.body=fx(v.body);
   $('#stage').className='stage'+(anim?' anim':'');
-  $('#stage').innerHTML=`<div class="duo"><div class="col left" id="colL">${left}</div><div class="col right"><section class="viz"><div class="vcap"><span>${v.cap}</span><span>${v.tail||''}</span></div><div class="vbody">${v.body}</div>${v.ctl?`<div class="ctl">${v.ctl}</div>`:''}</section></div></div>`;
+  $('#stage').innerHTML=`<div class="duo"><div class="col left" id="colL">${left}</div><div class="col right"><section class="viz"><div class="vcap"><span>${v.cap}</span><span id="vtail">${v.tail||''}</span></div><div class="vbody">${v.body}</div>${v.ctl?`<div class="ctl">${v.ctl}</div>`:''}</section></div></div>`;
   if(anim){ const l=$('#colL'); l.scrollTop=l.scrollHeight; }
   requestAnimationFrame(drawPop);
   // chrome
@@ -511,7 +550,9 @@ $('#tabs').addEventListener('click',e=>{ const b=e.target.closest('.tab'); if(b)
 $('#dots').addEventListener('click',e=>{ const b=e.target.closest('.dot'); if(b) go(+b.dataset.g); });
 $('#prev').addEventListener('click',()=>go(st.g-1));
 $('#next').addEventListener('click',()=>go(st.g+1));
-$('#stage').addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(!b) return; const a=actions[b.dataset.act]; if(a){ a(b.dataset.v); refreshAfter(); } });
+$('#stage').addEventListener('click',e=>{ if(e.target.id==='pop'&&view.mode==='truth'){ st.sorted=!st.sorted; render(false); return; } const b=e.target.closest('[data-act]'); if(!b) return; const a=actions[b.dataset.act]; if(a){ a(b.dataset.v); refreshAfter(); } });
+$('#stage').addEventListener('input',e=>{ const t=e.target;
+  if(t.id==='slC') ci.level=+t.value/100; else if(t.id==='slN') ci.n=posToN(+t.value); else return; liveCI(); });
 $('#themeBtn').addEventListener('click',()=>{ st.theme=st.theme==='dark'?'light':'dark'; document.documentElement.dataset.theme=st.theme; $('#themeBtn').innerHTML=st.theme==='dark'?'&#9790;':'&#9728;'; render(false); });
 document.addEventListener('keydown',e=>{ if(e.metaKey||e.ctrlKey||e.altKey) return;
   if(e.key==='ArrowRight') go(st.g+1); else if(e.key==='ArrowLeft') go(st.g-1); else if(e.key==='r'||e.key==='R') go(0); });
