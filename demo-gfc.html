@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ben_sacks | The 2008 Financial Crisis, Explained</title>
+<meta name="description" content="An interactive, visual explainer of the 2008 global financial crisis: from a single mortgage to MBS, tranches, CDOs, leverage, and the collapse, with practice questions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400..900;1,8..60,400..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --mono:'Space Mono',ui-monospace,Menlo,Consolas,monospace;
+  --bg:#1e1e1e; --panel:#252525; --ink:#ececec; --muted:#a3a3a3; --line:#3d3d3d; --soft:#2d2d2d;
+  --blue:#4a8cff; --green:#2ecc71; --acc:#e3b505; --accHot:rgba(227,181,5,.18); --accInk:#f2cc3a; --onAcc:#1e1e1e;
+  --red:#ff5a4f; --ok:#3ddc84; --bad:#ff6b6b;
+  --tAAA:#2ecc71; --tMEZ:#4a8cff; --tBBB:#e3b505; --tEQ:#ff5a4f;
+  --shadow:none; color-scheme:dark;
+}
+[data-theme=light]{
+  --bg:#f3f1ea; --panel:#ffffff; --ink:#1e1e1e; --muted:#5f5f5f; --line:#d6d3c8; --soft:#eceae1;
+  --blue:#1565e0; --green:#0f9d58; --acc:#d9a800; --accHot:rgba(217,168,0,.2); --accInk:#6b5200; --onAcc:#1e1e1e;
+  --red:#d93025; --ok:#0b7f44; --bad:#c62828;
+  --tAAA:#0f9d58; --tMEZ:#1565e0; --tBBB:#c99700; --tEQ:#d93025;
+  --shadow:0 1px 2px rgba(20,25,40,.05),0 6px 18px rgba(20,25,40,.06); color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:7.2em}
+body{margin:0;font-family:var(--serif);font-variant-numeric:lining-nums;background:var(--bg);color:var(--ink);font-size:clamp(16px,.3vw + 15px,19px);line-height:1.62;-webkit-font-smoothing:antialiased}
+a{color:var(--accInk)}
+a:hover{color:var(--acc)}
+button{font:inherit;color:inherit}
+em{font-style:italic}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+
+/* progress + header */
+.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:50;background:transparent}
+.progress i{display:block;height:100%;width:0;background:var(--acc)}
+header.top{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--panel) 94%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topin{display:flex;align-items:center;gap:.7em;padding:.45em 1em;flex-wrap:wrap}
+.brand{font-weight:800;font-size:1em;display:flex;align-items:center;gap:.5em;white-space:nowrap;text-decoration:none;color:var(--ink)}
+.brand span.arrow{font-family:var(--mono);color:var(--muted)}
+.brand:hover{color:var(--acc)}
+.spacer{flex:1}
+.score{font:700 .78em var(--mono);padding:.3em .75em;border:1px solid var(--acc);border-radius:999px;color:var(--accInk);white-space:nowrap}
+.btn{border:1px solid var(--line);background:var(--panel);padding:.4em .85em;border-radius:10px;cursor:pointer;font-weight:600;line-height:1.2;font-family:var(--mono);font-size:.85em}
+.btn:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}
+.btn.sm{padding:.3em .7em;font-size:.78em}
+.btn.primary{border-color:var(--acc);color:var(--accInk)}
+.btn.primary:hover:not(:disabled){background:var(--accHot)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+nav.tabs{display:flex;gap:.2em;overflow-x:auto;padding:0 .8em .4em;scrollbar-width:thin}
+.tab{border:0;background:transparent;padding:.28em .6em;border-radius:8px;cursor:pointer;white-space:nowrap;font:700 .74em var(--mono);color:var(--muted);text-decoration:none}
+.tab b{opacity:.55;margin-right:.35em}
+.tab:hover{background:var(--soft);color:var(--ink)}
+.tab.on{background:var(--acc);color:var(--onAcc)}
+
+/* layout */
+main{max-width:960px;margin:0 auto;padding:0 18px 4em}
+section.sec{margin:4.5em 0 0}
+.sh{border-bottom:2px solid var(--line);padding-bottom:.6em;margin-bottom:1.2em}
+.sh .num{font:700 .85em var(--mono);color:var(--accInk);letter-spacing:.08em}
+.sh h2{margin:.1em 0 .1em;font-size:clamp(1.7rem,3vw + .8rem,2.6rem);line-height:1.12;letter-spacing:-.015em;font-weight:800}
+.sh .kicker{margin:.3em 0 0;color:var(--muted);font-size:1.05em}
+h3{font-size:1.35em;margin:2em 0 .3em;line-height:1.25}
+.prose p,.prose li{max-width:68ch}
+.prose ul,.prose ol{padding-left:1.3em}
+.prose li{margin:.35em 0}
+.prose p{margin:.8em 0}
+.eyebrow{font:700 .8em var(--mono);color:var(--accInk);letter-spacing:.1em;margin:2.5em 0 .2em}
+h1{font-size:clamp(2.1rem,5vw + .6rem,3.7rem);line-height:1.05;letter-spacing:-.025em;font-weight:900;margin:.1em 0 .3em}
+.lede{font-size:1.2em;color:var(--ink);max-width:62ch}
+.lede em{color:var(--accInk);font-style:normal;font-weight:700}
+.term{border-bottom:2px dotted var(--acc);font-weight:700}
+
+/* figures */
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:.9em 1em 1em;margin:1.4em 0;box-shadow:var(--shadow)}
+.figh{font:700 .78em var(--mono);color:var(--accInk);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.5em;display:flex;gap:.6em;align-items:center}
+.figh .tryit{background:var(--acc);color:var(--onAcc);padding:.05em .55em;border-radius:6px}
+.fig .cap{color:var(--muted);font-size:.92em;margin:.5em 0 0}
+.chartbox,.tlchart{overflow-x:auto;overflow-y:hidden}
+svg.chart{display:block;width:100%;height:auto;min-width:420px;font-family:var(--serif)}
+svg.chain{display:block;width:100%;height:auto;min-width:760px;font-family:var(--serif)}
+.badge{display:inline-block;vertical-align:middle;flex:none}
+.who{display:inline-flex;align-items:center;gap:.28em;vertical-align:middle;white-space:nowrap}
+.who b{font-weight:800}
+.who svg{vertical-align:-.45em}
+svg .tk{font:11px var(--mono);fill:var(--muted)}
+svg .gl{stroke:var(--line);stroke-width:1}
+svg .al{font:700 11px var(--mono);fill:var(--muted)}
+svg .al3{font:600 11.5px var(--serif);fill:var(--muted)}
+svg .bl{font:700 10.5px var(--mono);fill:var(--muted)}
+svg .sl2{font:800 12px var(--serif)}
+svg .tv{font:800 13px var(--serif);fill:var(--ink)}
+svg .tt{font:800 11.5px var(--mono);fill:var(--ink)}
+svg .nt{font:800 13px var(--serif);fill:var(--ink)}
+svg .ns{font:600 11.5px var(--serif)}
+svg .rt{font:800 13px var(--mono);fill:var(--ink);letter-spacing:.02em}
+svg .rtag{font:600 12.5px var(--serif)}
+svg .note2{font:600 13px var(--serif);fill:var(--muted)}
+svg .st{font:800 14px var(--serif);fill:var(--ink)}
+svg .sd{font:12.5px var(--serif);fill:var(--muted)}
+svg .sn{font:700 12px var(--mono);fill:var(--ink)}
+svg text.sw{font:700 9.5px var(--mono);fill:var(--red);letter-spacing:.08em}
+svg .sf{font:600 12px var(--serif);fill:var(--ink)}
+svg .sr{font:700 13px var(--serif);fill:var(--red)}
+svg .cn{font:700 13px var(--serif);fill:var(--ink)}
+svg a.stn{cursor:pointer}
+svg a.stn:hover .st{fill:var(--acc)}
+svg .mk{cursor:pointer}
+svg .mk circle{fill:var(--panel);stroke:var(--acc);stroke-width:2.4}
+svg .mk text{font:800 10px var(--mono);fill:var(--ink);pointer-events:none}
+svg .mk.on circle{fill:var(--acc)}
+svg .mk.on text{fill:var(--onAcc)}
+svg .mk:hover circle{fill:var(--accHot)}
+
+/* modules */
+.mod .ctl{display:flex;flex-direction:column;gap:.5em;margin-bottom:.8em}
+.sl{display:grid;grid-template-columns:minmax(10em,17em) minmax(0,1fr) 6.5em;gap:.7em;align-items:center;font-size:.95em;font-weight:600}
+.sl output{font:700 .95em var(--mono);color:var(--accInk);text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:1.6em}
+.row{display:flex;align-items:center;gap:.7em;flex-wrap:wrap}
+.lab{font-weight:600;font-size:.95em}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-wrap:wrap}
+.seg label{cursor:pointer}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:block;padding:.35em .85em;font:700 .8em var(--mono);color:var(--muted);border-right:1px solid var(--line)}
+.seg label:last-child span{border-right:0}
+.seg input:checked+span{background:var(--acc);color:var(--onAcc)}
+.seg input:focus-visible+span{outline:3px solid var(--acc);outline-offset:-3px}
+.presets{display:flex;gap:.4em;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(10.5em,1fr));gap:.6em;margin:.7em 0}
+.stats.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.stats.one{grid-template-columns:1fr}
+.stat{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:.5em .75em}
+.stat.hot{border-color:var(--red);background:color-mix(in srgb,var(--red) 10%,var(--soft))}
+.stat span{display:block;font:700 .7em var(--mono);color:var(--muted);letter-spacing:.03em}
+.stat b{display:block;font-size:1.55em;line-height:1.2;font-weight:800}
+.stat small{color:var(--muted);font-size:.8em}
+.note{color:var(--muted);font-size:.93em;margin:.6em 0 0}
+.note b{color:var(--ink)}
+.callout{border-left:4px solid var(--acc);background:var(--accHot);border-radius:0 12px 12px 0;padding:.6em .9em;margin:.8em 0;font-size:.97em}
+.callout.good{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 11%,transparent)}
+.callout.warn{border-color:var(--acc);background:var(--accHot)}
+.callout.bad{border-color:var(--red);background:color-mix(in srgb,var(--red) 11%,transparent)}
+.callout h4{margin:0 0 .2em;font-size:1em}
+.callout p{margin:.3em 0}
+.real{display:grid;grid-template-columns:auto 1fr;gap:.9em;align-items:start;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:0 14px 14px 0;padding:.8em 1em;margin:1.2em 0}
+.real h4{margin:0 0 .15em;font-size:1.05em}
+.real p{margin:.3em 0;font-size:.97em}
+.real .tag{font:700 .68em var(--mono);color:var(--accInk);letter-spacing:.08em}
+
+.armrows{display:flex;flex-direction:column;gap:.5em;margin:.6em 0}
+.arow{display:grid;grid-template-columns:8.5em minmax(0,1fr) 10.5em;gap:.7em;align-items:center}
+.al2{font-weight:700;line-height:1.2}.al2 small,.av small,.dl small{color:var(--muted);font-weight:500}
+.atrack{background:var(--soft);border-radius:8px;height:2.1em;overflow:hidden}.atrack i{display:block;height:100%;border-radius:8px}
+.av{line-height:1.25}
+.eqgrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:1em;align-items:center}
+.divb{display:flex;flex-direction:column;gap:.5em;margin:.6em 0}
+.drow{display:grid;grid-template-columns:11em minmax(0,1fr) 6em;gap:.7em;align-items:center;padding:.25em .4em;border-radius:10px}
+.drow.sel{background:var(--accHot)}
+.dl{font-weight:700;line-height:1.2}
+.dtrack{position:relative;height:1.9em;background:var(--soft);border-radius:6px}
+.dtrack .bar{position:absolute;top:0;bottom:0;border-radius:4px}
+.dtrack .zero{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.7;z-index:2}
+.dv{font:800 1em var(--mono);text-align:right}
+.wf{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:1em;align-items:start}
+.cdogrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,.9fr);gap:.8em}
+.levgrid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:1em;align-items:center}
+table.tbl{border-collapse:collapse;width:100%;font-size:.93em}
+.tbl th{font:700 .72em var(--mono);color:var(--muted);text-align:left;padding:.4em .5em;border-bottom:2px solid var(--line)}
+.tbl td{padding:.45em .5em;border-bottom:1px solid var(--line);vertical-align:middle}
+i.sw{display:inline-block;width:.8em;height:.8em;border-radius:3px;margin-right:.5em;vertical-align:-.05em}
+.chip{display:inline-block;padding:.05em .6em;border-radius:999px;font:700 .78em var(--mono);border:1px solid var(--line);white-space:nowrap}
+.chip.ok{color:var(--ok);border-color:var(--ok)}.chip.warn{color:var(--accInk);border-color:var(--acc);background:var(--accHot)}.chip.bad{color:#fff;background:var(--red);border-color:var(--red)}
+
+/* timeline card */
+.tlcard{display:grid;grid-template-columns:auto 1fr;gap:1em;background:var(--soft);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:0 14px 14px 0;padding:.8em 1em;margin-top:.6em;min-height:8.5em}
+.tlcard h4{margin:.05em 0 .25em;font-size:1.15em;line-height:1.25}
+.tlcard p{margin:0;font-size:.97em}
+.tldate{font:700 .72em var(--mono);color:var(--accInk);letter-spacing:.04em}
+.tlnav{display:flex;justify-content:space-between;align-items:center;gap:.6em;margin-top:.6em;flex-wrap:wrap}
+.hintx{color:var(--muted);font-size:.85em}
+
+/* vertical timeline */
+.vt{position:relative;margin:1em 0;padding-left:0}
+.vt .ev{display:grid;grid-template-columns:5.2em 3em 1fr;gap:.8em;align-items:start;padding:.55em 0;border-top:1px dashed var(--line)}
+.vt .ev:first-child{border-top:0}
+.vt .d{font:700 .78em var(--mono);color:var(--accInk);padding-top:.5em}
+.vt h4{margin:.1em 0 .15em;font-size:1.02em}
+.vt p{margin:0;font-size:.94em;color:var(--muted)}
+.vt p b{color:var(--ink)}
+
+/* cards */
+.cast{display:grid;grid-template-columns:repeat(auto-fill,minmax(15.5em,1fr));gap:.7em;margin:1em 0}
+.cc{display:grid;grid-template-columns:auto 1fr;gap:.7em;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.6em .75em;align-items:start}
+.cc b{display:block;line-height:1.2}.cc small{color:var(--muted);display:block;line-height:1.35;font-size:.85em;margin-top:.15em}
+.cc .at{font:700 .68em var(--mono);color:var(--accInk)}
+.bigstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:.7em;margin:1em 0}
+.bs{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.7em .85em}
+.bs b{display:block;font-size:2em;line-height:1.1;font-weight:900;color:var(--accInk)}
+.bs span{font-size:.92em;line-height:1.35;display:block;margin-top:.2em}
+.bs small{display:block;color:var(--muted);font:700 .68em var(--mono);margin-top:.35em}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:.9em}
+.myth{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.7em .95em;margin:.6em 0}
+.myth h4{margin:0 0 .25em}.myth p{margin:.25em 0;font-size:.96em}
+.myth .m{color:var(--red);font:700 .72em var(--mono)}.myth .f{color:var(--ok);font:700 .72em var(--mono)}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.5em .9em;margin:.5em 0}
+summary{cursor:pointer;font-weight:700}
+dl.gl{margin:.5em 0 0}
+dl.gl dt{font-weight:800;margin-top:.6em}dl.gl dd{margin:.1em 0 0;color:var(--muted)}
+
+/* practice */
+.practice{margin:2.4em 0 0;border:2px solid var(--acc);border-radius:18px;padding:1em 1.1em 1.1em;background:color-mix(in srgb,var(--acc) 5%,var(--panel))}
+.practice>h3{margin:0 0 .5em;font:800 .95em var(--mono);color:var(--accInk);letter-spacing:.08em;text-transform:uppercase}
+.qz{padding:.8em 0;border-top:1px dashed var(--line)}
+.qz:first-child{border-top:0;padding-top:.2em}
+.qq{display:grid;grid-template-columns:auto 1fr;gap:.6em;font-weight:600}
+.qn{display:inline-grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;background:var(--acc);color:var(--onAcc);font:800 .8em var(--mono)}
+.qz.solved .qn{background:var(--ok);color:#fff}
+.opts{display:grid;gap:.4em;margin:.5em 0 0 2.3em}
+.opt{display:grid;grid-template-columns:auto 1fr;gap:.6em;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.45em .7em;cursor:pointer;line-height:1.35}
+.opt:hover:not(:disabled){border-color:var(--acc)}
+.opt .ol{font:800 .8em var(--mono);color:var(--muted);padding-top:.15em}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--panel))}
+.opt.wrong{border-color:var(--red);background:color-mix(in srgb,var(--red) 10%,var(--panel));opacity:.65}
+.opt:disabled{cursor:default}
+.numrow{display:flex;align-items:center;gap:.4em;margin:.5em 0 0 2.3em;flex-wrap:wrap}
+.numrow input{width:9em;padding:.4em .6em;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:700 1em var(--mono)}
+.numrow input:focus{border-color:var(--acc);outline:none;box-shadow:0 0 0 3px var(--accHot)}
+.numrow .pre,.numrow .post{font:700 .95em var(--mono);color:var(--muted)}
+.fb{margin:.5em 0 0 2.3em;font-size:.95em}
+.fb:empty{display:none}
+.fb.good{color:var(--ink);background:color-mix(in srgb,var(--ok) 11%,transparent);border-left:4px solid var(--ok);padding:.45em .75em;border-radius:0 10px 10px 0}
+.fb.bad{color:var(--bad)}
+.linkbtn{background:none;border:0;color:var(--accInk);text-decoration:underline;cursor:pointer;padding:0}
+
+footer.pg{border-top:1px solid var(--line);padding:2em 18px 3em;text-align:center;color:var(--muted);font-size:.9em}
+footer.pg p{max-width:70ch;margin:.5em auto}
+
+@media (max-width:760px){
+  .wf>div:last-child{overflow-x:auto;min-width:0}.wf{min-width:0}table.tbl{font-size:.85em}.tbl td,.tbl th{padding:.35em .3em}
+  .sl{grid-template-columns:1fr 5em;gap:.2em .6em}.sl span{grid-column:1/-1}.sl input{grid-column:1}
+  .arow{grid-template-columns:1fr}.drow{grid-template-columns:1fr 5em}.drow .dl{grid-column:1/-1}
+  .eqgrid,.wf,.cdogrid,.levgrid,.two{grid-template-columns:minmax(0,1fr)}
+  .stats.three{grid-template-columns:1fr}
+  .vt .ev{grid-template-columns:4.6em 2.6em 1fr}
+  .opts,.numrow,.fb{margin-left:0}
+  .real{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{header.top,.progress{display:none}.practice{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="progress" aria-hidden="true"><i id="prog"></i></div>
+<header class="top">
+  <div class="topin">
+    <a class="brand" href="teaching.html"><span class="arrow">&larr;</span> ben_sacks <span class="arrow">/</span> GFC explained</a>
+    <span class="spacer"></span>
+    <span class="score" id="score" title="Practice questions solved">Practice 0/0</span>
+    <button class="btn sm" id="themeBtn" aria-label="Toggle light / dark mode">&#9728;</button>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+</header>
+
+<main>
+<!-- ===================================================== 00 -->
+<section class="sec" id="s0" data-title="Big picture" style="margin-top:0">
+  <p class="eyebrow">DEMO_08 // FINANCE</p>
+  <h1>How the 2008 financial crisis actually worked</h1>
+  <p class="lede">You watched <em>The Big Short</em>. You saw people get rich betting against housing. This page is about everything <em>underneath</em> that: how a handful of ordinary home loans turned into a collapse that shook the world, and what it did to real families.</p>
+
+  <div class="prose">
+    <p>No finance background needed, just common sense. We'll follow <b>one mortgage</b> from a family's kitchen table through Wall Street, up through layer after layer of financial engineering, and back down into the real world when it all fell apart. At each stop there are interactive widgets (move the sliders, they're the point) and a few practice questions.</p>
+  </div>
+
+  <div class="fig">
+    <div class="figh">The whole story in one picture <span class="hintx">(click any step)</span></div>
+    <div class="chartbox"><div id="chain-master"></div></div>
+    <p class="cap">Seven steps. Each one made the risk <em>look</em> smaller. None of them made it smaller. At the end of the page you'll see this same picture again, with what broke at each step.</p>
+  </div>
+
+  <div class="prose">
+    <h3>The 60-second version</h3>
+    <ol>
+      <li><b>Lenders made loans to almost anyone</b>, because they planned to sell the loans immediately instead of being repaid themselves.</li>
+      <li><b>Wall Street bought the loans by the thousand</b>, bundled them into bonds, and sold slices of those bonds to investors worldwide.</li>
+      <li><b>Rating agencies called most of those slices "AAA"</b> (as safe as US government debt), partly because their models assumed home prices wouldn't fall everywhere at once.</li>
+      <li><b>The leftover risky slices were bundled again</b> into new bonds called CDOs, and again most of the new pile was stamped AAA.</li>
+      <li><b>Banks bought huge amounts of these "safe" bonds with borrowed money</b>, about $30 borrowed for every $1 of their own, and insurers like AIG sold protection on them without setting aside money for a payout.</li>
+      <li><b>Then house prices stopped rising.</b> Borrowers who had counted on refinancing couldn't. Defaults rose, the bottom slices were wiped out, then "AAA" slices were hit far harder than anyone's models said was possible.</li>
+      <li><b>Because banks had so little cushion, small losses made them insolvent</b>, nobody knew who held the bad assets, and lending froze. Layoffs and foreclosures made house prices fall further. Around and around.</li>
+    </ol>
+  </div>
+
+  <h3 style="margin-top:2em">The cast</h3>
+  <p class="prose" style="max-width:68ch">Real firms and people, plus one made-up family so we can follow a single loan. Each one keeps <b>the same icon and color</b> the whole way through, so you can track who's who. Shapes: circles are people/households, squares are firms, hexagons are government or referee-type bodies, dashed squares are the "financial machines" (trusts) rather than companies.</p>
+  <div class="cast">
+    <div class="cc"><span data-badge="mia" data-size="52"></span><div><b>Mia &amp; Sam Torres</b><small>A <i>composite</i> family (not real people), modeled on borrowers in California's Inland Empire. We follow their mortgage all the way up and down.</small><span class="at">§1, 8, 10</span></div></div>
+    <div class="cc"><span data-badge="cw" data-size="52"></span><div><b>Countrywide Financial</b><small>America's biggest mortgage lender in the mid-2000s (CEO <i>Angelo Mozilo</i>). Bought by Bank of America in 2008.</small><span class="at">§2, 8</span></div></div>
+    <div class="cc"><span data-badge="nc" data-size="52"></span><div><b>New Century Financial</b><small>A major subprime specialist. Its April 2007 bankruptcy was the first big tremor.</small><span class="at">§8</span></div></div>
+    <div class="cc"><span data-badge="ff" data-size="52"></span><div><b>Fannie Mae &amp; Freddie Mac</b><small>Government-sponsored companies that guarantee and package mortgages. Taken over by the government in Sept 2008.</small><span class="at">§2, 3, 9</span></div></div>
+    <div class="cc"><span data-badge="leh" data-size="52"></span><div><b>Lehman Brothers</b><small>Wall Street bank (CEO <i>Dick Fuld</i>); a top packager of mortgage bonds. Went bankrupt Sept 15, 2008.</small><span class="at">§3, 7, 9</span></div></div>
+    <div class="cc"><span data-badge="bs" data-size="52"></span><div><b>Bear Stearns</b><small>Wall Street bank whose mortgage hedge funds collapsed in 2007. Sold to JPMorgan in March 2008.</small><span class="at">§8, 9</span></div></div>
+    <div class="cc"><span data-badge="ml" data-size="52"></span><div><b>Merrill Lynch</b><small>Wall Street bank (CEO <i>Stan O'Neal</i>); one of the biggest CDO factories. Sold to Bank of America in Sept 2008.</small><span class="at">§5, 8, 9</span></div></div>
+    <div class="cc"><span data-badge="wc" data-size="52"></span><div><b>Wing Chau</b><small>"Mr. Chau" from <i>The Big Short</i>: a CDO manager (Harding Advisory) who chose which BBB slices went into CDOs.</small><span class="at">§5</span></div></div>
+    <div class="cc"><span data-badge="mdy" data-size="52"></span><div><b>Moody's (and S&amp;P)</b><small>Credit-rating agencies. Paid by the banks whose bonds they rated.</small><span class="at">§4, 5, 8</span></div></div>
+    <div class="cc"><span data-badge="aig" data-size="52"></span><div><b>AIG</b><small>Giant insurer whose Financial Products unit (<i>Joseph Cassano</i>) insured CDOs. Rescued for ~$182B.</small><span class="at">§6, 9</span></div></div>
+    <div class="cc"><span data-badge="fed" data-size="52"></span><div><b>The Federal Reserve</b><small>The US central bank (chair <i>Ben Bernanke</i>, earlier <i>Alan Greenspan</i>). Sets interest rates, lends in emergencies.</small><span class="at">§8, 9</span></div></div>
+    <div class="cc"><span data-badge="ust" data-size="52"></span><div><b>U.S. Treasury</b><small>Secretary <i>Hank Paulson</i> led the $700B TARP bailout.</small><span class="at">§9, 10</span></div></div>
+    <div class="cc"><span data-badge="gov" data-size="52"></span><div><b>FDIC &amp; regulators</b><small>The agencies that seize failed banks and guarantee deposits.</small><span class="at">§9</span></div></div>
+    <div class="cc"><span data-badge="inv" data-size="52"></span><div><b>Investors</b><small>Pension funds, banks, insurers, foreign governments, money-market funds: whoever bought the bonds.</small><span class="at">§3 on</span></div></div>
+    <div class="cc"><span data-badge="mbs" data-size="52"></span><div><b>An "MBS trust"</b><small>A legal shell that holds a pile of mortgages and issues bonds against them (not a company).</small><span class="at">§3</span></div></div>
+    <div class="cc"><span data-badge="cdo" data-size="52"></span><div><b>A "CDO"</b><small>Another shell: holds slices of other bonds and re-slices them.</small><span class="at">§5</span></div></div>
+  </div>
+
+  <div class="practice"><h3>Warm-up</h3><div id="q-s0"></div></div>
+</section>
+
+<!-- ===================================================== 01 -->
+<section class="sec" id="s1" data-title="Mortgages 101">
+  <div class="sh"><div class="num">01</div><h2>Mortgages 101</h2><p class="kicker">Everything starts with a family buying a house.</p></div>
+  <div class="prose">
+    <p><span data-who="mia" data-label="Mia and Sam Torres"></span> want to buy a $300,000 house. They don't have $300,000, nobody does, so they get a <span class="term">mortgage</span>: a loan from a bank that is <em>secured by the house itself</em>. If they stop paying, the bank can take the house and sell it. This is called <span class="term">foreclosure</span>, and the house is the <span class="term">collateral</span>.</p>
+    <ul>
+      <li><b>Principal</b>: the amount borrowed. <b>Interest</b>: the lender's fee for lending, charged as a yearly percentage of what you still owe.</li>
+      <li><b>Down payment</b>: the part you pay up front from your own savings. 20% is the traditional amount; Mia put down 5%.</li>
+      <li><b>Equity</b> = what the house is worth − what you still owe. It's the part you really own. <b>Underwater</b> means that number is negative.</li>
+      <li>Everything is paid back in equal monthly payments over, typically, 30 years.</li>
+    </ul>
+  </div>
+
+  <div class="fig">
+    <div class="figh"><span class="tryit">TRY IT</span> The mortgage calculator</div>
+    <div id="m-calc"></div>
+  </div>
+
+  <div class="prose">
+    <p>One thing to notice: <b>in the first years, most of your payment is interest.</b> You own very little of your house, because you've paid off very little. That makes a small fall in prices dangerous, because it can erase your tiny equity.</p>
+    <h3>Prime, subprime, Alt-A, and the weird products</h3>
+    <p>Banks sort borrowers by creditworthiness:</p>
+  </div>
+  <table class="tbl" style="margin:.5em 0 1em">
+    <thead><tr><th>Type</th><th>Who</th><th>Typical terms</th></tr></thead>
+    <tbody>
+      <tr><td><b>Prime</b></td><td>Good credit, steady proven income</td><td>~20% down, fixed rate, documents checked</td></tr>
+      <tr><td><b>Subprime</b></td><td>Weak or thin credit history</td><td>Little down, higher rate, often <em>adjustable</em></td></tr>
+      <tr><td><b>Alt-A</b></td><td>Okay credit, but income not verified</td><td>"Stated income" / "no-doc" loans, nicknamed <em>liar loans</em></td></tr>
+    </tbody>
+  </table>
+  <div class="prose">
+    <p>And the products that made it worse: <b>2/28 ARMs</b> (a cheap fixed "teaser" rate for 2 years, then an adjustable rate for 28 years), <b>interest-only loans</b>, <b>option ARMs</b> (you could pay <em>less than the interest</em> and watch your balance grow), <b>"piggyback" 80/20 loans</b> (borrow the down payment too), and <b>NINJA loans</b> (No Income, No Job or Assets).</p>
+  </div>
+
+  <div class="fig">
+    <div class="figh"><span class="tryit">TRY IT</span> Payment shock: Mia &amp; Sam's 2/28 ARM</div>
+    <div id="m-arm"></div>
+  </div>
+
+  <div class="prose">
+    <p>Why would anyone sign that? Because of the <b>escape plan</b>: <em>"House prices only go up. Before the rate resets, we'll refinance into a new loan using our extra equity."</em> That plan works only when prices keep rising:</p>
+  </div>
+  <div class="fig">
+    <div class="figh"><span class="tryit">TRY IT</span> Is the escape hatch open? Move the house price</div>
+    <div id="m-equity"></div>
+  </div>
+
+  <div class="practice"><h3>Practice: mortgages</h3><div id="q-s1"></div></div>
+</section>
+
+<!-- ===================================================== 02 -->
+<section class="sec" id="s2" data-title="Lenders stop caring">
+  <div class="sh"><div class="num">02</div><h2>Lenders stop caring</h2><p class="kicker">How "making a loan" turned into "making a product to sell."</p></div>
+  <div class="prose">
+    <p>For most of the 20th century a bank made a loan and <b>kept it</b>. If Mia stopped paying, the bank lost money, so it checked her income and the house's value carefully. Economists call this <span class="term">originate-to-hold</span>.</p>
+    <p>By the 2000s the model had flipped. A lender like <span data-who="cw"></span> made a loan, collected a fee, and <b>sold the loan within days or weeks</b> to a Wall Street bank such as <span data-who="leh"></span>. That's <span class="term">originate-to-distribute</span>.</p>
+  </div>
+  <div class="fig"><div class="figh">Who bears the risk?</div><div class="chartbox"><div id="fig-oldnew"></div></div></div>
+
+  <div class="prose">
+    <p>Selling loans wasn't new: <span data-who="ff" data-label="Fannie Mae and Freddie Mac"></span> had bought "conforming" (safe, well-documented) mortgages for decades, guaranteeing them against default. What changed was a flood of <b>private</b> buyers, Wall Street, who wanted millions of <em>higher-yielding</em> loans to package and sell. Subprime lending exploded to roughly <b>$600 billion a year</b> by 2005–06, about one new mortgage in five.</p>
+    <p>Everyone along the chain was paid <em>up front</em>:</p>
+    <ul>
+      <li><b>Mortgage brokers</b> earned commissions per loan, and often more for steering you into a higher-rate loan (a "yield spread premium"), even if you'd have qualified for a cheaper one.</li>
+      <li><b>Appraisers</b> who didn't bring in the value the lender wanted didn't get hired again.</li>
+      <li><b>Lenders</b> got fees plus a profit when they sold the loan. They needed volume to feed Wall Street's appetite.</li>
+    </ul>
+  </div>
+  <div class="real"><span data-badge="cw" data-size="56"></span><div><span class="tag">REAL LIFE</span><h4>Countrywide and "the most dangerous product in existence"</h4>
+    <p>Countrywide, led by Angelo Mozilo, was the largest US mortgage lender, with roughly one of every six new mortgages in 2006. In a 2006 email later quoted by the SEC, Mozilo described one of the company's subprime "80/20" products as "the most dangerous product in existence". Countrywide kept selling such loans. It was nearly insolvent by August 2007 and was sold to Bank of America in 2008. Mozilo later settled SEC fraud charges for $67.5 million without admitting wrongdoing.</p></div></div>
+
+  <div class="fig">
+    <div class="figh"><span class="tryit">TRY IT</span> Would you make this loan?</div>
+    <div id="m-incent"></div>
+  </div>
+
+  <div class="practice"><h3>Practice: incentives</h3><div id="q-s2"></div></div>
+</section>
+
+<!-- ===================================================== 03 -->
+<section class="sec" id="s3" data-title="MBS: pooling">
+  <div class="sh"><div class="num">03</div><h2>Pooling loans into bonds (MBS)</h2><p class="kicker">Securitization: turning thousands of mortgages into one tradeable thing.</p></div>
+  <div class="prose">
+    <p>Wall Street banks like <span data-who="leh"></span> buy thousands of loans from lenders like <span data-who="cw"></span> and put them in a pile. That pile is placed inside a legal shell, a trust (the <span data-who="mbs" data-label="MBS trust"></span>). The trust then sells <b>bonds</b> whose payments come from the pile. These are called <span class="term">mortgage-backed securities (MBS)</span>, and the process is <span class="term">securitization</span>.</p>
+    <p>A <b>bond</b> is just a loan that investors make to someone: they hand over cash now and get paid interest and principal back over time. Here the "borrower" is the pile of homeowners.</p>
+  </div>
+  <div class="fig"><div class="figh">How an MBS is built and paid</div><div class="chartbox"><div id="fig-mbsflow"></div></div>
+    <p class="cap">Thousands of Mias (like Mia: $1,993/month) send payments to a <span data-who="srv" data-label="servicer"></span>, a company that just collects the checks, which forwards the cash to the trust, which pays whoever owns the bonds.</p></div>
+
+  <div class="prose">
+    <h3>Why everyone loved it</h3>
+    <ul>
+      <li><b>Lenders</b> got their cash back immediately and could make more loans.</li>
+      <li><b>Wall Street</b> earned fees on every step.</li>
+      <li><b>Investors</b> (pension funds, foreign banks, insurers) wanted something that paid more than US Treasuries but felt safe. Mortgages are backed by houses, and houses are boring. Global savings were piling up and needed a home.</li>
+    </ul>
+    <p>And the core idea is sound! <b>Pooling reduces risk when the loans are independent.</b> If one borrower in 20 defaults, you can't predict <em>which</em> one, but you can predict that about 5% will. See it for yourself:</p>
+  </div>
+  <div class="fig"><div class="figh"><span class="tryit">TRY IT</span> Why pooling works (the law of large numbers)</div><div id="m-pool"></div></div>
+
+  <div class="callout"><h4>Agency vs. private-label</h4>
+    <p>MBS made by Fannie/Freddie ("<b>agency</b>") come with a guarantee: if homeowners default, Fannie or Freddie pays the bondholders. MBS made by Lehman, Bear, Countrywide and others ("<b>private-label</b>") have <em>no</em> guarantee. Those private-label deals funded most subprime and Alt-A loans, so they're where the disaster started.</p></div>
+
+  <div class="practice"><h3>Practice: pooling</h3><div id="q-s3"></div></div>
+</section>
+
+<!-- ===================================================== 04 -->
+<section class="sec" id="s4" data-title="Tranches + ratings">
+  <div class="sh"><div class="num">04</div><h2>Tranches: slicing the risk</h2><p class="kicker">Different bonds for different appetites, and who stamped them "safe."</p></div>
+  <div class="prose">
+    <p>Some investors, like a pension fund, want safe and don't mind a low return. Others, like hedge funds, want high returns and will take risk. So instead of selling identical bonds, the trust cuts the pile's cash flows into slices called <span class="term">tranches</span> (French for "slice") with different priority.</p>
+    <p>Picture a <b>building that floods from the basement</b>. Whenever homeowners fail to pay, the "water" rises from the bottom:</p>
+    <ul>
+      <li><b>Equity tranche</b> (basement, ~5%): absorbs the first losses. Highest possible return, highest risk.</li>
+      <li><b>BBB tranche</b> and <b>Mezzanine</b> (AA/A) tranches: the middle floors.</li>
+      <li><b>Senior / AAA tranche</b> (penthouse, ~80%): hit only after everything below is wiped out. Paid first, loses last, and pays the lowest interest.</li>
+    </ul>
+    <p>Payments run the other way: money flows <em>down</em> from the top, so the AAA investors are paid before anyone else. (Illustrative sizes and yields; real deals varied.)</p>
+  </div>
+  <div class="fig"><div class="figh"><span class="tryit">TRY IT</span> The flood: how much does each tranche lose?</div><div id="m-waterfall"></div></div>
+
+  <div class="prose">
+    <h3>The referees: rating agencies</h3>
+    <p>Nobody can read a 600-page prospectus covering 5,000 loans. So investors relied on letter grades from <span data-who="mdy" data-label="Moody's"></span> and Standard &amp; Poor's: <b>AAA</b> (as safe as it gets), then AA, A, BBB... down through "junk". Many pension funds and banks were <em>only allowed</em> to hold AAA or investment-grade bonds.</p>
+    <p>Three problems:</p>
+    <ol>
+      <li><b>Conflict of interest.</b> The <em>banks</em> creating the bonds paid the agencies. If one agency was tough, the bank could shop around. In 2006 Moody's rated nearly 30 mortgage-related securities <b>every working day</b>. Over 2000–2007 it gave AAA to about 45,000 of them, while only six private US companies carried a AAA rating in 2010.</li>
+      <li><b>Thin history.</b> The agencies' models were fed historical data in which US house prices <em>had not fallen nationwide</em> since the 1930s, and subprime had barely existed before the late 1990s.</li>
+      <li><b>A hidden assumption about correlation</b> (below).</li>
+    </ol>
+  </div>
+
+  <h3>The assumption that broke everything</h3>
+  <div class="prose"><p>Earlier you saw pooling work because each loan was an independent coin flip. In reality, if house prices fall <em>everywhere</em>, many loans fail <b>for the same reason</b>, which statisticians call <span class="term">correlation</span> (see your <a href="demo-correlation-matching.html">Correlation demo</a>). Same <i>average</i> default rate, very different tails:</p></div>
+  <div class="fig"><div class="figh"><span class="tryit">TRY IT</span> What correlation does to the "safe" tranche</div><div id="m-corr"></div></div>
+
+  <div class="practice"><h3>Practice: tranches &amp; ratings</h3><div id="q-s4"></div></div>
+</section>
+
+<!-- ===================================================== 05 -->
+<section class="sec" id="s5" data-title="CDOs (Mr. Chau)">
+  <div class="sh"><div class="num">05</div><h2>CDOs: bonds made of bonds</h2><p class="kicker">Where Mr. Chau comes in, and where the leverage inside the product is created.</p></div>
+  <div class="prose">
+    <p>A strange problem arose. Big investors bought the AAA slices, thrill-seekers took the equity, but <b>the BBB slices were hard to sell</b>: too risky for a pension fund, too boring for a hedge fund. Wall Street had thousands of them left over, and as long as they couldn't sell them, the banks couldn't buy more mortgages.</p>
+    <p>The solution was creative: <b>do it again.</b> Gather the BBB slices of <em>many</em> different mortgage deals into one new pile, put that in a new shell, and slice <em>that</em> into tranches. The new product is a <span class="term">collateralized debt obligation (CDO)</span>. Because the new pile held slices from 100 different deals, the rating agencies' models said it was well diversified, and about <b>75% of the CDO was stamped AAA</b>, even though every ingredient was a BBB.</p>
+  </div>
+  <div class="fig"><div class="figh">Building a CDO</div><div class="chartbox"><div id="fig-cdo"></div></div></div>
+
+  <div class="real"><span data-badge="wc" data-size="56"></span><div><span class="tag">REAL LIFE</span><h4>Wing Chau and the CDO manager</h4>
+    <p>In <i>The Big Short</i>, Steve Eisman's team meets <b>Wing Chau</b>, who ran Harding Advisory and managed CDOs for <span data-who="ml"></span>. A CDO manager <em>picks</em> which BBB slices go in. Chau's firm earned fees tied to the size of the CDOs it managed, and Merrill earned fees for creating and selling them. Everyone in the chain was paid for finishing deals. Nobody was paid to ask whether the underlying mortgages were any good. The film's Las Vegas conference scene is a famous dramatization of how thin the checking was in the middle of the chain.</p>
+    <p>Merrill was one of the largest CDO underwriters of 2006–07 and later wrote off tens of billions on them. It was sold to Bank of America on Sept 14, 2008.</p></div></div>
+
+  <h3>Where the leverage comes from</h3>
+  <div class="prose">
+    <p>"Leverage" means a small change in one thing produces a big change in another. A CDO is <b>built-in leverage</b>: since it contains <em>only</em> the thin BBB layers, a modest loss on the underlying mortgages wipes out most of those layers, and that loss lands on the CDO. A CDO's AAA slice is protected by its own cushion, but the cushion is made of the very thing that's being destroyed. Slide the mortgage loss up and watch:</p>
+  </div>
+  <div class="fig"><div class="figh"><span class="tryit">TRY IT</span> How a small mortgage loss becomes a huge "AAA" loss</div><div id="m-cdo"></div></div>
+
+  <div class="callout"><h4>Wait, was this just a mistake?</h4>
+    <p>Partly. But three things kept the machine running: (1) <b>correlation</b> was ignored, so the CDO "diversification" was fake; (2) fees were earned <em>up front</em>, so growth paid more than quality; (3) when real BBB slices ran out, banks created <b>"synthetic" CDOs</b> from insurance contracts (credit default swaps) on BBB slices that referenced mortgages without needing new loans, so it kept growing even after Wall Street ran out of real mortgages to package. It meant one mortgage's risk could be bet on again and again.</p></div>
+
+  <div class="practice"><h3>Practice: CDOs &amp; leverage</h3><div id="q-s5"></div></div>
+</section>
+
+<!-- ===================================================== 06 -->
+<section class="sec" id="s6" data-title="Insurance: AIG">
+  <div class="sh"><div class="num">06</div><h2>Insurance nobody could pay: AIG</h2><p class="kicker">Credit default swaps, and the company that sold them without a safety net.</p></div>
+  <div class="prose">
+    <p>Banks holding CDO slices wanted protection. A <span class="term">credit default swap (CDS)</span> is like an insurance policy on a bond: you pay a small premium, and the seller promises to pay you if the bond loses value. (Unlike real insurance, you don't need to own the thing: anyone could buy a CDS, which is the bet that Burry, Eisman and others made in the film.)</p>
+    <p><span data-who="aig"></span> was a natural seller. It had a top credit rating, tons of cash, and a London-based unit, <b>AIG Financial Products</b> (run by Joseph Cassano), that wrote CDS on the "super senior" AAA slices of CDOs, ones that its models said had essentially zero chance of losing money. It sold protection on roughly <b>$78 billion</b> of subprime-related CDOs, part of a CDS book of around $500 billion, and collected a premium of a small fraction of 1% a year. It also set aside very little for payouts, because the models said payouts would never happen.</p>
+  </div>
+  <div class="fig"><div class="figh">How a credit default swap works</div><div class="chartbox"><div id="fig-aig"></div></div></div>
+  <div class="fig"><div class="figh"><span class="tryit">TRY IT</span> Collect pennies, owe millions</div><div id="m-aig"></div></div>
+
+  <div class="prose">
+    <p>When the CDOs lost value, AIG owed billions, and its own contracts said that if its credit rating was cut or the bonds fell in value, it had to <b>hand over cash (collateral) immediately</b>. On <b>Sept 16, 2008</b>, the day after Lehman failed and AIG's rating was cut, the Fed lent AIG $85 billion and took roughly 80% of the company. Over time the government's commitment reached about <b>$182 billion</b>. Much of that cash flowed straight through AIG to its trading partners, including Goldman Sachs, Société Générale, Merrill Lynch and Deutsche Bank.</p>
+    <p>Why save it? Because AIG was a <b>hub</b>: dozens of banks were relying on the same insurer. If it had failed, their "hedged" positions would have turned into naked losses overnight.</p>
+  </div>
+  <div class="practice"><h3>Practice: insurance</h3><div id="q-s6"></div></div>
+</section>
+
+<!-- ===================================================== 07 -->
+<section class="sec" id="s7" data-title="Leverage + repo">
+  <div class="sh"><div class="num">07</div><h2>Borrowed money: leverage and repo</h2><p class="kicker">Why a few percent of losses was enough to kill a bank.</p></div>
+  <div class="prose">
+    <p><span class="term">Leverage</span> means using borrowed money to buy more than you could with your own. Buy a $100 house with $3 of your own savings and $97 borrowed (<b>"33 to 1"</b>) and a mere 3% price rise doubles your money. But a 3% fall <b>wipes you out</b>.</p>
+    <p>Wall Street investment banks did exactly this with mortgage bonds. At the end of 2007, <span data-who="bs"></span> had around <b>33</b> dollars of assets for each dollar of its own capital, and <span data-who="leh"></span> about <b>31</b>. A typical commercial bank was closer to 10. It looked brilliant: if your assets rise 2%, you earn 60% on your capital.</p>
+  </div>
+  <div class="fig"><div class="figh"><span class="tryit">TRY IT</span> A bank's balance sheet</div><div id="m-lev"></div></div>
+
+  <div class="prose">
+    <h3>Repo: borrowing against bonds, overnight</h3>
+    <p>Where does a bank get $30 to borrow for every $1 it owns? A large chunk came from the <span class="term">repo market</span> ("repurchase agreement"). The bank hands over bonds as collateral, receives cash, and promises to buy the bonds back tomorrow. It's like a pawn shop that you visit every single morning. Most repo loans were <b>overnight</b>. So every day, lenders had to <em>choose</em> to renew.</p>
+  </div>
+  <div class="fig"><div class="figh">Overnight repo</div><div class="chartbox"><div id="fig-repo"></div></div></div>
+  <div class="two">
+    <div class="callout good"><h4>1. Normal times</h4><p>Lender sees the bonds are "AAA." Rolls the loan every morning. Nobody thinks about it.</p></div>
+    <div class="callout warn"><h4>2. Worry</h4><p>Bond prices wobble. Lender asks for a bigger cushion (a "haircut"). The bank needs more cash than it has.</p></div>
+    <div class="callout bad"><h4>3. Run</h4><p>Lender refuses to renew. The bank must sell bonds <em>now</em> into a falling market, pushing prices lower, so the <em>next</em> lender gets nervous...</p></div>
+    <div class="callout"><h4>It's a bank run, on a bank that has no depositors</h4><p>This is "shadow banking": bank-like funding without bank-like protection (no FDIC insurance, no lender of last resort until the Fed stepped in). Even a bank worth more than it owes can die if funding vanishes.</p></div>
+  </div>
+  <div class="real"><span data-badge="leh" data-size="56"></span><div><span class="tag">REAL LIFE</span><h4>Lehman's "Repo 105"</h4>
+    <p>As fear grew, Lehman wanted its leverage to look lower at quarter-end. A later court examiner found it used an accounting maneuver ("Repo 105") to temporarily move roughly <b>$50 billion</b> of assets off its balance sheet each quarter-end in 2008, then bring them back after the reporting date. Investors were not told.</p></div></div>
+  <div class="practice"><h3>Practice: leverage &amp; repo</h3><div id="q-s7"></div></div>
+</section>
+
+<!-- ===================================================== 08 -->
+<section class="sec" id="s8" data-title="The crack (2006–07)">
+  <div class="sh"><div class="num">08</div><h2>The crack: 2006 and 2007</h2><p class="kicker">Why the machine stopped, and why it took 18 months to become a crisis.</p></div>
+  <div class="prose">
+    <p>Why had prices been rising? A mix: cheap money after the <span data-who="fed" data-label="Fed"></span> cut rates to 1% in 2003, a flood of global savings, lax lending, and a self-fulfilling belief that <i>"housing never falls."</i> Speculators bought homes to flip them. The more lending expanded, the higher prices went. Higher prices made the loans look safer, so more lending followed.</p>
+    <p>But the machine needed <b>constant fuel</b>: new loans, so it could make new bonds. As qualified borrowers ran out, lenders chased riskier ones. The last loans made in 2006–07 were the worst: a growing share of borrowers missed their <em>very first</em> payment. And once the Fed had raised rates from 1% back to 5.25%, adjustable-rate loans began resetting, just as the "just refinance" escape plan stopped working.</p>
+  </div>
+  <div class="fig"><div class="figh"><span class="tryit">TRY IT</span> US house prices and the first tremors <span class="hintx">(click the numbers)</span></div><div id="tl-house"></div>
+    <p class="cap">Index values are rounded approximations of the S&amp;P/Case-Shiller US National Home Price Index (Jan 2000 = 100).</p></div>
+  <div class="practice"><h3>Practice: the crack</h3><div id="q-s8"></div></div>
+</section>
+
+<!-- ===================================================== 09 -->
+<section class="sec" id="s9" data-title="The collapse (2008)">
+  <div class="sh"><div class="num">09</div><h2>The collapse: 2008</h2><p class="kicker">How a mortgage problem became a banking panic.</p></div>
+  <div class="prose">
+    <p>By 2008 everything we've built was under water. Step through how the pieces fell:</p>
+  </div>
+  <div class="fig"><div class="figh"><span class="tryit">TRY IT</span> The chain reaction (and the loop)</div><div class="chartbox"><div id="m-cycle"></div></div></div>
+
+  <div class="prose">
+    <h3>The stock-market view of 2007–2009</h3>
+    <p>Stocks fell roughly 57% peak to bottom. Click through the key moments:</p>
+  </div>
+  <div class="fig"><div class="figh"><span class="tryit">TRY IT</span> Timeline: Oct 2007 – Mar 2009</div><div id="tl-sp"></div></div>
+
+  <div class="prose">
+    <h3>September 2008, day by day</h3>
+    <p>In one month, the system nearly stopped. Remember the cast, and watch for who shows up:</p>
+  </div>
+  <div class="fig"><div class="vt">
+    <div class="ev"><div class="d">Sun<br>Sep 7</div><span data-badge="ff" data-size="40"></span><div><h4>Fannie Mae and Freddie Mac taken over</h4><p>The government places both into "conservatorship". Together they guaranteed or owned about <b>$5 trillion</b> of mortgages, roughly half of all US home loans. Taxpayer support eventually totaled about $190 billion.</p></div></div>
+    <div class="ev"><div class="d">Sun<br>Sep 14</div><span data-badge="ml" data-size="40"></span><div><h4>The Merrill Lynch weekend</h4><p>At the New York Fed, Paulson convenes Wall Street CEOs to find a buyer for Lehman. Bank of America walks away from Lehman and instead agrees to buy <b>Merrill Lynch</b> for about $50 billion. Barclays, the other suitor, is blocked by British regulators.</p></div></div>
+    <div class="ev"><div class="d">Mon<br>Sep 15</div><span data-badge="leh" data-size="40"></span><div><h4>Lehman Brothers files for bankruptcy</h4><p>The largest bankruptcy in US history: <b>$639 billion in assets</b>. No government rescue. The Dow falls about 500 points. Lehman's creditors, including money-market funds, suddenly can't get their money back.</p></div></div>
+    <div class="ev"><div class="d">Tue<br>Sep 16</div><span data-badge="aig" data-size="40"></span><div><h4>AIG rescued; a money fund "breaks the buck"</h4><p>The Fed lends AIG <b>$85 billion</b>. The same day, the <b>Reserve Primary Fund</b>, a money-market fund holding about $785 million of Lehman IOUs, announces its shares are worth $0.97 instead of $1.00, a shock for people who thought it was as safe as a bank account. Within days investors pull <b>hundreds of billions</b> out of similar funds.</p></div></div>
+    <div class="ev"><div class="d">Sep<br>19–21</div><span data-badge="ust" data-size="40"></span><div><h4>"Give us $700 billion"</h4><p>Paulson and Bernanke ask Congress for a huge bailout. Treasury guarantees money-market funds. Goldman Sachs and Morgan Stanley, the last two big independent investment banks, become regulated bank holding companies so they can borrow from the Fed.</p></div></div>
+    <div class="ev"><div class="d">Thu<br>Sep 25</div><span data-badge="gov" data-size="40"></span><div><h4>Washington Mutual seized</h4><p>The FDIC closes WaMu ($307 billion in assets), the <b>largest bank failure in US history</b>, and sells it to JPMorgan Chase for $1.9 billion.</p></div></div>
+    <div class="ev"><div class="d">Mon<br>Sep 29</div><span data-badge="ust" data-size="40"></span><div><h4>Congress votes "no" and the Dow plunges</h4><p>The House rejects the bailout bill 228–205, and the Dow drops almost 778 points in a day (then its biggest ever). The bill passes days later on <b>Oct 3</b> as the Troubled Asset Relief Program (<b>TARP</b>).</p></div></div>
+  </div></div>
+
+  <div class="callout"><h4>Why was Bear Stearns rescued but not Lehman?</h4>
+    <p>Still debated. Paulson argued the government had no legal authority to inject capital and Lehman lacked enough good collateral for the Fed to lend against; critics argue Lehman was no worse off than the firms that were saved and the decision caused chaos. Whatever the reason, the panic that followed (money funds, commercial paper, global interbank lending) is often traced to that weekend. The "bank fear" gauge, the LIBOR–OIS spread, normally about <b>0.1%</b>, hit about <b>3.6%</b> in October 2008. When banks won't lend to each other, businesses can't make payroll.</p></div>
+
+  <div class="practice"><h3>Practice: 2008</h3><div id="q-s9"></div></div>
+</section>
+
+<!-- ===================================================== 10 -->
+<section class="sec" id="s10" data-title="Main Street">
+  <div class="sh"><div class="num">10</div><h2>What it did to regular people</h2><p class="kicker">Wall Street's losses were counted in dollars. Main Street's were counted in homes and jobs.</p></div>
+
+  <div class="prose"><p>Back to <span data-who="mia" data-label="Mia and Sam"></span>. Here's their story under different choices. Change the loan, change what happens to Sam's job, and drag the year slider:</p></div>
+  <div class="fig"><div class="figh"><span class="tryit">TRY IT</span> Mia &amp; Sam, 2005 – 2011</div><div id="m-mia"></div></div>
+
+  <div class="bigstats">
+    <div class="bs"><b>~10 million</b><span>homes lost to foreclosure from 2007 to 2016</span><small>COMMON ESTIMATE</small></div>
+    <div class="bs"><b>~1 in 4</b><span>mortgaged homes were underwater at the worst point (about 11 million)</span><small>CORELOGIC, 2009–10</small></div>
+    <div class="bs"><b>8.7 million</b><span>US jobs lost between Jan 2008 and Feb 2010</span><small>BLS</small></div>
+    <div class="bs"><b>~$16 trillion</b><span>drop in US household net worth, 2007 to early 2009 (about a quarter)</span><small>FEDERAL RESERVE</small></div>
+    <div class="bs"><b>−4%</b><span>US economy shrank about 4% peak to trough, the worst since WWII at that point</span><small>BEA, DEC 2007–JUN 2009</small></div>
+    <div class="bs"><b>69% → 63%</b><span>US homeownership rate fell from 2004's peak to 2016</span><small>CENSUS</small></div>
+  </div>
+
+  <div class="two">
+    <div class="fig" style="margin-top:.4em"><div class="figh">US unemployment rate</div><div class="chartbox"><div id="chart-unemp"></div></div><p class="cap">It reached 10% in Oct 2009 and took until 2016 to return to pre-crisis levels. Values are approximate.</p></div>
+    <div class="fig" style="margin-top:.4em"><div class="figh">Median household wealth lost, 2005 → 2009</div><div id="chart-wealth"></div><p class="cap">Source: Pew Research Center (2011). Households with most of their wealth in a home, especially Black and Hispanic families who'd been targeted by subprime lenders, were hit hardest.</p></div>
+  </div>
+
+  <div class="prose">
+    <h3>The ways it reached everyone</h3>
+    <ul>
+      <li><b>Neighborhood spillovers.</b> A foreclosed, empty house lowers the value of every house nearby, including those of neighbors who never missed a payment. Las Vegas, Phoenix, inland California, Florida and Detroit saw prices fall by half or more.</li>
+      <li><b>Jobs.</b> Construction collapsed first, then everything else as credit froze. Companies that rely on short-term borrowing for payroll and inventory couldn't borrow.</li>
+      <li><b>Retirement savings.</b> The stock market's fall of about 57% shrank 401(k)s and pensions right before many people planned to retire.</li>
+      <li><b>Credit.</b> Banks tightened lending on car loans, small-business credit lines, student loans, credit cards, and mortgages for years.</li>
+      <li><b>The world.</b> European banks had bought huge amounts of US mortgage bonds. Britain's Northern Rock suffered a bank run in September 2007. Iceland's banks collapsed in 2008, and the shockwave contributed to Europe's debt crisis in the following years.</li>
+    </ul>
+    <h3>The response, and why many people were angry</h3>
+    <p>The government acted at scale: the <span data-who="fed"></span> cut interest rates to near zero and bought trillions in bonds; <span data-who="ust"></span> authorized <b>TARP</b> ($700 billion, later cut to $475B; most of it was eventually repaid, with the government recovering more than it disbursed overall); Congress passed an $800B-ish stimulus in 2009. Bank rescues were fast. Help for homeowners was slow and small: the main program, HAMP, aimed at 3–4 million loan modifications and delivered roughly 1.7 million permanent ones.</p>
+    <p>Accountability was thin. Few top executives of the big banks were charged personally; the banks paid settlements instead (e.g., JPMorgan $13 billion in 2013, Bank of America $16.65 billion in 2014).</p>
+    <p>New rules followed: <b>Dodd-Frank (2010)</b> created the Consumer Financial Protection Bureau, forced standard derivatives onto exchanges, set rules for winding down failing giants, and requires securitizers to keep ~5% of the risk ("skin in the game"). <b>Basel III</b> raised bank capital requirements, and the Fed began regular "stress tests."</p>
+  </div>
+  <div class="practice"><h3>Practice: Main Street</h3><div id="q-s10"></div></div>
+</section>
+
+<!-- ===================================================== 11 -->
+<section class="sec" id="s11" data-title="Wrap-up">
+  <div class="sh"><div class="num">11</div><h2>Putting it all together</h2><p class="kicker">The same seven-step picture, with what broke at every step.</p></div>
+  <div class="fig"><div class="figh">Where each link failed</div><div class="chartbox"><div id="chain-recap"></div></div></div>
+
+  <div class="prose">
+    <h3>Three ideas that explain the whole thing</h3>
+    <ol>
+      <li><b>Risk was cut up and hidden, not removed.</b> Pooling, tranching, ratings and insurance made the risk <em>look</em> small at every step. But the total risk (one huge bet that US house prices wouldn't fall) was unchanged, and it sat concentrated in a few giant, overextended firms.</li>
+      <li><b>Incentives were upside-down.</b> Brokers, lenders, banks, CDO managers and rating agencies were all paid for volume at the moment of sale, and the risk went to somebody else.</li>
+      <li><b>Leverage and short-term funding made it fragile.</b> With ~30 to 1 borrowing and funding that had to be renewed every night, a few percent of losses and a loss of confidence were enough.</li>
+    </ol>
+  </div>
+
+  <h3>Myth vs. reality</h3>
+  <div class="myth"><span class="m">MYTH</span><h4>"It was all irresponsible borrowers."</h4><p><span class="f">REALITY</span> Many borrowers were steered into loans they couldn't afford, often by brokers paid for it; plenty who qualified for prime loans got subprime ones. Borrowers made choices, but the system was designed so that the people with the most information (lenders, banks, raters) bore the least risk.</p></div>
+  <div class="myth"><span class="m">MYTH</span><h4>"Fannie and Freddie caused it."</h4><p><span class="f">REALITY</span> Debated. They did buy risky mortgage bonds and loosened standards late, and they collapsed. But most of the riskiest loans (subprime, Alt-A) were packaged by private Wall Street firms with no government guarantee. The majority view of the official Financial Crisis Inquiry Commission was that they contributed but weren't the primary cause.</p></div>
+  <div class="myth"><span class="m">MYTH</span><h4>"Nobody could have seen it coming."</h4><p><span class="f">REALITY</span> A few investors did (the people in <i>The Big Short</i>), and many analysts warned of a housing bubble. The models failed partly because the incentives to question them were weak.</p></div>
+  <div class="myth"><span class="m">MYTH</span><h4>"The bailouts were gifts to the banks."</h4><p><span class="f">REALITY</span> It's both. Most direct TARP money was eventually repaid, and without it the panic might have ended in a second Great Depression. But the lopsided treatment, banks rescued quickly while homeowners and executives largely weren't held to account, is why trust in institutions fell.</p></div>
+
+  <details><summary>Glossary: all the jargon in one place</summary>
+    <dl class="gl">
+      <dt>Alt-A</dt><dd>Loans to borrowers with decent credit but undocumented income ("liar loans").</dd>
+      <dt>ARM (adjustable-rate mortgage)</dt><dd>A loan whose interest rate changes over time. A 2/28 has a fixed teaser for 2 years, then adjusts.</dd>
+      <dt>Collateral</dt><dd>An asset a lender can seize if you don't repay (the house, or bonds in a repo).</dd>
+      <dt>CDO</dt><dd>Collateralized debt obligation: a pile of bonds (often BBB slices of MBS) re-sliced into new tranches.</dd>
+      <dt>CDS (credit default swap)</dt><dd>An insurance-like contract that pays out if a bond loses value.</dd>
+      <dt>Correlation</dt><dd>How much things move together. High correlation = they fail together, so diversification stops working.</dd>
+      <dt>Equity (home)</dt><dd>House value − mortgage owed. (Equity tranche: the first-loss slice of a pool.)</dd>
+      <dt>Haircut</dt><dd>The cushion a repo lender demands: lending $95 against $100 of bonds is a 5% haircut.</dd>
+      <dt>Leverage</dt><dd>Using borrowed money to magnify gains and losses. 30:1 means $30 of assets per $1 of your own money.</dd>
+      <dt>MBS (mortgage-backed security)</dt><dd>A bond whose payments come from a pool of mortgages.</dd>
+      <dt>Originate-to-distribute</dt><dd>Making loans in order to sell them rather than hold them.</dd>
+      <dt>Repo</dt><dd>Short-term (often overnight) borrowing secured by bonds, renewed continually.</dd>
+      <dt>Securitization</dt><dd>Pooling loans and selling bonds backed by them.</dd>
+      <dt>Subprime</dt><dd>Loans to borrowers with weaker credit.</dd>
+      <dt>TARP</dt><dd>Troubled Asset Relief Program: the $700B (later $475B) bailout fund approved Oct 2008.</dd>
+      <dt>Tranche</dt><dd>A slice of a pool of loans with its own priority for being paid and for absorbing losses.</dd>
+      <dt>Underwater</dt><dd>Owing more on the house than it is worth.</dd>
+    </dl>
+  </details>
+
+  <div class="practice"><h3>Final check</h3><div id="q-s11"></div></div>
+</section>
+</main>
+
+<footer class="pg">
+  <p>Sizes, yields and some dollar figures in the interactive models are <b>simplified and illustrative</b>, chosen to show the mechanism. Historical facts and statistics come from public sources: the Financial Crisis Inquiry Commission report, the Federal Reserve, BLS, BEA, Census, CoreLogic, S&amp;P/Case-Shiller, Pew Research, and the Lehman bankruptcy examiner's report. Round numbers are rounded; please verify before citing.</p>
+  <p><a href="teaching.html">&larr; Back to demos</a></p>
+</footer>
+
+<script src="assets/js/demo-gfc-core.js"></script>
+<script src="assets/js/demo-gfc-quiz.js"></script>
+<script src="assets/js/demo-gfc-a.js"></script>
+<script src="assets/js/demo-gfc-b.js"></script>
+<script>
+(function(){
+  const G=GFC,$=G.$,$$=G.$$;
+  G.hydrate(document);
+  // quizzes
+  Object.keys(G.QUIZ).forEach(k=>{const el=document.getElementById('q-'+k); if(el) G.buildQuiz(el,G.QUIZ[k]);});
+  // nav tabs
+  const secs=$$('section.sec'), tabs=$('#tabs');
+  tabs.innerHTML=secs.map((s,i)=>`<a class="tab" href="#${s.id}" data-id="${s.id}"><b>${String(i).padStart(2,'0')}</b>${s.dataset.title}</a>`).join('');
+  // scroll spy + progress
+  const prog=$('#prog');
+  function spy(){
+    const h=document.documentElement; prog.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight||1)*100)+'%';
+    let cur=secs[0]; secs.forEach(s=>{ if(s.getBoundingClientRect().top<window.innerHeight*0.35) cur=s; });
+    $$('.tab',tabs).forEach(t=>{const on=t.dataset.id===cur.id; t.classList.toggle('on',on); if(on&&!t.dataset.seen){} });
+    const on=$('.tab.on',tabs); if(on&&!spy.last||spy.last!==cur.id){ spy.last=cur.id; if(on) tabs.scrollTo({left:on.offsetLeft-tabs.clientWidth/3,behavior:'auto'}); }
+  }
+  window.addEventListener('scroll',spy,{passive:true}); window.addEventListener('resize',spy); spy();
+  // theme
+  const btn=$('#themeBtn'); let theme='dark';
+  try{ const t=localStorage.getItem('gfc-theme'); if(t) theme=t; }catch(e){}
+  function setTheme(t){theme=t;document.documentElement.dataset.theme=t;btn.innerHTML=t==='light'?'&#9790;':'&#9728;';try{localStorage.setItem('gfc-theme',t);}catch(e){}}
+  setTheme(theme);
+  btn.addEventListener('click',()=>setTheme(theme==='light'?'dark':'light'));
+})();
+</script>
+</body>
+</html>
