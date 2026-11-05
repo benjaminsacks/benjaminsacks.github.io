@@ -140,7 +140,7 @@ table.mini code{font:700 .85em var(--mono)}
 /* sort game */
 .sorter{display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:.55em}
 .sitem{border:1px solid var(--line);background:var(--bg);padding:.5em .7em;display:flex;flex-direction:column;gap:.45em}
-.sitem .q{font-weight:600}
+.sitem .q{font-weight:600;font-size:1.05em}
 .sitem .row{display:flex;gap:.35em;flex-wrap:wrap;align-items:center}
 .sitem.right{border-color:var(--ok)}
 .sitem.wrong{border-color:var(--bad)}
@@ -179,20 +179,20 @@ table.mini code{font:700 .85em var(--mono)}
 
 /* cups */
 .cal .cup{fill:var(--cup)}
-.cal.color .cup.o{fill:var(--oat)}
-.cal.color .cup.m{fill:var(--milk)}
+.cal .cup.o{fill:var(--oat)}
+.cal .cup.m{fill:var(--milk)}
 .cal .dayf{fill:none;stroke:transparent;stroke-width:2.5}
 .cal .day{cursor:pointer}
-.cal .day:hover .dayf{stroke:var(--muted)}
-.cal .day.sel .dayf{stroke:var(--acc)}
-.cal .day.hot .dayf,.cal .allf.hot{stroke:var(--acc)}
-.cal .allf{fill:none;stroke:transparent;stroke-width:3}
+.cal .day:hover .dayf,.cal .day.sel .dayf{stroke:var(--muted)}
+.cal .day.hot .dayf{stroke:var(--acc)}
 .cal .dl{font:700 12px var(--mono);fill:var(--muted);text-anchor:middle}
 .cal .dk{font:700 11px var(--mono);fill:var(--muted)}
 .dayv .cup{fill:var(--cup);stroke:none}
 .dayv .cup.o{fill:var(--oat)}
 .dayv .cup.m{fill:var(--milk)}
 .dayv .lid{fill:var(--muted);opacity:.55}
+.dayv .cupf{fill:none;stroke:transparent;stroke-width:3}
+.dayv .cupf.hot{stroke:var(--acc)}
 .dayv.pour .c{animation:pour .25s ease both}
 @keyframes pour{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .legend{display:flex;gap:1em;justify-content:center;font:700 .74em var(--mono);color:var(--muted);flex-wrap:wrap}
@@ -390,7 +390,7 @@ const SECRET=0.31;                              // only the demo knows this
 
 /* ---------- state ---------- */
 const st={sec:0,step:0,theme:'dark',rev:{},hl:null,
-  milk:false,pick:TUE,picks:[],sort:{},
+  pick:TUE,picks:[],sort:{},
   today:null,hist:[],pour:false,
   nsl:150,
   cut:{mode:'gt',a:0.46,b:0.46,lo:0.35},
@@ -427,23 +427,29 @@ const NS='http://www.w3.org/2000/svg';
 function calendarSVG(o={}){
   const cs=5.4, gap=.9, dw=15*cs, dh=10*cs, gx=16, gy=26, L=58, Tp=26;
   const W=L+5*dw+4*gx+8, H=Tp+4*dh+3*gy+8;
-  let s=`<svg class="chart cal${st.milk?' color':''}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Last month: 20 weekdays of 150 drinks each">`;
-  s+=`<rect class="allf" data-k="pop" x="${L-6}" y="${Tp-6}" width="${5*dw+4*gx+12}" height="${4*dh+3*gy+12}"/>`;
+  let s=`<svg class="chart cal" viewBox="0 0 ${W} ${H}" role="img" aria-label="Last month: 20 weekdays of 150 drinks each">`;
   DAYN.forEach((n,c)=>{ s+=`<text class="dl" x="${L+c*(dw+gx)+dw/2}" y="${Tp-10}">${n}</text>`; });
   for(let w=0;w<4;w++) s+=`<text class="dk" x="4" y="${Tp+w*(dh+gy)+dh/2+4}">Wk ${w+1}</text>`;
   MONTH.forEach((day,d)=>{ const c=d%5, w=Math.floor(d/5), x0=L+c*(dw+gx), y0=Tp+w*(dh+gy);
     const sel=o.sel===d;
-    s+=`<g class="day${sel?' sel':''}" data-k="pop day${d}${d===TUE?' tue':''}" data-act="${o.click?'pick':''}" data-v="${d}"><title>${day.label}${st.milk?`: ${day.k} of 150 oat`:''}</title><rect class="dayf" x="${x0-3}" y="${y0-3}" width="${dw+6}" height="${dh+6}"/>`;
+    s+=`<g class="day${sel?' sel':''}" data-k="pop day${d}${d===TUE?' tue':''}" data-act="${o.click?'pick':''}" data-v="${d}"><rect class="dayf" x="${x0-3}" y="${y0-3}" width="${dw+6}" height="${dh+6}"/>`;
     for(let i=0;i<N0;i++){ s+=`<rect class="cup ${day.cups[i]?'o':'m'}" x="${(x0+(i%15)*cs).toFixed(1)}" y="${(y0+Math.floor(i/15)*cs).toFixed(1)}" width="${cs-gap}" height="${cs-gap}"/>`; }
-    if(o.showK&&st.milk) s+=`<text class="dl" x="${x0+dw/2}" y="${y0+dh+15}">${day.k}/150</text>`;
     s+=`<rect x="${x0-3}" y="${y0-3}" width="${dw+6}" height="${dh+6}" fill="transparent"/></g>`;
   });
+  return s+'</svg>';
+}
+/* ----- the whole month as one 75 x 40 block, oat on the left ----- */
+function popSVG(){
+  const cs=8, gap=1.4, cols=75, rows=40, oat=Math.round(P0*cols*rows);
+  let s=`<svg class="chart cal" viewBox="0 0 ${cols*cs+2} ${rows*cs+2}" role="img" aria-label="3,000 drinks: 1,200 oat on the left, 1,800 other on the right">`;
+  for(let i=0;i<cols*rows;i++){ s+=`<rect class="cup ${i<oat?'o':'m'}" x="${(1+Math.floor(i/rows)*cs).toFixed(1)}" y="${(1+(i%rows)*cs).toFixed(1)}" width="${cs-gap}" height="${cs-gap}"/>`; }
   return s+'</svg>';
 }
 /* ----- one day: 150 cups ----- */
 function cupsSVG(cups,o={}){
   const cw=26, chh=30, W=15*cw+8, H=10*chh+6;
   let s=`<svg class="chart dayv${o.pour?' pour':''}" viewBox="0 0 ${W} ${H}" role="img" aria-label="150 drinks" style="max-width:${o.max||520}px;margin:0 auto">`;
+  if(o.k) s+=`<rect class="cupf" data-k="${o.k}" x="2" y="2" width="${W-4}" height="${H-4}"/>`;
   for(let i=0;i<N0;i++){ const x=4+(i%15)*cw+cw/2, y=4+Math.floor(i/15)*chh+chh/2, cls=cups?(cups[i]?'o':'m'):'';
     s+=`<g class="c" style="animation-delay:${o.pour?i*5:0}ms"><rect class="lid" x="${x-9}" y="${y-12}" width="18" height="3.6" rx="1.4"/><path class="cup ${cls}" d="M${x-8} ${y-8} H${x+8} L${x+6} ${y+12} H${x-6} Z"/></g>`; }
   return s+'</svg>';
@@ -729,19 +735,19 @@ const N150=raw`\sqrt{\frac{0.4(1-0.4)}{150}}`;
 const tueK=MONTH[TUE].k;
 
 const SORTQ=[
-  ['The average height of <b>all</b> men in the United States','P'],
   ['The average height of <b>1,000 randomly selected</b> US men','S'],
   ['The median price of <b>every</b> home in San Diego','P'],
-  ['The median price of <b>200 randomly selected</b> San Diego homes','S'],
   ['The proportion of <b>all</b> voters who support a ballot measure','P'],
-  ['The proportion of supporters in a <b>poll of 500</b> likely voters','S']];
+  ['The median price of <b>200 randomly selected</b> San Diego homes','S'],
+  ['The proportion of supporters in a <b>poll of 500</b> likely voters','S'],
+  ['The average height of <b>all</b> men in the United States','P']];
 function sortViz(){
   const items=SORTQ.map(([q,a],i)=>{ const g=st.sort[i]; const right=g&&g===a;
-    return `<div class="sitem${g?(right?' right':' wrong'):''}"><div class="q">${q}</div><div class="row">
+    return `<div class="sitem${g?(right?' right':' wrong'):''}"><div class="lab">Parameter or statistic?</div><div class="q">${q}</div><div class="row">
       <button class="btn${g==='P'?' on':''}" data-act="sort" data-v="${i}:P">Parameter</button><button class="btn${g==='S'?' on':''}" data-act="sort" data-v="${i}:S">Statistic</button>
       ${g?`<span class="verdict ${right?'ok':'bad'}">${right?'✓':'✗ try again'}</span>`:''}</div></div>`; }).join('');
   const done=SORTQ.every((q,i)=>st.sort[i]===q[1]);
-  return {cap:'Parameter or statistic?',tail:'click one for each',body:`<div class="sorter">${items}</div>${done?`<div class="readout"><b>All six correct.</b></div>`:''}`};
+  return {cap:'Parameter or statistic?',tail:'click one for each',body:`<div class="big">Is each value a <b>parameter</b> or a <b>statistic</b>?</div><div class="sorter">${items}</div>${done?`<div class="readout"><b>All six correct.</b></div>`:''}`};
 }
 
 /* --- section 2 helpers --- */
@@ -842,21 +848,14 @@ const SECS=[
    body:()=>`<p>Gia and Sarah run <b>Mnemonic</b>, a popular coffee shop in Bankers Hill, San Diego.</p>
      <p>Let’s say that on a typical weekday they sell <b>150 milk-based drinks</b>. Last month had 20 non-holiday weekdays, so that’s</p>
      <div class="line">20 days <span class="op">×</span> 150 drinks <span class="op">=</span> ${rb('m3000','3,000 drinks')}</div>
-     <p class="note">Each little square in the calendar is one drink. Hover over a day to see which one it is.</p>`,
-   viz:()=>({cap:'Last month at Mnemonic',tail:'20 weekdays × 150 drinks',body:calendarSVG({})})},
-  {t:'Oat milk',
-   body:()=>`<p>Looking at their sales data, they know that <b>40%</b> of those 3,000 drinks were made with <span class="oat">oat milk</span>.</p>
-     <div class="line">40% of 3,000 <span class="op">=</span> ${rb('m1200','1,200 oat drinks')}</div>
-     <p>Click <b>Show milk type</b> to color the drinks.</p>`,
-   viz:()=>({cap:'Last month at Mnemonic',tail:'3,000 drinks',body:calendarSVG({showK:true})+(st.milk?cupLegend():''),
-     ctl:`<button class="btn${st.milk?' on':''}" data-act="milk">${st.milk?'Hide':'Show'} milk type</button>`})},
+     <p>Each little square is one drink. Looking at their sales data, they know they sold <b>1,200</b> <span class="oat">oat milk</span> drinks. What proportion of the drinks is that?</p>
+     <div class="line">${fr('1,200','3,000')} <span class="op">=</span> ${rb('m40','0.40 = 40%')}</div>`,
+   viz:()=>({cap:'Last month at Mnemonic',tail:'3,000 drinks',body:popSVG()+cupLegend()})},
   {t:'Population and sample',
    body:()=>`<p>Recall that a ${hl('pop','<b>population</b>')} is the entire group or set of objects that we are interested in studying, and a ${hl('day'+st.pick,'<b>sample</b>')} is a subset of that group.</p>
-     <p>For Mnemonic, the population might be ${hl('pop','all of the drinks they sold on weekdays over the last month')}, whereas the drinks they sold on ${hl('day'+st.pick,'one particular day')} would make up a sample.</p>
-     <p class="note">Click any day on the calendar to pull it out as a sample.</p>`,
-   enter:()=>{ st.milk=true; },
+     <p>For Mnemonic, the population might be ${hl('pop','all of the drinks they sold on weekdays over the last month')}, whereas the drinks they sold on ${hl('day'+st.pick,'one particular day')} would make up a sample.</p>`,
    viz:()=>{ const d=MONTH[st.pick]; return {cap:'Population: all 3,000 drinks',tail:`Sample: ${dayLab(st.pick)}`,
-     body:`<div class="flexw"><div style="flex:2.2 1 380px">${calendarSVG({sel:st.pick,click:true})}</div><div style="flex:1 1 190px;max-width:260px">${cupsSVG(d.cups,{max:260})}<div class="readout"><span>${dayLab(st.pick)}: <b>${d.k}</b> of 150 oat</span></div></div></div>`+cupLegend()}; }},
+     body:`<div class="flexw"><div style="flex:2.2 1 380px">${calendarSVG({sel:st.pick,click:true})}</div><div style="flex:1 1 190px;max-width:260px">${cupsSVG(d.cups,{max:260,k:'day'+st.pick})}<div class="readout"><span>${dayLab(st.pick)}: <b>${d.k}</b> of 150 oat</span></div></div></div>`+cupLegend()}; }},
   {t:'Parameters and statistics',
    body:()=>`<p>A value we use to describe a <b>population</b> is called a <b>parameter</b>.</p>
      <p>A value that comes from a <b>sample</b> is called a <b>statistic</b>.</p>
@@ -864,17 +863,18 @@ const SECS=[
      <p>The same kind of number can be either one. It depends on how you define your population. Try sorting the six examples.</p>`,
    viz:sortViz},
   {t:'p and p̂',
-   body:()=>`<p>For this lesson we only look at <b>proportions</b>.</p>
+   body:()=>{ const d=MONTH[st.pick], dh='day'+st.pick; return `<p>For this lesson we only look at <b>proportions</b>.</p>
      <p>The ${hl('pop','<b>population proportion</b>')} ${T('p')} is a parameter. For all drinks last month:</p>
      <div class="line">${T('p')} <span class="op">=</span> ${fr(rb('pn','1,200','?'),rb('pd','3,000','?'))} <span class="op">=</span> ${rb('pr','0.40')}</div>
-     <p>Let’s say on ${hl('tue','a random Tuesday')}, ${tueK} of the 150 drinks were oat. The <b>sample proportion</b> ${PH} (“p-hat”) is a statistic:</p>
-     <div class="line">${PH} <span class="op">=</span> ${fr(rb('qn',String(tueK)),rb('qd','150'))} <span class="op">=</span> ${rb('qr',f2(tueK/150))}</div>
+     <p>Let’s say on ${hl(dh,dayLab(st.pick))}, ${d.k} of the 150 drinks were oat. The <b>sample proportion</b> ${PH} (“p-hat”) is a statistic:</p>
+     <div class="line">${PH} <span class="op">=</span> ${fr(rb('qn',String(d.k)),rb('qd','150'))} <span class="op">=</span> ${rb('qr',f2(d.k/150))}</div>
      <table class="mini"><thead><tr><th></th><th>describes</th><th>value</th></tr></thead><tbody>
        <tr><td>${T('p')}</td><td>${hl('pop','the population')} (parameter)</td><td>${st.rev.pr?'0.40':'?'}</td></tr>
-       <tr><td>${PH}</td><td>${hl('tue','one sample')} (statistic)</td><td>${st.rev.qr?f2(tueK/150):'?'}</td></tr></tbody></table>`,
-   enter:()=>{ st.milk=true; st.pick=TUE; },
-   viz:()=>({cap:'p describes the month · p̂ describes one day',tail:`${dayLab(TUE)}: ${tueK} of 150 oat`,
-     body:`<div class="flexw"><div style="flex:2.2 1 380px">${calendarSVG({sel:TUE})}</div><div style="flex:1 1 190px;max-width:260px">${cupsSVG(MONTH[TUE].cups,{max:260})}</div></div>`+cupLegend()})}
+       <tr><td>${PH}</td><td>${hl(dh,'one sample')} (statistic)</td><td>${st.rev.qr?f2(d.k/150):'?'}</td></tr></tbody></table>
+     <p class="note">Click a different day on the calendar to change the sample.</p>`; },
+   enter:()=>{ st.pick=TUE; },
+   viz:()=>({cap:'p describes the month · p̂ describes one day',tail:`${dayLab(st.pick)}: ${MONTH[st.pick].k} of 150 oat`,
+     body:`<div class="flexw"><div style="flex:2.2 1 380px">${calendarSVG({sel:st.pick,click:true})}</div><div style="flex:1 1 190px;max-width:260px">${cupsSVG(MONTH[st.pick].cups,{max:260,k:'day'+st.pick})}</div></div>`+cupLegend()})}
  ]},
  {tab:'Variability',t:'Sampling variability',steps:[
   {t:'Every day is different',
@@ -1246,8 +1246,7 @@ $('#stage').addEventListener('pointerover',e=>{ const el=e.target.closest('.day'
 /* ---------- actions ---------- */
 const ACT={
   prev:()=>goFlat(-1), next:()=>goFlat(1),
-  milk:()=>{ st.milk=!st.milk; renderViz(); },
-  pick:v=>{ st.pick=+v; renderBody(); renderViz(); },
+  pick:v=>{ st.pick=+v; delete st.rev.qn; delete st.rev.qr; renderBody(); renderViz(); },
   sort:v=>{ const [i,a]=v.split(':'); st.sort[i]=a; renderViz(); },
   open:v=>{ openDay(Math.min(+v,25)); if(+v>25) simAdd(sim150,+v-25); st.pour=+v===1; if(+v>25){ st.today=st.today; } renderBody(); renderViz(); },
   clearsim:()=>{ sim150=mkSim(150); st.hist=[]; st.today=null; renderBody(); renderViz(); },
