@@ -175,7 +175,17 @@ table.mini code{font:700 .85em var(--mono)}
 .chart .fish{fill:var(--accInk)}
 .chart .pq{fill:none;stroke:var(--ink);stroke-width:2.4}
 .chart [data-k].hot{filter:drop-shadow(0 0 4px var(--acc))}
-.chart .sdbr{stroke:var(--acc);stroke-width:2.5;fill:none}
+.chart .sdbr{stroke:var(--muted);stroke-width:2.5;fill:none}
+.chart .sdbr.hot{stroke:var(--acc);filter:none}
+.chart .sdlab{fill:var(--muted)}
+.chart .sdlab.hot{fill:var(--accInk);filter:none}
+.chart .mk.hot{stroke:var(--acc);stroke-width:3.4;filter:none}
+.btnrow{display:flex;gap:.4em;flex-wrap:wrap;margin:.3em 0 .8em}
+.btnrow.r{justify-content:flex-end}
+.shrinkin{animation:shrinkin .7s ease both}
+@keyframes shrinkin{from{max-width:470px}to{max-width:300px}}
+.fadein{animation:fadein .7s ease .25s both}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
 
 /* cups */
 .cal .cup{fill:var(--cup)}
@@ -479,7 +489,7 @@ function histSVG(S,o={}){
   if(o.curve&&S.tot){ let d=''; for(let i=0;i<=160;i++){ const x=x0+(x1-x0)*i/160; d+=(i?'L':'M')+X(x).toFixed(1)+','+(base-S.tot*bw*dens(x)*u).toFixed(1); } s+=`<path class="curve" data-k="curve" d="${d}"/>`; }
   s+=`<line class="ax" x1="${L}" x2="${W-R}" y1="${base}" y2="${base}"/>`;
   if(o.sdbr&&S.tot>1){ const m=o.sdbr.mu, sdv=o.sdbr.sd, yb=T+8;
-    [1,2].forEach(k=>{ const y=yb+(k-1)*16; s+=`<path class="sdbr" data-k="sd" d="M${X(m-k*sdv)} ${y+5} V${y} H${X(m+k*sdv)} V${y+5}"/><text class="ml acc" x="${X(m+k*sdv)+6}" y="${y+4}" style="text-anchor:start">±${k}σ</text>`; }); }
+    [1,2].forEach(k=>{ const y=yb+(k-1)*16; s+=`<path class="sdbr" data-k="sd" d="M${X(m-k*sdv)} ${y+5} V${y} H${X(m+k*sdv)} V${y+5}"/><text class="ml sdlab" data-k="sd" x="${X(m+k*sdv)+6}" y="${y+4}" style="text-anchor:start">±${k}σ</text>`; }); }
   (o.marks||[]).forEach(m=>{ s+=`<line class="mk" ${m.k?`data-k="${m.k}"`:''} x1="${X(m.x)}" x2="${X(m.x)}" y1="${T-4}" y2="${base}"/><text class="ml${m.acc?' acc':''}" x="${X(m.x)}" y="${T-10}">${m.label}</text>`; });
   s+=`<text class="at" x="${W/2}" y="${H-5}">${o.axis||'p̂ = proportion of the day’s drinks made with oat milk'}</text></svg>`;
   return s;
@@ -756,7 +766,9 @@ function openDay(m=1){
     st.today={cups,k}; st.hist.push(k/N0); sim150.c[k]++; sim150.tot++; sim150.s+=k/N0; sim150.ss+=(k/N0)*(k/N0); sim150.last=k; }
 }
 const histChips=()=>`<div class="chips">${st.hist.slice(-14).map((v,i,a)=>`<span class="chip${i===a.length-1?' last':''}">${f2(v)}</span>`).join('')}</div>`;
-const dayButtons=more=>`<button class="btn primary" data-act="open" data-v="1">Open the shop (1 day)</button>${more?`<button class="btn primary" data-act="open" data-v="5">+1 week</button><button class="btn primary" data-act="open" data-v="20">+1 month</button>`:''}`;
+const btnOpen1=`<div class="btnrow r"><button class="btn primary" data-act="open" data-v="1">Open the shop</button></div>`;
+const btnWeeks=`<div class="btnrow"><button class="btn primary" data-act="open" data-v="1">+1 day</button><button class="btn primary" data-act="open" data-v="5">+1 week</button><button class="btn primary" data-act="open" data-v="20">+1 month</button></div>`;
+const btnYears=`<div class="btnrow"><button class="btn primary" data-act="open" data-v="20">+1 month</button><button class="btn primary" data-act="open" data-v="250">+1 year</button><button class="btn primary" data-act="open" data-v="2500">+10 years</button></div>`;
 function simReadout(S,mu,sd){ return S.tot>1?`<div class="readout"><span>days: <b>${S.tot.toLocaleString()}</b></span><span>average p̂: <b>${f4(simMean(S))}</b></span><span>SD of p̂: <b>${f4(simSD(S))}</b></span></div>`:`<div class="readout"><span>days: <b>${S.tot}</b></span></div>`; }
 const addDays=()=>`<span class="lab">Add days</span><button class="btn primary" data-act="open" data-v="1">+1</button><button class="btn primary" data-act="open" data-v="20">+1 month</button><button class="btn primary" data-act="open" data-v="250">+1 year</button><button class="btn primary" data-act="open" data-v="2500">+10 years</button><span class="sp"></span><button class="btn" data-act="clearsim">Clear</button>`;
 
@@ -878,44 +890,50 @@ const SECS=[
  ]},
  {tab:'Variability',t:'Sampling variability',steps:[
   {t:'Every day is different',
-   body:()=>`<p>Let’s say the 40% oat rate has held steady over Mnemonic’s three years. So ${T('p = 0.40')}.</p>
-     <p>On any particular day, though, the actual percentage of oat drinks will vary. Click <b>Open the shop</b> a few times.</p>
-     ${st.hist.length>=3?`<div class="def"><b>Sampling variability:</b> a sample statistic (here, ${PH}) varies from sample to sample depending on which units happen to be selected.</div>`:`<p class="note">Open the shop at least 3 times.</p>`}`,
+   body:()=>`<p>Let’s say the 40% oat rate has held steady over Mnemonic’s three years of operation. So ${T('p = 0.40')}.</p>
+     <p>On any particular day, though, the actual percentage of oat drinks will vary. Click <b>Open the shop</b> a few times to simulate a day of coffee orders.</p>
+     ${btnOpen1}
+     ${st.hist.length>=3?`<div class="def"><b>Sampling variability:</b> a sample statistic (here, ${PH}) varies from sample to sample depending on which units happen to be selected.</div>`:''}`,
    viz:()=>({cap:st.today?`Today: ${st.today.k} of 150 oat · p̂ = ${f3(st.today.k/150)}`:'Today at Mnemonic',tail:`${st.hist.length} day${st.hist.length===1?'':'s'} so far`,
-     body:cupsSVG(st.today?st.today.cups:null,{pour:st.pour,max:470})+cupLegend()+histChips(),ctl:dayButtons(false)})},
+     body:cupsSVG(st.today?st.today.cups:null,{pour:st.pour,max:470})+cupLegend()+histChips()})},
   {t:'Stack the days',
-   body:()=>`<p>Let’s keep track of every day’s ${PH} by stacking it on a number line. Each square is one day.</p>
-     <p>Most days land close to 0.40. Every so often, a day lands a little farther away.</p>
-     <p class="note">Add a week or a month at a time.</p>`,
+   body:()=>`<p>Let’s keep track of every day’s ${PH} by stacking it on a number line. Each square is one day. Try adding a few weeks or months of ${PH}’s.</p>
+     ${btnWeeks}
+     <p>Most days land close to 0.40. Every so often, a day lands a little farther away.</p>`,
    viz:()=>({cap:'Every day’s p̂, stacked',tail:`n = 150 drinks per day`,
-     body:`<div style="max-width:300px;margin:0 auto;width:100%">${cupsSVG(st.today?st.today.cups:null,{pour:st.pour,max:300})}</div>`+histSVG(sim150,{markLast:true,marks:[{x:P0,label:'p = 0.40'}],h:260})+simReadout(sim150),ctl:dayButtons(true)+`<span class="sp"></span><button class="btn" data-act="clearsim">Clear</button>`})},
+     body:`<div class="${st.anim?'shrinkin':''}" style="max-width:300px;margin:0 auto;width:100%">${cupsSVG(st.today?st.today.cups:null,{pour:st.pour,max:st.anim?470:300})}</div>`+histChips()+`<div class="${st.anim?'fadein':''}">`+histSVG(sim150,{markLast:true,marks:[{x:P0,label:'p = 0.40'}],h:260})+simReadout(sim150)+`</div>`,ctl:`<span class="sp"></span><button class="btn" data-act="clearsim">Clear</button>`})},
   {t:'The long run',
    body:()=>`<p>Now jump ahead a year, or ten.</p>
+     ${btnYears}
      <p>Over the long run, the shape of the distribution of sample proportions forms a <b>bell curve</b>.</p>
-     ${sim150.tot>=250?`<div class="def"><b>Sampling distribution of ${PH}:</b> the distribution of ${PH} across all possible samples of the same size.</div>`:`<p class="note">Add at least a year of days.</p>`}`,
-   viz:()=>({cap:'The sampling distribution of p̂',tail:`n = 150`,body:histSVG(sim150,{marks:[{x:P0,label:'p = 0.40'}]})+simReadout(sim150),ctl:addDays()})},
+     ${sim150.tot>=250?`<div class="def"><b>Sampling distribution of ${PH}:</b> the distribution of ${PH} across all possible samples of the same size.</div>`:''}`,
+   viz:()=>({cap:'The sampling distribution of p̂',tail:`n = 150`,body:histSVG(sim150,{marks:[{x:P0,label:'p = 0.40'}]})+simReadout(sim150),ctl:`<span class="sp"></span><button class="btn" data-act="clearsim">Clear</button>`})},
   {t:'The center',
    enter:()=>{ if(sim150.tot<1000) simAdd(sim150,1000-sim150.tot); },
-   body:()=>`<p>The ${hl('mu','middle of this bell curve')} is the population proportion.</p>
+   body:()=>`<p>The ${hl('mu','middle of this bell curve')} is equal to the population proportion.</p>
      <div class="line">${T(muTxt)} <span class="op">=</span> ${T('p')} <span class="op">=</span> ${rb('mu','0.40')}</div>
-     <p>Check the readout: the average of all the simulated ${PH}’s is ${rb('mus',f3(simMean(sim150)),'?')}, right on top of 0.40.</p>
-     <p class="note">Some days are high, some are low, but they balance out around ${T('p')}.</p>`,
+     <p>Check the readout: the average of all the simulated ${PH}’s is ${rb('mus',f3(simMean(sim150)),'?')}, right on top of 0.40. Some days are high, some are low, but they balance out around ${T('p')}.</p>`,
    viz:()=>({cap:'The center',tail:`${sim150.tot.toLocaleString()} days`,body:histSVG(sim150,{marks:[{x:P0,label:'μ = p = 0.40',k:'mu',acc:1}]})+simReadout(sim150),ctl:addDays()})},
   {t:'The spread',
    enter:()=>{ if(sim150.tot<1000) simAdd(sim150,1000-sim150.tot); },
    body:()=>`<p>The ${hl('sd','spread')} of the bell curve is its standard deviation:</p>
      ${D(raw`\sigma_{\hat p}=\sqrt{\frac{p(1-p)}{n}}`)}
      <div class="line">${T(sigTxt)} <span class="op">=</span> ${T(N150)} <span class="op">=</span> ${rb('sd','0.04')}</div>
-     <p>You may recall that standard deviation measures variability. Here, a typical day’s ${PH} lands about 0.04 (4 percentage points) from 0.40. The simulation agrees: SD of ${PH} ≈ ${f4(simSD(sim150))}.</p>`,
-   viz:()=>({cap:'The spread',tail:`σ = 0.04`,body:histSVG(sim150,{marks:[{x:P0,label:'0.40'}],sdbr:st.rev.sd?{mu:P0,sd:SD0}:null})+simReadout(sim150),ctl:addDays()})},
+     <p>You may recall that standard deviation measures variability. Here, a typical day’s ${PH} lands about 0.04 from 0.40.</p>`,
+   viz:()=>({cap:'The spread',tail:`σ = 0.04`,body:histSVG(sim150,{marks:[{x:P0,label:'0.40'}],sdbr:{mu:P0,sd:SD0}})+simReadout(sim150),ctl:addDays()})},
   {t:'Putting it together',
    enter:()=>{ if(sim150.tot<1000) simAdd(sim150,1000-sim150.tot); },
    body:()=>`<p>Together, we say the sampling distribution of ${PH} is approximately normal with</p>
      ${D(raw`\mu_{\hat p}=p \qquad \sigma_{\hat p}=\sqrt{\frac{p(1-p)}{n}}`)}
      <p>For Mnemonic: ${T(raw`\hat p \sim N(0.40,\ 0.04)`)}.</p>
      <div class="def"><b>When is the normal model OK?</b><br>
-       Expect at least 10 of each kind: ${T('np')} = ${rb('c1','150(0.4) = 60 ✓')} and ${T('n(1-p)')} = ${rb('c2','150(0.6) = 90 ✓')}<br>
-       The sample is at most 10% of the population: ${rb('c3','150 ≤ 300 ✓')}</div>`,
+       Expect at least 10 of each kind:<br>
+       ${T('np \\ge 10')}<br>${rb('c1','150(0.4) = 60 ✓')}<br>
+       ${T('n(1-p) \\ge 10')}<br>${rb('c2','150(0.6) = 90 ✓')}<br><br>
+       The sample is at most 10% of the population:<br>
+       ${T('n \\le 10\\% \\text{ of } N')}<br>
+       n = 150 and N = 150 × 750 = 112,500 <span class="note">(150 cups/day × 250 non-holiday weekdays/year × 3 years of operation)</span><br>
+       ${rb('c3','150 ≤ 11,250 ✓')}</div>`,
    viz:()=>({cap:'A normal model for p̂',tail:'N(0.40, 0.04)',body:histSVG(sim150,{curve:{mu:P0,sd:SD0},marks:[{x:P0,label:'0.40'}]})+simReadout(sim150),ctl:addDays()})},
   {t:'Busy days vs. slow days',
    body:()=>{ const se=sdOf(P0,st.nsl); return `<p>The important thing to notice in ${T(sigTxt)} is that the sample size ${T('n')} is in the <b>denominator</b>.</p>
@@ -1220,13 +1238,14 @@ function renderViz(onlyBody){
     $('#stage').innerHTML=`<div class="viz"><div class="vcap"><span id="vcapt">${fx(v.cap)}</span><span id="vtail">${fx(v.tail)}</span></div><div class="vbody" id="vbody">${v.body}</div>${v.ctl?`<div class="ctl">${v.ctl}</div>`:''}</div>`;
   }
   applyHL();
-  st.pour=false;
+  st.pour=false; st.anim=false;
 }
 function render(){
   $('#main').classList.toggle('wide',!!SECS[st.sec].wide);
   renderTabs(); renderBody(); renderNav(); renderViz();
 }
 function go(sec,step,fresh){
+  st.anim=(sec===1&&step===1&&st.sec===1&&st.step===0);
   st.sec=sec; st.step=step; const s=cur(); st.hl=null;
   if(s.enter) s.enter();
   render(); if(fresh!==false){ $('#pbody').scrollTop=0; }
