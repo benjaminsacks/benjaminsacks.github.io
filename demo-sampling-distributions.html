@@ -134,6 +134,7 @@ table.mini code{font:700 .85em var(--mono)}
 .rb{border:2px dashed var(--line);background:var(--soft);padding:.05em .5em;min-width:2.2em;min-height:1.7em;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:.3em;font-weight:700;line-height:1.2;vertical-align:middle;color:var(--muted);transition:background .2s,border-color .2s}
 .rb:hover{border-color:var(--acc)}
 .rb.on{border-style:solid;border-color:var(--acc);background:var(--accHot);color:var(--ink)}
+span.rb{cursor:text;user-select:text}
 .rb.wide{display:flex;width:100%;justify-content:flex-start;text-align:left;padding:.4em .7em;font-weight:500}
 .rb.wide:not(.on){font-weight:700;font-size:.85em}
 .rb.wide.on{background:transparent;border-color:var(--line);display:block}
@@ -168,7 +169,10 @@ table.mini code{font:700 .85em var(--mono)}
 .chart .band.top{fill:color-mix(in srgb,var(--blue) 30%,transparent);stroke:var(--blue);stroke-width:2}
 .chart .bigl{font:800 17px var(--mono);fill:var(--ink);text-anchor:middle;paint-order:stroke;stroke:var(--panel);stroke-width:5px}
 .chart .handle{fill:var(--acc);stroke:var(--panel);stroke-width:3;cursor:ew-resize}
+.tsel:focus-visible{outline:2px solid #111;outline-offset:1px}
 .chart [data-drag]{cursor:ew-resize}
+svg[data-drag]{touch-action:none}
+svg[data-drag]:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .chart .ci{stroke:var(--acc);stroke-width:5;stroke-linecap:round}
 .chart .cap{stroke:var(--acc);stroke-width:2.5}
 .chart .pd{fill:var(--blue)}
@@ -299,7 +303,7 @@ table.mini code{font:700 .85em var(--mono)}
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><svg viewBox="-16 -16 32 32" aria-hidden="true"><path d="M-9 -8 H9 L6.6 13 H-6.6 Z" fill="var(--oat)"/><rect x="-11" y="-12" width="22" height="4.5" rx="1.5" fill="var(--muted)"/><path d="M-13 13 Q-7 4 0 6 Q7 8 13 0" fill="none" stroke="var(--acc)" stroke-width="2.4"/></svg>Sampling &amp; Inference</div>
+    <a class="brand" href="teaching.html" style="color:inherit;text-decoration:none" title="Back to teaching"><svg viewBox="-16 -16 32 32" aria-hidden="true"><path d="M-9 -8 H9 L6.6 13 H-6.6 Z" fill="var(--oat)"/><rect x="-11" y="-12" width="22" height="4.5" rx="1.5" fill="var(--muted)"/><path d="M-13 13 Q-7 4 0 6 Q7 8 13 0" fill="none" stroke="var(--acc)" stroke-width="2.4"/></svg>Sampling &amp; Inference</a>
     <nav class="tabs" id="tabs" aria-label="Sections"></nav>
     <div class="tools">
       <button class="btn" id="themeBtn" aria-label="Toggle light or dark mode">&#9790;</button>
@@ -308,7 +312,7 @@ table.mini code{font:700 .85em var(--mono)}
   </header>
   <main id="main">
     <section id="stage" aria-label="Visual"></section>
-    <section id="panel" aria-live="polite">
+    <section id="panel">
       <div class="pbody" id="pbody"></div>
       <div class="pnav" id="pnav"></div>
     </section>
@@ -319,7 +323,7 @@ table.mini code{font:700 .85em var(--mono)}
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const raw=String.raw;
-function tex(s,d){ try{ return window.katex?katex.renderToString(s,{displayMode:!!d,throwOnError:false}):s; }catch(e){ return s; } }
+function tex(s,d){ try{ return window.katex?katex.renderToString(s,{displayMode:!!d,throwOnError:false,trust:true}):s; }catch(e){ return s; } }
 const T=s=>tex(s), D=s=>`<div class="eq">${tex(s,true)}</div>`;
 const PH=T('\\hat p');
 const f2=x=>x.toFixed(2), f3=x=>x.toFixed(3), f4=x=>x.toFixed(4);
@@ -427,7 +431,9 @@ function netZ(){ if(!st.net.z) st.net.z=Array.from({length:100},randn); return s
 
 /* ---------- small html helpers ---------- */
 const REG={};
-function rb(id,ans,q='?',cls=''){ REG[id]={ans,q}; const on=!!st.rev[id]; return `<button class="rb ${cls}${on?' on':''}" data-rid="${id}" aria-label="Click to reveal">${on?ans:q}</button>`; }
+function rb(id,ans,q='?',cls=''){ REG[id]={ans,q}; const on=!!st.rev[id];
+  return on?`<span class="rb on ${cls}" data-rid="${id}" role="group" aria-label="Revealed answer">${ans}</span>`
+           :`<button class="rb ${cls}" data-rid="${id}" aria-label="Reveal answer: ${esc(String(q).replace(/<[^>]*>/g,'')).replace(/"/g,'&quot;')}">${q}</button>`; }
 const fr=(a,b)=>`<span class="frac">${a}<span class="fbar"></span>${b}</span>`;
 const hl=(k,h)=>`<span class="hlw" data-hl="${k}">${h}</span>`;
 const key=t=>`<span class="k">${t}</span>`;
@@ -509,7 +515,7 @@ function curveSVG(o){
   const W=CG.W,H=o.h||290,L=CG.L,R=CG.R,T=36,B=o.z?64:44, pw=W-L-R, ph=H-T-B, base=T+ph;
   const mu=o.mu,sd=o.sd,x0=o.x0,x1=o.x1, X=x=>L+(x-x0)/(x1-x0)*pw;
   const dens=x=>Math.exp(-.5*Math.pow((x-mu)/sd,2)), Y=x=>base-dens(x)*ph*.9;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'Normal curve'}"${o.drag?` data-drag="${o.drag}" data-x0="${x0}" data-x1="${x1}"`:''}>`;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.aria||'Normal curve'}"${o.drag?` data-drag="${o.drag}" data-x0="${x0}" data-x1="${x1}" tabindex="0" aria-description="Use the left and right arrow keys to move the handle"`:''}>`;
   const tk=o.tk||0.05, dec=o.dec!=null?o.dec:2;
   for(let x=Math.ceil(x0/tk-1e-9)*tk;x<=x1+1e-9;x+=tk) s+=`<line class="gl" x1="${X(x)}" x2="${X(x)}" y1="${T}" y2="${base}"/><text class="tk" x="${X(x)}" y="${base+17}">${x.toFixed(dec)}</text>`;
   if(o.z) for(let k=-3;k<=3;k++){ const x=mu+k*sd; if(x<x0||x>x1) continue; s+=`<text class="tz" x="${X(x)}" y="${base+36}">z=${k}</text>`; }
@@ -569,8 +575,9 @@ function forestSVG(runs,o={}){
   for(let x=x0;x<=x1+1e-9;x+=0.05) s+=`<line class="gl" x1="${X(x)}" x2="${X(x)}" y1="${top}" y2="${base}"/><text class="tk" x="${X(x)}" y="${base+17}">${f2(x)}</text>`;
   s+=`<line class="mk" x1="${X(SECRET)}" x2="${X(SECRET)}" y1="${top-6}" y2="${base}"/>${o.fish?fish(X(SECRET),top-16):truept(X(SECRET),top-16)}<text class="ml acc" x="${X(SECRET)+20}" y="${top-12}" style="text-anchor:start">true p = ${SECRET}</text>`;
   runs.forEach((c,i)=>{ const y=top+rh*(i+.5);
-    s+=`<line class="${c.hit?'hit':'miss'}" style="stroke-width:${Math.max(1.4,rh*.55)}" x1="${X(c.lo)}" x2="${X(c.hi)}" y1="${y}" y2="${y}"/><circle class="pd${c.hit?'':' miss'}" cx="${X(c.ph)}" cy="${y}" r="${Math.max(1.6,rh*.42)}"/>`; });
+    s+=`<line class="${c.hit?'hit':'miss'}" style="stroke-width:${Math.max(1.4,rh*(c.hit?.55:.8))}" x1="${X(c.lo)}" x2="${X(c.hi)}" y1="${y}" y2="${y}"/><circle class="pd${c.hit?'':' miss'}" cx="${X(c.ph)}" cy="${y}" r="${Math.max(1.6,rh*.42)}"/>`; });
   s+=`<line class="ax" x1="${L}" x2="${W-R}" y1="${base}" y2="${base}"/><text class="at" x="${W/2}" y="${H-5}">${o.axis||'each row is one survey’s interval (newest on top)'}</text></svg>`;
+  s+=`<div class="legend"><span><i style="background:var(--muted)"></i>caught the true p</span><span><i style="background:var(--bad)"></i>missed it</span></div>`;
   return s;
 }
 /* sampling distribution strip for the capture demo */
@@ -589,7 +596,7 @@ function capCurveSVG(runs){
 /* ----- p(1-p) ----- */
 function pqSVG(p){
   const W=640,H=270,L=50,R=20,T=26,B=46,pw=W-L-R,ph=H-T-B,base=T+ph,X=x=>L+x*pw,Y=v=>base-v/0.25*ph*.92;
-  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="p-hat times one minus p-hat" data-drag="pg" data-x0="0" data-x1="1" data-l="${L}" data-r="${R}">`;
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="p-hat times one minus p-hat" data-drag="pg" data-x0="0" data-x1="1" data-l="${L}" data-r="${R}" tabindex="0" aria-description="Use the left and right arrow keys to move the dot">`;
   [0,.25,.5,.75,1].forEach(x=>{ s+=`<line class="gl" x1="${X(x)}" x2="${X(x)}" y1="${T}" y2="${base}"/><text class="tk" x="${X(x)}" y="${base+17}">${x}</text>`; });
   [0,.1,.2,.25].forEach(v=>{ s+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tk" x="${L-8}" y="${Y(v)+4}" style="text-anchor:end">${v}</text>`; });
   let d=''; for(let i=0;i<=100;i++){ const x=i/100; d+=(i?'L':'M')+X(x)+','+Y(x*(1-x)); }
@@ -713,7 +720,8 @@ function pressKey(k,el){
 /* ----- the calculator playground (practice) ----- */
 const PMODES=[['normalcdf','normalcdf'],['invNorm','invNorm'],['propz','1-PropZInt'],['proptest','1-PropZTest']];
 const ALTS=[['NE','≠p0'],['LT','<p0'],['GT','>p0']], ALTSYM={NE:'≠',LT:'<',GT:'>'};
-function resetPlay(mode){ const P=st.play; P.mode=mode; P.out=null; P.tail='LEFT'; P.alt='GT'; Object.keys(P.f).forEach(k=>P.f[k]=''); }
+function resetPlay(mode){ const P=st.play; P.mode=mode; P.out=null; P.tail='LEFT'; P.alt='GT'; Object.keys(P.f).forEach(k=>P.f[k]='');
+  if(mode==='normalcdf'||mode==='invNorm'){ P.f.mu='0'; P.f.sigma='1'; } }   // like the real calculator's defaults
 function zViz(){
   const z=zstar(st.C), C=st.C, tl=(1-C)/2;
   return {cap:'Critical value z*',tail:'standard normal: μ = 0, σ = 1',
@@ -724,10 +732,10 @@ function playViz(opt){
   opt=opt||{};
   const P=st.play, f=P.f, inp=(k,l)=>`<div class="tl">${l}<input data-pf="${k}" value="${esc(f[k])}" spellcheck="false" autocomplete="off" inputmode="text" aria-label="${l}"></div>`;
   let body='';
-  if(P.mode==='normalcdf') body=`<div class="tl c"><span class="inv">&nbsp;normalcdf&nbsp;</span></div>${inp('lower','lower:')}${inp('upper','upper:')}${inp('mu','μ:')}${inp('sigma','σ:')}<div class="tl"><span class="inv tsel" data-act="prun">Paste</span></div>`;
-  else if(P.mode==='invNorm') body=`<div class="tl c"><span class="inv">&nbsp;invNorm&nbsp;</span></div>${inp('area','area:')}${inp('mu','μ:')}${inp('sigma','σ:')}<div class="tl">Tail: ${['LEFT','CENTER','RIGHT'].map(t=>`<span class="opt tsel${P.tail===t?' inv':''}" data-act="ptail" data-v="${t}">${t}</span>`).join(' ')}</div><div class="tl"><span class="inv tsel" data-act="prun">Paste</span></div>`;
-  else if(P.mode==='proptest') body=`<div class="tl c"><span class="inv">&nbsp;1-PropZTest&nbsp;</span></div>${inp('p0','p0:')}${inp('x','x:')}${inp('n','n:')}<div class="tl">prop: ${ALTS.map(a=>`<span class="opt tsel${P.alt===a[0]?' inv':''}" data-act="palt" data-v="${a[0]}">${a[1]}</span>`).join(' ')}</div><div class="tl"><span class="inv tsel" data-act="prun">Calculate</span></div>`;
-  else body=`<div class="tl c"><span class="inv">&nbsp;1-PropZInt&nbsp;</span></div>${inp('x','x:')}${inp('n','n:')}${inp('cl','C-Level:')}<div class="tl"><span class="inv tsel" data-act="prun">Calculate</span></div>`;
+  if(P.mode==='normalcdf') body=`<div class="tl c"><span class="inv">&nbsp;normalcdf&nbsp;</span></div>${inp('lower','lower:')}${inp('upper','upper:')}${inp('mu','μ:')}${inp('sigma','σ:')}<div class="tl"><span class="inv tsel" role="button" tabindex="0" data-act="prun">Paste</span></div>`;
+  else if(P.mode==='invNorm') body=`<div class="tl c"><span class="inv">&nbsp;invNorm&nbsp;</span></div>${inp('area','area:')}${inp('mu','μ:')}${inp('sigma','σ:')}<div class="tl">Tail: ${['LEFT','CENTER','RIGHT'].map(t=>`<span class="opt tsel${P.tail===t?' inv':''}" role="button" tabindex="0" aria-pressed="${P.tail===t}" data-act="ptail" data-v="${t}">${t}</span>`).join(' ')}</div><div class="tl"><span class="inv tsel" role="button" tabindex="0" data-act="prun">Paste</span></div>`;
+  else if(P.mode==='proptest') body=`<div class="tl c"><span class="inv">&nbsp;1-PropZTest&nbsp;</span></div>${inp('p0','p0:')}${inp('x','x:')}${inp('n','n:')}<div class="tl">prop: ${ALTS.map(a=>`<span class="opt tsel${P.alt===a[0]?' inv':''}" role="button" tabindex="0" aria-pressed="${P.alt===a[0]}" data-act="palt" data-v="${a[0]}">${a[1]}</span>`).join(' ')}</div><div class="tl"><span class="inv tsel" role="button" tabindex="0" data-act="prun">Calculate</span></div>`;
+  else body=`<div class="tl c"><span class="inv">&nbsp;1-PropZInt&nbsp;</span></div>${inp('x','x:')}${inp('n','n:')}${inp('cl','C-Level:')}<div class="tl"><span class="inv tsel" role="button" tabindex="0" data-act="prun">Calculate</span></div>`;
   const isCalc=P.mode==='propz'||P.mode==='proptest';
   const o=P.out;
   let res='';
@@ -803,7 +811,7 @@ const btnOpen1=`<div class="btnrow r"><button class="btn primary" data-act="open
 const btnWeeks=`<div class="btnrow"><button class="btn primary" data-act="open" data-v="1">+1 day</button><button class="btn primary" data-act="open" data-v="5">+1 week</button><button class="btn primary" data-act="open" data-v="20">+1 month</button></div>`;
 const btnYears=`<div class="btnrow"><button class="btn primary" data-act="open" data-v="20">+1 month</button><button class="btn primary" data-act="open" data-v="250">+1 year</button><button class="btn primary" data-act="open" data-v="2500">+10 years</button></div>`;
 function simReadout(S,mu,sd){ return S.tot>1?`<div class="readout"><span>days: <b>${S.tot.toLocaleString()}</b></span><span>average p̂: <b>${f4(simMean(S))}</b></span><span>SD of p̂: <b>${f4(simSD(S))}</b></span></div>`:`<div class="readout"><span>days: <b>${S.tot}</b></span></div>`; }
-const addDays=()=>`<span class="lab">Add days</span><button class="btn primary" data-act="open" data-v="1">+1</button><button class="btn primary" data-act="open" data-v="20">+1 month</button><button class="btn primary" data-act="open" data-v="250">+1 year</button><button class="btn primary" data-act="open" data-v="2500">+10 years</button><span class="sp"></span><button class="btn" data-act="clearsim">Clear</button>`;
+const addDays=()=>`<span class="lab">Add days</span><button class="btn primary" data-act="open" data-v="1">+1</button><button class="btn primary" data-act="open" data-v="20">+1 month</button><button class="btn primary" data-act="open" data-v="250">+1 year</button><button class="btn primary" data-act="open" data-v="2500">+10 years</button><span class="sp"></span><button class="btn" data-act="resetsim">Reset</button>`;
 
 /* --- section 3: the draggable cutoff --- */
 function cutInfo(){
@@ -843,20 +851,21 @@ function capAdd(m){ for(let j=0;j<m;j++){ st.cap.runs.unshift(mkInt(binom(CN,SEC
 function netRuns(){ const z=netZ(), sd=sdOf(SECRET,st.net.n); return z.map(v=>mkInt(Math.min(.99,Math.max(.01,SECRET+sd*v)),st.net.n,st.net.C)); }
 function netViz(which){
   const runs=netRuns(), hit=runs.filter(r=>r.hit).length, w=runs.reduce((a,r)=>a+2*r.me,0)/runs.length;
-  const ctl=which==='C'?slider('netC',80,99,1,Math.round(st.net.C*100),'Confidence',Math.round(st.net.C*100)+'%'):slider('netN',0,1000,1,nToPos(st.net.n),'Customers asked','n = '+st.net.n);
+  const ctl=which==='C'?slider('netC',80,99,1,Math.round(st.net.C*100),'Confidence',Math.round(st.net.C*100)+'%'):slider('netN',0,1000,1,nToPos(st.net.n),'Customers asked','n = '+st.net.n)+`<button class="btn" data-act="netn" data-v="200">200</button><button class="btn" data-act="netn" data-v="800">800</button>`;
   return {cap:'100 surveys, 100 nets',tail:`n = ${st.net.n} · ${Math.round(st.net.C*100)}% confidence`,
     body:forestSVG(runs,{fish:true,rh:3.6,axis:'each row is one survey’s interval'})+`<div class="readout"><span>z* = <b>${f3(zstar(st.net.C))}</b></span><span>average width: <b>${f3(w)}</b></span><span>caught the fish: <b>${hit} of 100</b></span></div>`,
     ctl:ctl+`<button class="btn" data-act="newnet">New surveys</button>`};
 }
-const posToN=v=>Math.round(25*Math.pow(80,v/1000)), nToPos=n=>Math.round(1000*Math.log(n/25)/Math.log(80));   // 25 to 2,000
+const posToN=v=>Math.round(50*Math.pow(40,v/1000)), nToPos=n=>Math.round(1000*Math.log(n/50)/Math.log(40));   // 50 to 2,000
 
 /* --- section 6 --- */
+const YN=raw`\htmlStyle{color:var(--accInk)}{n}`;
 const ALG=[
-  [raw`ME = z^*\sqrt{\frac{\hat p(1-\hat p)}{\textcolor{#e3b505}{n}}}`,'start with the margin of error'],
-  [raw`\frac{ME}{z^*} = \sqrt{\frac{\hat p(1-\hat p)}{\textcolor{#e3b505}{n}}}`,'divide both sides by z*'],
-  [raw`\frac{ME^2}{(z^*)^2} = \frac{\hat p(1-\hat p)}{\textcolor{#e3b505}{n}}`,'square both sides'],
-  [raw`\textcolor{#e3b505}{n}\cdot\frac{ME^2}{(z^*)^2} = \hat p(1-\hat p)`,'multiply both sides by n'],
-  [raw`\textcolor{#e3b505}{n} = \frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`,'multiply by (z*)² and divide by ME²']];
+  [raw`ME = z^*\sqrt{\frac{\hat p(1-\hat p)}{${YN}}}`,'start with the margin of error'],
+  [raw`\frac{ME}{z^*} = \sqrt{\frac{\hat p(1-\hat p)}{${YN}}}`,'divide both sides by z*'],
+  [raw`\frac{ME^2}{(z^*)^2} = \frac{\hat p(1-\hat p)}{${YN}}`,'square both sides'],
+  [raw`${YN}\cdot\frac{ME^2}{(z^*)^2} = \hat p(1-\hat p)`,'multiply both sides by n'],
+  [raw`${YN} = \frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`,'multiply by (z*)² and divide by ME²']];
 function algViz(){
   const k=st.alg;
   const rows=ALG.slice(0,k+1).map(([t,why],i)=>`<div style="display:grid;grid-template-columns:minmax(0,1fr) 11em;gap:.8em;align-items:center;opacity:${i===k?1:.6}"><div class="eq" style="margin:.2em 0;${i===ALG.length-1&&k===i?'outline:2px solid var(--acc)':''}">${tex(t,true)}</div><div class="note" style="margin:0">${i?why:why}</div></div>`).join('');
@@ -919,6 +928,7 @@ function htViz(what){
     big=`<div class="big">p-value <b>${f4(C.p)}</b> <span class="op">${rej?'&lt;':'&gt;'}</span> α <b>${a}</b> &nbsp;→&nbsp; <b>${rej?'Reject H₀':'Fail to reject H₀'}</b></div>
       <div class="legend"><span><i style="background:var(--blue);opacity:.5"></i>reject zone (area = α)</span><span><i style="background:var(--acc);opacity:.7"></i>p-value</span></div>`;
     ctl=`<span class="lab">α</span>${seg('alpha',[[0.1,'0.10'],[0.05,'0.05'],[0.01,'0.01']],a)}<span class="sp"></span>${haSeg}`; }
+  if(drag&&what!=='intro') ctl+=`<span class="sp"></span><button class="btn" data-act="htreset"${Math.abs(h.ph-HPH)<1e-9?' disabled':''}>Reset to 0.48</button>`;
   return {cap,tail,body:svg+big,ctl};
 }
 function htRecap(){
@@ -954,7 +964,7 @@ function hpBody(){
   let fb='';
   if(r==='ok') fb=`<div class="key-idea" style="border-color:var(--ok)">✓ Correct. ${ans}</div>`;
   else if(r){ fb=`<div class="key-idea" style="border-color:var(--bad)">${r.map(x=>x).join('<br>')}</div>`; }
-  return `<p>Writing the hypotheses is the first step of every test. For each question, type ${T('p_0')} (the value in ${T('H_0')}) and pick the sign for ${T('H_A')}. The curve on the left updates as you go.</p>
+  return `<p>Writing the hypotheses is the first step of every test. For each question, type ${T('p_0')} (the value in ${T('H_0')}) and pick the sign for ${T('H_A')}. The curve in the visual updates as you go.</p>
    <div class="pq"><p><b>Question ${i+1} of ${HPQ.length}.</b> ${q.txt}</p>
     <div class="line">${T('H_0')}: ${T('p')} <span class="op">=</span> <input class="hpin" data-hp="val" value="${esc(H.val[i])}" size="5" maxlength="6" spellcheck="false" autocomplete="off" inputmode="decimal" aria-label="p0"></div>
     <div class="line">${T('H_A')}: ${T('p')} ${seg('hpsign',[['gt','&gt;'],['lt','&lt;'],['ne','≠']],sg||'')} <b>${esc(vt)}</b></div>
@@ -981,7 +991,8 @@ const SECS=[
    viz:()=>({cap:'Last month at Mnemonic',tail:'3,000 drinks',body:popSVG()+cupLegend()})},
   {t:'Population and sample',
    body:()=>`<p>Recall that a ${hl('pop','<b>population</b>')} is the entire group or set of objects that we are interested in studying, and a ${hl('day'+st.pick,'<b>sample</b>')} is a subset of that group.</p>
-     <p>For Mnemonic, the population might be ${hl('pop','all of the drinks they sold on weekdays over the last month')}, whereas the drinks they sold on ${hl('day'+st.pick,'one particular day')} would make up a sample.</p>`,
+     <p>For Mnemonic, the population might be ${hl('pop','all of the drinks they sold on weekdays over the last month')}, whereas the drinks they sold on ${hl('day'+st.pick,'one particular day')} would make up a sample.</p>
+     <p class="note">Click any day on the calendar to pick a different sample. Hover over a dotted word to highlight it in the picture.</p>`,
    viz:()=>{ const d=MONTH[st.pick]; return {cap:'Population: all 3,000 drinks',tail:`Sample: ${dayLab(st.pick)}`,
      body:`<div class="flexw"><div style="flex:2.2 1 380px">${calendarSVG({sel:st.pick,click:true})}</div><div style="flex:1 1 190px;max-width:260px">${cupsSVG(d.cups,{max:260,k:'day'+st.pick})}<div class="readout"><span>${dayLab(st.pick)}: <b>${d.k}</b> of 150 oat</span></div></div></div>`+cupLegend()}; }},
   {t:'Parameters and statistics',
@@ -1078,7 +1089,7 @@ const SECS=[
    viz:()=>cutViz(true)},
   {t:'On the TI-84',
    enter:()=>{ resetPlay('normalcdf'); st.cut.mode='gt'; st.cut.a=0.46; },
-   body:()=>`<p>Let’s find ${T(raw`P(\hat p > 0.46)`)} on the TI-84 Plus CE. Follow these keystrokes, then type the values into the calculator on the left.</p>
+   body:()=>`<p>Let’s find ${T(raw`P(\hat p > 0.46)`)} on the TI-84 Plus CE. Follow these keystrokes, then type the values into the calculator.</p>
      <ol class="ksteps">
       <li>Press ${key2()}, then ${key('vars')} (<b>distr</b>).</li>
       <li>Choose <b>2:normalcdf(</b>.</li>
@@ -1087,6 +1098,8 @@ const SECS=[
       <li>Move down to <b>Paste</b> and press ${key('enter')}.</li>
       <li>Press ${key('enter')} again to calculate.</li>
      </ol>
+     <p class="note">Typing the σ: <code>√(</code> is ${key2()} then ${key('x²')}. Don’t forget the closing parenthesis.</p>
+     ${older(`There is no fill-in screen. Type the whole command on the home screen: <code>normalcdf(0.46,999,0.4,√(0.4*0.6/150))</code>, then press enter.`)}
      <p>${rb('a46','≈ 0.0668. On about 6.7% of days, more than 46% of drinks are oat.','Show the answer','wide')}</p>
      <div class="pq"><p><b>Your turn.</b> What is the probability that <b>fewer than 35%</b> of a day’s 150 drinks are oat?</p>
      <div class="sol">${rb('pr1',`<div>${T(raw`P(\hat p<0.35)`)}: normalcdf(−999, 0.35, 0.4, ${SIG}) ≈ <b>0.1056</b>. About 1 day in 10.</div>`,'Show solution','wide')}</div></div>`,
@@ -1169,8 +1182,8 @@ const SECS=[
    enter:()=>{ if(!st.flip) newFlip(); },
    body:()=>`<p>From the last section: for 95% of samples, ${PH} lands within <b>1.96σ</b> of ${T('p')}.</p>
      <p>Flip that around: if ${PH} is within 1.96σ of ${T('p')}, then ${T('p')} is within 1.96σ of ${PH}. It’s the same distance either way.</p>
-     <p>So if we reach 1.96σ out from ${PH} in both directions, we’ll catch ${T('p')} for 95% of samples. Click <b>New survey</b> a few times: the two answers always match.</p>`,
-   viz:()=>({cap:'The same distance, both directions',tail:'pretend we know p',body:flipSVG(st.flip),ctl:`<button class="btn primary" data-act="flip">New survey</button>`})},
+     <p>So if we reach 1.96σ out from ${PH} in both directions, we’ll catch ${T('p')} for 95% of samples. Click <b>New survey</b> a few times: the two answers always match. Misses are rare, so use <b>Show me a miss</b> to check that they match then too.</p>`,
+   viz:()=>({cap:'The same distance, both directions',tail:'pretend we know p',body:flipSVG(st.flip),ctl:`<button class="btn primary" data-act="flip">New survey</button><button class="btn" data-act="flipmiss">Show me a miss</button>`})},
   {t:'Confidence and z*',
    enter:()=>{ resetPlay('invNorm'); },
    body:()=>`<p>That “95%” is the <b>confidence level</b>, ${T('C')}: how often our process should succeed.</p>
@@ -1198,7 +1211,7 @@ const SECS=[
    viz:()=>{ const me=st.rev.me, ends=st.rev.lo&&st.rev.hi; return {cap:'95% confidence interval',tail:`p̂ ± ME`,body:nlineSVG({ph:CPH,lo:me?CPH-CME:null,hi:CPH+CME,me:!!me,ends,unknown:true})}; }},
   {t:'1-PropZInt',
    enter:()=>{ resetPlay('propz'); },
-   body:()=>`<p>The calculator does all of that in one go with <b>1-PropZInt</b>. Follow these keystrokes, then type the values into the calculator on the left.</p>
+   body:()=>`<p>The calculator does all of that in one go with <b>1-PropZInt</b>. Follow these keystrokes, then type the values into the calculator.</p>
      <ol class="ksteps">
       <li>Press ${key('stat')}, then ${key('▶')} twice to reach <b>TESTS</b>.</li>
       <li>Choose <b>A:1-PropZInt</b> (press ${key('alpha')} then ${key('math')}, or scroll down).</li>
@@ -1231,18 +1244,19 @@ const SECS=[
    body:()=>`<p>Which café would you trust more: one with a 4.6★ average from <b>5</b> reviews, or a 4.6★ average from <b>500</b>?</p>
      <p>With more reviews, one weird review can’t throw off the average much. Same idea here. Slide the number of customers asked.</p>
      <div class="key-idea">Bigger n → smaller SE → smaller ME → narrower interval</div>
-     <p>Because n sits under a square root, you need <b>4 times</b> the customers to cut the width in half.</p>`,
+          <p>Because n sits under a square root, you need <b>4 times</b> the customers to cut the width in half. Compare the buttons for n = 200 and n = 800.</p>`,
    viz:()=>netViz('n')}
  ]},
  {tab:'Sample size',t:'Choosing a sample size',steps:[
   {t:'Plan before you survey',
    body:()=>`<p>Gia and Sarah want to run a bigger pistachio survey. This time they want the margin of error to be at most <b>3 percentage points</b> (ME = 0.03) at <b>95%</b> confidence. How many customers should they ask?</p>
-     <p>The margin of error formula has ${T('n')} in it, so we can solve it for ${T('n')}. Click <b>Next algebra step</b> on the left to see how.</p>
+     <p>The margin of error formula has ${T('n')} in it, so we can solve it for ${T('n')}. Click <b>Next algebra step</b> in the visual to see how.</p>
      ${st.alg>=ALG.length-1?D(raw`n=\frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`):''}`,
    viz:algViz},
   {t:'Example: with an earlier estimate',
    body:()=>`<p>From their first survey, ${PH} = 0.29. Use it as the best guess.</p>
      <div class="line">n <span class="op">=</span> ${T(raw`\frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`)} <span class="op">=</span> ${T(raw`\frac{1.96^2(0.29)(1-0.29)}{0.03^2}`)} <span class="op">=</span> ${rb('n1',needN(.95,.03,.29).toFixed(2))}</div>
+     <p class="note">The calculator uses the exact z* (1.95996…), so a hand calculation with 1.96 may differ in the last decimal. It rounds up to the same n.</p>
      <p>You can’t survey part of a customer, so round up: ${rb('n1u','n = 879 customers')}</p>
      <p>Drag the dot on the curve to see how the guess for ${PH} changes ${T(raw`\hat p(1-\hat p)`)}, and with it the sample size.</p>`,
    enter:()=>{ st.pg=0.29; },
@@ -1257,7 +1271,7 @@ const SECS=[
   {t:'Always round up',
    enter:()=>{ st.rup=1067; },
    body:()=>`<p>1067.07 would normally round <i>down</i> to 1067. Let’s check whether 1067 customers is enough.</p>
-     <p>Click <b>n − 1</b> and <b>n + 1</b> on the left. With n = 1067 the margin of error is ${rb('r67',(Z95*Math.sqrt(.25/1067)).toFixed(6)+', a hair over 0.03 ✗')}. With n = 1068 it’s ${rb('r68',(Z95*Math.sqrt(.25/1068)).toFixed(6)+' ✓')}.</p>
+     <p>Click <b>n − 1</b> and <b>n + 1</b> in the visual. With n = 1067 the margin of error is ${rb('r67',(Z95*Math.sqrt(.25/1067)).toFixed(6)+', a hair over 0.03 ✗')}. With n = 1068 it’s ${rb('r68',(Z95*Math.sqrt(.25/1068)).toFixed(6)+' ✓')}.</p>
      <div class="key-idea">The formula gives the <b>smallest</b> n that works. Any fewer customers and the margin of error is bigger than promised, so <b>always round up</b>: n = 1068.</div>`,
    viz:rupViz},
   {t:'Explore',
@@ -1304,7 +1318,7 @@ const SECS=[
    viz:()=>htViz('cond')},
   {t:'The test statistic',
    enter:()=>{ st.ht.ha='gt'; st.ht.ph=HPH; st.ht.sw=[false,false,false]; },
-   body:()=>{ const w=st.ht.sw, c=(on,t)=>on?raw`{\color{#e08a00}${t}}`:t,
+   body:()=>{ const w=st.ht.sw, c=(on,t)=>on?raw`\htmlStyle{color:var(--accInk)}{${t}}`:t,
        X=c(w[0],w[0]?raw`\hat p`:'x'), M=c(w[1],w[1]?'p_0':raw`\mu`), S=c(w[2],w[2]?raw`\sqrt{\dfrac{p_0(1-p_0)}{n}}`:raw`\sigma`);
      const row=(i,lab,btn,why)=>`<div class="line"><button class="btn${w[i]?' on':''}" data-act="sw" data-v="${i}">${w[i]?'✓ ':''}${btn}</button><span>${w[i]?why:lab}</span></div>`;
      return `<p>The test statistic is a z-score. Recall that a z-score tells us how many <b>standard deviations</b> a value is from the mean:</p>
@@ -1336,7 +1350,7 @@ const SECS=[
        <b>p-value &gt; α:</b> fail to reject ${T('H_0')}.</div>
      <p>Sarah uses ${T(raw`\alpha=0.05`)}:</p>
      <div class="line">${rb('ht_d',`${f4(HPV)} < 0.05, so we reject H₀`)}</div>
-     <p>Now switch α to 0.01 on the left. Same data, different decision! That’s why α is chosen <b>before</b> looking at the data.</p>`,
+     <p>Now switch α to 0.01 in the visual. Same data, different decision! That’s why α is chosen <b>before</b> looking at the data.</p>`,
    viz:()=>htViz('decide')},
   {t:'The conclusion',
    body:()=>`<p>The decision is about ${T('H_0')}. The <b>conclusion</b> is about Mnemonic’s customers, in plain words:</p>
@@ -1346,7 +1360,7 @@ const SECS=[
    viz:htRecap},
   {t:'On the TI-84',
    enter:()=>{ resetPlay('proptest'); },
-   body:()=>`<p>The calculator can do steps 2 and 3 for you with <b>1-PropZTest</b>. Follow these keystrokes, then type the values into the calculator on the left.</p>
+   body:()=>`<p>The calculator can do steps 2 and 3 for you with <b>1-PropZTest</b>. Follow these keystrokes, then type the values into the calculator.</p>
      <ol class="ksteps">
       <li>Press ${key('stat')}, then ${key('▶')} twice to reach <b>TESTS</b>.</li>
       <li>Choose <b>5:1-PropZTest</b>.</li>
@@ -1385,7 +1399,7 @@ const SECS=[
 function practiceHTML(){
   const s=(id,h)=>`<div class="sol">${rb(id,h,'Show solution','wide')}</div>`;
   const s1=sdOf(.35,250), q2=302/840, se2=sdOf(q2,840), z90=zstar(.9);
-  return `<p>Same style as the homework, new contexts. Work each part with the calculator on the left, then check the solution.</p>
+  return `<p>Same style as the homework, new contexts. Work each part with the calculator, then check the solution.</p>
   <div class="row" style="display:flex;gap:.5em;margin:.4em 0"><button class="btn" data-act="allsol">${st.showAll?'Hide':'Show'} all solutions</button></div>
   <div class="pq"><p><b>1.</b> A city transit agency knows that <b>35%</b> of all riders on its Green Line trolley pay with a monthly pass. A fare inspector checks a random sample of <b>250</b> riders and finds that <b>80</b> of them are using a monthly pass.</p>
    <ol type="a">
@@ -1428,7 +1442,7 @@ function summaryHTML(){
    ${c('Confidence interval',`${D(raw`\hat p\pm z^*\sqrt{\frac{\hat p(1-\hat p)}{n}}`)}<p class="note">z* = invNorm(C, 0, 1, CENTER) · 90%: 1.645 · 95%: 1.960 · 99%: 2.576<br>Calculator: STAT → TESTS → A:1-PropZInt</p>`)}
    ${c('Interpretation',`<p>“We are C% confident that between ___ and ___ of all [population] [have the trait].”</p><p class="note">C% of intervals built this way contain p.</p>`)}
    ${c('Width',`<p>Higher C → wider. Bigger n → narrower. 4× the n → half the width.</p>`)}
-   ${c('Hypothesis test for p',`<p>1. ${T(raw`H_0:\ p=p_0`)} vs. ${T(raw`H_A:\ p>p_0,\ p<p_0,\ \text{or}\ p\ne p_0`)}</p>${D(raw`z=\frac{\hat p-p_0}{\sqrt{p_0(1-p_0)/n}}`)}<p>3. p-value: area right, left, or double the smaller tail.</p><p>4. p-value &lt; α → reject ${T('H_0')}; otherwise fail to reject.</p><p>5. Conclude in context.</p><p class="note">Conditions use ${T('p_0')}: ${T(raw`np_0\ge10`)}, ${T(raw`n(1-p_0)\ge10`)}. Calculator: STAT → TESTS → 5:1-PropZTest</p>`)}
+   ${c('Hypothesis test for p',`<p>1. ${T(raw`H_0:\ p=p_0`)} vs. ${T(raw`H_A:\ p>p_0,\ p<p_0,\ \text{or}\ p\ne p_0`)}</p>${D(raw`z=\frac{\hat p-p_0}{\sqrt{p_0(1-p_0)/n}}`)}<p>2. Test statistic (above).</p><p>3. p-value: area right, left, or double the smaller tail.</p><p>4. p-value &lt; α → reject ${T('H_0')}; otherwise fail to reject.</p><p>5. Conclude in context.</p><p class="note">Conditions use ${T('p_0')}: ${T(raw`np_0\ge10`)}, ${T(raw`n(1-p_0)\ge10`)}. Calculator: STAT → TESTS → 5:1-PropZTest</p>`)}
    ${c('Sample size',`${D(raw`n=\frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`)}<p class="note">No estimate? Use p̂ = 0.5. Always round <b>up</b>.</p>`)}
   </div>`;
 }
@@ -1460,10 +1474,14 @@ function renderViz(onlyBody){
   const s=cur(); if(!s.viz){ $('#stage').innerHTML=''; return; }
   const v=s.viz(); vizCache=v;
   const fx=h=>(h||'').replace(/p̂/g,PH);
+  const ae=document.activeElement, fk=!onlyBody&&ae&&ae.closest&&ae.closest('#stage')&&ae.dataset&&ae.dataset.act?`[data-act="${ae.dataset.act}"]${ae.dataset.v!=null?`[data-v="${ae.dataset.v}"]`:''}`:null;
+  const fsv=ae&&ae.matches&&ae.matches('svg[data-drag]');
   if(onlyBody&&$('#vbody')){ $('#vbody').innerHTML=v.body; $('#vtail').innerHTML=fx(v.tail); $('#vcapt').innerHTML=fx(v.cap); }
   else {
     $('#stage').innerHTML=`<div class="viz"><div class="vcap"><span id="vcapt">${fx(v.cap)}</span><span id="vtail">${fx(v.tail)}</span></div><div class="vbody" id="vbody">${v.body}</div>${v.ctl?`<div class="ctl">${v.ctl}</div>`:''}</div>`;
   }
+  if(fk){ const n=$('#stage '+fk); if(n) n.focus({preventScroll:true}); }
+  if(fsv){ const n=$('#vbody svg[data-drag]'); if(n) n.focus({preventScroll:true}); }
   applyHL();
   st.pour=false; st.anim=false;
 }
@@ -1496,6 +1514,7 @@ const ACT={
   sort:v=>{ const [i,a]=v.split(':'); st.sort[i]=a; renderViz(); },
   open:v=>{ openDay(Math.min(+v,25)); if(+v>25) simAdd(sim150,+v-25); st.pour=+v===1; if(+v>25){ st.today=st.today; } renderBody(); renderViz(); },
   clearsim:()=>{ sim150=mkSim(150); st.hist=[]; st.today=null; renderBody(); renderViz(); },
+  resetsim:()=>{ sim150=mkSim(150); simAdd(sim150,1000); renderBody(); renderViz(); },
   nset:v=>{ st.nsl=+v; renderBody(); renderViz(); },
   cutmode:v=>{ st.cut.mode=v; if(v==='btw'){ st.cut.lo=0.35; st.cut.a=0.45; } else if(v==='lt'){ st.cut.a=0.35; } else st.cut.a=0.46; renderViz(); },
   tail:v=>{ st.inv.tail=v; renderViz(); },
@@ -1504,12 +1523,14 @@ const ACT={
   cprev:()=>{ st.calc.i=Math.max(0,st.calc.i-1); renderViz(); },
   creset:()=>{ st.calc.i=0; renderViz(); },
   flip:()=>{ newFlip(); renderViz(); },
+  flipmiss:()=>{ let i=0; do newFlip(); while(st.flip.hit&&++i<500); renderViz(); },
   cap:v=>{ capAdd(+v); renderBody(); renderViz(); },
   capclear:()=>{ st.cap.runs=[]; capAdd(1); renderBody(); renderViz(); },
   newnet:()=>{ st.net.z=null; renderViz(); },
+  netn:v=>{ st.net.n=+v; renderViz(); },
   alg:v=>{ st.alg=Math.max(0,Math.min(ALG.length-1,st.alg+ +v)); renderBody(); renderViz(); },
   rup:v=>{ st.rup=Math.max(1064,Math.min(1071,st.rup+ +v)); renderViz(); },
-  pmode:v=>{ st.play.mode=v; st.play.out=null; renderViz(); },
+  pmode:v=>{ resetPlay(v); renderViz(); },
   ptail:v=>{ st.play.tail=v; renderViz(); },
   palt:v=>{ st.play.alt=v; renderViz(); },
   ha:v=>{ st.ht.ha=v; renderViz(); },
@@ -1521,6 +1542,7 @@ const ACT={
     else { const e=[]; if(Math.abs(v-q.p0)>1e-9) e.push('Not quite: check p₀. It’s the value from the claim that was true before, the status quo.'); if(sg!==q.ha) e.push('Not quite: check the sign. Look for the key word in the question (increased, decreased, different…).'); H.res[i]=e.length?e:'ok'; }
     renderBody(); },
   alpha:v=>{ st.ht.a=+v; renderViz(); },
+  htreset:()=>{ st.ht.ph=HPH; renderViz(); },
   pclear:()=>{ st.play.out=null; renderViz(); },
   prun:()=>{ runPlay(); renderViz(); },
   allsol:()=>{ st.showAll=!st.showAll; ['q1a','q1b','q1c','q1d','q2a','q2b','q2c','q2d','q2e','q2f','q3a','q3b','q3c','q4a','q4b','q4c','q4d','q4e'].forEach(k=>st.rev[k]=st.showAll); renderBody(); }
@@ -1529,9 +1551,10 @@ document.addEventListener('click',e=>{
   const t=e.target;
   const tab=t.closest('[data-tab]'); if(tab){ go(+tab.dataset.tab,0); return; }
   const dot=t.closest('[data-step]'); if(dot){ go(st.sec,+dot.dataset.step); return; }
-  const r=t.closest('[data-rid]'); if(r){ const id=r.dataset.rid, R=REG[id]; if(!R) return; st.rev[id]=!st.rev[id];
-    r.classList.toggle('on',!!st.rev[id]); r.innerHTML=st.rev[id]?R.ans:R.q;
-    if(SECS[st.sec].steps.length&&/^(pr|qr|lo|hi|me|ht_k[123])$/.test(id)) renderBody();
+  const r=t.closest('[data-rid]'); if(r){ const id=r.dataset.rid, R=REG[id]; if(!R||st.rev[id]) return;   // reveals are one-way, so selecting a solution never hides it
+    st.rev[id]=true;
+    if(/^(pr|qr|lo|hi|me|ht_k[123])$/.test(id)) renderBody();
+    else { const b=document.createElement('span'); b.className=r.className+' on'; b.dataset.rid=id; b.setAttribute('role','group'); b.setAttribute('aria-label','Revealed answer'); b.innerHTML=R.ans; r.replaceWith(b); }
     renderViz(); return; }
   const k=t.closest('[data-key]'); if(k){ pressKey(k.dataset.key,k); return; }
   const ins=t.closest('[data-ins]'); if(ins){ const a=document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.pf?document.activeElement:lastPF; if(a){ const p=a.selectionStart??a.value.length; a.value=a.value.slice(0,p)+ins.dataset.ins+a.value.slice(a.selectionEnd??p); st.play.f[a.dataset.pf]=a.value; a.focus(); const np=p+ins.dataset.ins.length; a.setSelectionRange(np,np); } return; }
@@ -1563,6 +1586,13 @@ document.addEventListener('change',e=>{ if(e.target.dataset.in==='nsl') renderBo
 document.addEventListener('keydown',e=>{
   if(e.target.matches('input,textarea')){ if(e.key==='Enter'&&e.target.dataset.pf){ runPlay(); renderViz(); } if(e.key==='Enter'&&e.target.dataset.hp) ACT.hpcheck(); return; }
   if(e.metaKey||e.ctrlKey||e.altKey) return;
+  if((e.key==='Enter'||e.key===' ')&&e.target.getAttribute&&e.target.getAttribute('role')==='button'&&e.target.tagName!=='BUTTON'){ e.preventDefault(); e.target.click(); return; }
+  const dsv=e.target.closest&&e.target.closest('svg[data-drag]');
+  if(dsv&&(e.key==='ArrowRight'||e.key==='ArrowLeft')){ const d=e.key==='ArrowRight'?1:-1, k=dsv.dataset.drag;
+    if(k==='cut') st.cut[st.cut.mode==='btw'&&e.shiftKey?'lo':'a']=Math.round((st.cut[st.cut.mode==='btw'&&e.shiftKey?'lo':'a']+d*.005)*200)/200;
+    else if(k==='ht') st.ht.ph=Math.round((st.ht.ph+d*.005)*200)/200;
+    else if(k==='pg') st.pg=Math.round(Math.min(.99,Math.max(.01,st.pg+d*.01))*100)/100;
+    e.preventDefault(); renderViz(true); return; }
   if(e.key==='ArrowRight'){ goFlat(1); e.preventDefault(); } else if(e.key==='ArrowLeft'){ goFlat(-1); e.preventDefault(); }
 });
 
@@ -1586,11 +1616,21 @@ $('#stage').addEventListener('pointerdown',e=>{
 });
 window.addEventListener('pointermove',e=>{ if(drag) dragTo(e.clientX); });
 window.addEventListener('pointerup',()=>{ drag=null; });
+window.addEventListener('pointercancel',()=>{ drag=null; });
 
 /* ---------- theme ---------- */
-$('#themeBtn').addEventListener('click',()=>{ st.theme=st.theme==='dark'?'light':'dark'; document.documentElement.dataset.theme=st.theme; $('#themeBtn').innerHTML=st.theme==='dark'?'&#9790;':'&#9728;'; });
+function setTheme(t){ st.theme=t; document.documentElement.dataset.theme=t; $('#themeBtn').innerHTML=t==='dark'?'&#9790;':'&#9728;'; }
+$('#themeBtn').addEventListener('click',()=>{ const t=st.theme==='dark'?'light':'dark'; setTheme(t); try{ localStorage.setItem('sd-theme',t); }catch(e){} });
+{ let t=null; try{ t=localStorage.getItem('sd-theme'); }catch(e){}
+  if(t!=='light'&&t!=='dark') t=window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+  setTheme(t); }
 
-go(0,0);
+/* deep links: #3.2 = section 3, step 2 */
+function hashPos(){ const m=/^#(\d+)(?:\.(\d+))?$/.exec(location.hash); if(!m) return null; const si=+m[1]-1, i=m[2]?+m[2]-1:0; return SECS[si]&&SECS[si].steps[i]?[si,i]:null; }
+const _go=go; go=function(sec,step,fresh){ _go(sec,step,fresh); const n=SECS[sec].steps.length>1?`${sec+1}.${step+1}`:`${sec+1}`; if(location.hash!=='#'+n) history.replaceState(null,'','#'+n); };
+window.addEventListener('hashchange',()=>{ const p=hashPos(); if(p&&(p[0]!==st.sec||p[1]!==st.step)) go(p[0],p[1]); });
+
+{ const p=hashPos(); go(p?p[0]:0,p?p[1]:0); }
 })();
 </script>
 </body>
