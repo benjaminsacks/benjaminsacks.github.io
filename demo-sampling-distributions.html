@@ -849,11 +849,11 @@ const posToN=v=>Math.round(25*Math.pow(80,v/1000)), nToPos=n=>Math.round(1000*Ma
 
 /* --- section 6 --- */
 const ALG=[
-  [raw`ME = z^*\sqrt{\frac{\hat p(1-\hat p)}{\color{#e3b505}{n}}}`,'start with the margin of error'],
-  [raw`\frac{ME}{z^*} = \sqrt{\frac{\hat p(1-\hat p)}{\color{#e3b505}{n}}}`,'divide both sides by z*'],
-  [raw`\frac{ME^2}{(z^*)^2} = \frac{\hat p(1-\hat p)}{\color{#e3b505}{n}}`,'square both sides'],
-  [raw`\color{#e3b505}{n}\cdot\frac{ME^2}{(z^*)^2} = \hat p(1-\hat p)`,'multiply both sides by n'],
-  [raw`\color{#e3b505}{n} = \frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`,'multiply by (z*)² and divide by ME²']];
+  [raw`ME = z^*\sqrt{\frac{\hat p(1-\hat p)}{\textcolor{#e3b505}{n}}}`,'start with the margin of error'],
+  [raw`\frac{ME}{z^*} = \sqrt{\frac{\hat p(1-\hat p)}{\textcolor{#e3b505}{n}}}`,'divide both sides by z*'],
+  [raw`\frac{ME^2}{(z^*)^2} = \frac{\hat p(1-\hat p)}{\textcolor{#e3b505}{n}}`,'square both sides'],
+  [raw`\textcolor{#e3b505}{n}\cdot\frac{ME^2}{(z^*)^2} = \hat p(1-\hat p)`,'multiply both sides by n'],
+  [raw`\textcolor{#e3b505}{n} = \frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`,'multiply by (z*)² and divide by ME²']];
 function algViz(){
   const k=st.alg;
   const rows=ALG.slice(0,k+1).map(([t,why],i)=>`<div style="display:grid;grid-template-columns:minmax(0,1fr) 11em;gap:.8em;align-items:center;opacity:${i===k?1:.6}"><div class="eq" style="margin:.2em 0;${i===ALG.length-1&&k===i?'outline:2px solid var(--acc)':''}">${tex(t,true)}</div><div class="note" style="margin:0">${i?why:why}</div></div>`).join('');
@@ -1205,7 +1205,7 @@ const SECS=[
    viz:algViz},
   {t:'Example: with an earlier estimate',
    body:()=>`<p>From their first survey, ${PH} = 0.29. Use it as the best guess.</p>
-     <div class="line">n <span class="op">=</span> ${T(raw`\frac{1.96^2(0.29)(1-0.29)}{0.03^2}`)} <span class="op">=</span> ${rb('n1',needN(.95,.03,.29).toFixed(2))}</div>
+     <div class="line">n <span class="op">=</span> ${T(raw`\frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`)} <span class="op">=</span> ${T(raw`\frac{1.96^2(0.29)(1-0.29)}{0.03^2}`)} <span class="op">=</span> ${rb('n1',needN(.95,.03,.29).toFixed(2))}</div>
      <p>You can’t survey part of a customer, so round up: ${rb('n1u','n = 879 customers')}</p>
      <p>Drag the dot on the curve to see how the guess for ${PH} changes ${T(raw`\hat p(1-\hat p)`)}, and with it the sample size.</p>`,
    enter:()=>{ st.pg=0.29; },
@@ -1213,8 +1213,9 @@ const SECS=[
   {t:'Example: no earlier estimate',
    enter:()=>{ st.pg=0.5; },
    body:()=>`<p>They’re also curious what proportion of customers would sign up for a <b>monthly coffee subscription</b>. They’ve never asked, so there’s no ${PH} to plug in.</p>
-     <p>Use ${T(raw`\hat p=0.5`)}. Drag the dot to see why: ${T(raw`\hat p(1-\hat p)`)} is biggest at 0.5, so it gives the <b>largest</b> n, which is big enough no matter what the true proportion is.</p>
-     <div class="line">n <span class="op">=</span> ${T(raw`\frac{1.96^2(0.5)(1-0.5)}{0.03^2}`)} <span class="op">=</span> ${rb('n2',needN(.95,.03,.5).toFixed(2))}</div>`,
+     <p><b>When there is no prior estimate of ${PH}, use ${T(raw`\hat p=0.5`)}:</b> it gives the largest, most conservative sample size.</p>
+     <p>Drag the dot to see why: ${T(raw`\hat p(1-\hat p)`)} is biggest at 0.5, so it gives the <b>largest</b> n, which is big enough no matter what the true proportion is.</p>
+     <div class="line">n <span class="op">=</span> ${T(raw`\frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`)} <span class="op">=</span> ${T(raw`\frac{1.96^2(0.5)(1-0.5)}{0.03^2}`)} <span class="op">=</span> ${rb('n2',needN(.95,.03,.5).toFixed(2))}</div>`,
    viz:()=>({cap:'Why 0.5 is the safe guess',tail:`95% confidence, ME = 0.03`,body:pqSVG(st.pg)+`<div class="big">n = <b>${needN(.95,.03,st.pg).toFixed(2)}</b></div>`})},
   {t:'Always round up',
    enter:()=>{ st.rup=1067; },
