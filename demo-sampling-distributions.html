@@ -109,7 +109,9 @@ main.wide .pbody{max-width:1100px;margin:0 auto;width:100%}
 .note b{color:var(--ink)}
 .key-idea{border-left:4px solid var(--acc);background:var(--accHot);padding:.45em .8em;margin:.6em 0;font-weight:600}
 .def{border:1px solid var(--line);background:var(--panel);padding:.45em .8em;margin:.55em 0;box-shadow:var(--shadow)}
-.def b:first-child{color:var(--accInk)}
+.def b:first-child,.def b.hi{color:var(--accInk)}
+.hpin{width:5em;font:700 1em var(--mono);padding:.15em .4em;background:var(--soft);border:2px solid var(--line);color:var(--ink)}
+.hpin:focus{outline:none;border-color:var(--acc)}
 .aside{border:1px dashed var(--line);padding:.4em .75em;margin:.6em 0;font-size:.88em;color:var(--muted)}
 .aside b{color:var(--ink)}
 .aside .tag83{font:700 .75em var(--mono);color:var(--accInk);display:block;margin-bottom:.15em;text-transform:uppercase;letter-spacing:.05em}
@@ -415,7 +417,8 @@ const st={sec:0,step:0,theme:'dark',rev:{},hl:null,
   alg:0,rup:1067,pg:0.5,
   ex:{C:0.95,me:0.03,p:0.5},
   play:{mode:'normalcdf',f:{lower:'',upper:'',mu:'',sigma:'',area:'',x:'',n:'',cl:'',p0:''},tail:'LEFT',alt:'GT',out:null},
-  ht:{ph:0.46,a:0.05,ha:'gt'},
+  ht:{ph:0.48,a:0.05,ha:'gt',sw:[false,false,false]},
+  hp:{q:0,sel:[null,null,null,null,null],val:['','','','',''],res:[null,null,null,null,null]},
   showAll:false};
 let sim150=mkSim(150), simN=null, big=null;
 function bigSim(){ if(!big){ big=mkSim(150); simAdd(big,2500); } return big; }
@@ -882,8 +885,9 @@ function exViz(){
     ctl:slider('exC',80,99,1,Math.round(e.C*100),'Confidence',Math.round(e.C*100)+'%')+slider('exM',1,10,1,Math.round(e.me*100),'Margin',`±${Math.round(e.me*100)}%`)+slider('exP',5,95,1,Math.round(e.p*100),'p̂ guess',f2(e.p))};
 }
 
-/* --- section 7: hypothesis test (is 0.46 unusual if p is still 0.40?) --- */
-const HX=69, HN=150, HPH=HX/HN;                 // promo day: 69 of 150 drinks were oat
+/* --- section 7: hypothesis test (is 0.48 unusual if p is still 0.40?) --- */
+const HX=72, HN=150, HPH=HX/HN;                 // promo day: 72 of 150 drinks were oat
+const HZ=(HPH-P0)/SD0, HPV=1-Phi(HZ);
 const HASYM={gt:'>',lt:'<',ne:raw`\ne`};
 function htCalc(){
   const h=st.ht, ph=h.ph, z=(ph-P0)/SD0, d=Math.abs(ph-P0); let p,shade,cmd;
@@ -894,7 +898,7 @@ function htCalc(){
   return {z,p,shade,cmd};
 }
 function htViz(what){
-  const h=st.ht, C=htCalc(), a=h.a, ph=h.ph, drag=what!=='intro';
+  const h=st.ht, C=htCalc(), a=h.a, ph=h.ph, drag=what!=='intro'&&what!=='cond';
   const marks=[{x:ph,label:what==='intro'?'today: '+f2(ph):f3(ph),acc:1}];
   if(drag) marks[0].h='a';
   if(h.ha==='ne'&&(what==='p'||what==='decide')) marks.push({x:2*P0-ph,label:f3(2*P0-ph),acc:1});
@@ -905,9 +909,10 @@ function htViz(what){
   const haT=raw`H_A:\ p\ ${HASYM[h.ha]}\ 0.40`;
   const haSeg=seg('ha',[['gt','HA: p &gt; 0.40'],['lt','HA: p &lt; 0.40'],['ne','HA: p ≠ 0.40']],h.ha);
   let big='',ctl='',cap='',tail='';
-  if(what==='intro'){ cap='If nothing has changed…'; tail='p̂ ~ N(0.40, 0.04)'; big=`<div class="big">Is a day with p̂ = <b>0.46</b> unusual when p = 0.40?</div>`; }
+  if(what==='intro'){ cap='If nothing has changed…'; tail='p̂ ~ N(0.40, 0.04)'; big=`<div class="big">Is a day with p̂ = <b>${f2(HPH)}</b> unusual when p = 0.40?</div>`; }
+  else if(what==='cond'){ cap='If the conditions hold…'; tail='p̂ ~ N(0.40, 0.04)'; big=`<div class="big">p̂ ~ N(<b>0.40</b>, <b>0.04</b>) if ${T('H_0')} is true</div>`; }
   else if(what==='tails'){ cap='Which results count as evidence?'; tail='drag the gold handle'; big=`<div class="big">${T(raw`H_0:\ p=0.40`)} &nbsp; ${T(haT)}</div><div class="note" style="text-align:center">Shaded = results at least this extreme in the direction of ${T(raw`H_A`)}</div>`; ctl=haSeg; }
-  else if(what==='z'){ cap='The test statistic'; tail='drag the gold handle'; big=`<div class="big">${T(raw`z=\frac{${f3(ph)}-0.40}{0.04}`)} <span class="op">=</span> <b>${f2(C.z)}</b></div>`; ctl=`<span class="lab">${f2(Math.abs(C.z))} standard deviations ${C.z>=0?'above':'below'} 0.40</span>`; }
+  else if(what==='z'){ cap='The test statistic'; tail='drag the gold handle'; big=`<div class="big">${T(raw`z=\frac{${f3(ph)}-0.40}{0.04}`)} <span class="op">=</span> <b>${f2(C.z)}</b></div>`; ctl=`<span class="lab">p̂ = ${f3(ph)} is <b>${f2(Math.abs(C.z))}</b> standard deviations ${C.z>=0?'above':'below'} 0.40</span>`; }
   else if(what==='p'){ cap='The p-value is the shaded area'; tail='if H₀ is true'; big=`<div class="big">p-value <span class="op">=</span> <b>${f4(C.p)}</b></div><div class="cmd">${C.cmd}</div>`; ctl=haSeg; }
   else { const rej=C.p<a;
     cap='Compare the p-value to α'; tail=`α = ${a}`;
@@ -920,10 +925,42 @@ function htRecap(){
   const row=(s,w)=>`<tr><td><b>${s}</b></td><td>${w}</td></tr>`;
   return {cap:'Sarah’s test at a glance',tail:'α = 0.05',body:`<table class="mini" style="margin:0 auto"><thead><tr><th>step</th><th>Sarah’s promotion</th></tr></thead><tbody>
     ${row('1. Hypotheses',`${T(raw`H_0:\ p=0.40`)}<br>${T(raw`H_A:\ p>0.40`)}`)}
-    ${row('2. Test statistic',`${T(raw`z=\frac{0.46-0.40}{0.04}=1.5`)}`)}
-    ${row('3. P-value',`${T(raw`P(Z>1.5)=0.0668`)}`)}
-    ${row('4. Decision',`0.0668 &gt; 0.05, so fail to reject ${T('H_0')}`)}
-    ${row('5. Conclusion','Not sufficient evidence that the oat share has increased')}</tbody></table>`};
+    ${row('2. Test statistic',`${T(raw`z=\frac{0.48-0.40}{0.04}=2`)}`)}
+    ${row('3. P-value',`${T(raw`P(Z>2)=0.0228`)}`)}
+    ${row('4. Decision',`0.0228 &lt; 0.05, so reject ${T('H_0')}`)}
+    ${row('5. Conclusion','Sufficient evidence that the oat share has increased above 40%')}</tbody></table>`};
+}
+
+/* practice: writing hypotheses (all about the shop, all different p0) */
+const HPQ=[
+ {p0:0.25,ha:'gt',txt:'Records show that 25% of Mnemonic’s customers add an extra espresso shot. Sarah launches a loyalty card and wonders whether it has <b>increased</b> the proportion who add a shot.',why:'“increased” → right-sided'},
+ {p0:0.15,ha:'lt',txt:'Gia knows that 15% of orders include a pastry. After raising pastry prices, she suspects the proportion of orders with a pastry has <b>decreased</b>.',why:'“decreased” → left-sided'},
+ {p0:0.60,ha:'ne',txt:'Historically, 60% of Mnemonic’s customers pay with a card. After installing a new payment terminal, Gia wants to know whether that proportion is <b>different</b> now.',why:'“different” → two-sided'},
+ {p0:0.70,ha:'lt',txt:'Last season, 70% of online orders were picked up within 5 minutes. After a staffing change, Sarah worries the proportion is <b>lower</b>.',why:'“lower” → left-sided'},
+ {p0:0.35,ha:'gt',txt:'Mnemonic usually sells iced drinks to 35% of customers. During a summer heat wave, Sarah thinks the proportion is <b>higher</b>.',why:'“higher” → right-sided'}];
+const hpVal=t=>{ t=String(t).trim(); if(!t) return null; const pc=t.endsWith('%'); const v=parseFloat(pc?t.slice(0,-1):t); return isNaN(v)?null:(pc?v/100:v); };
+const hpSym={gt:'>',lt:'<',ne:raw`\ne`};
+function hpViz(){
+  const H=st.hp, i=H.q, v=hpVal(H.val[i]), ok=v!=null&&v>0&&v<1, mu=ok?v:0.5, sd=0.03, sg=H.sel[i], k=1.5;
+  const shade=sg==='gt'?[[mu+k*sd,2]]:sg==='lt'?[[-1,mu-k*sd]]:sg==='ne'?[[-1,mu-k*sd],[mu+k*sd,2]]:[];
+  const svg=curveSVG({mu,sd,x0:mu-4*sd,x1:mu+4*sd,tk:1,z:true,shade,marks:[{x:mu,label:ok?'p₀ = '+v:'p₀ = ?',acc:1}],aria:'Sampling distribution of p-hat if the null hypothesis is true'});
+  const vt=ok?String(v):'?';
+  return {cap:'If H₀ is true…',tail:sg?'shaded = evidence for HA':'pick a sign for HA',
+    body:svg+`<div class="big">${T(raw`H_0:\ p=`+vt)} &nbsp; ${T(raw`H_A:\ p\ `+(sg?hpSym[sg]:raw`\square`)+raw`\ `+vt)}</div><div class="note" style="text-align:center">${sg?'Shaded = results that would count as evidence for H<sub>A</sub> (the tails).':'Choose a sign to see which results would count as evidence.'}</div>`};
+}
+function hpBody(){
+  const H=st.hp, i=H.q, q=HPQ[i], r=H.res[i], v=hpVal(H.val[i]), sg=H.sel[i], vt=(v!=null)?String(v):'p₀';
+  const ans=`${T(raw`H_0:\ p=${q.p0}`)} · ${T(raw`H_A:\ p\ ${hpSym[q.ha]}\ ${q.p0}`)} <span class="note">(${q.why})</span>`;
+  let fb='';
+  if(r==='ok') fb=`<div class="key-idea" style="border-color:var(--ok)">✓ Correct. ${ans}</div>`;
+  else if(r){ fb=`<div class="key-idea" style="border-color:var(--bad)">${r.map(x=>x).join('<br>')}</div>`; }
+  return `<p>Writing the hypotheses is the first step of every test. For each question, type ${T('p_0')} (the value in ${T('H_0')}) and pick the sign for ${T('H_A')}. The curve on the left updates as you go.</p>
+   <div class="pq"><p><b>Question ${i+1} of ${HPQ.length}.</b> ${q.txt}</p>
+    <div class="line">${T('H_0')}: ${T('p')} <span class="op">=</span> <input class="hpin" data-hp="val" value="${esc(H.val[i])}" size="5" maxlength="6" spellcheck="false" autocomplete="off" inputmode="decimal" aria-label="p0"></div>
+    <div class="line">${T('H_A')}: ${T('p')} ${seg('hpsign',[['gt','&gt;'],['lt','&lt;'],['ne','≠']],sg||'')} <b>${esc(vt)}</b></div>
+    <div class="row" style="display:flex;gap:.5em;margin:.5em 0;flex-wrap:wrap"><button class="btn primary" data-act="hpcheck">Check answer</button>${rb('hpans'+i,ans,'Show answer')}</div>
+    <div id="hpfb">${fb}</div></div>
+   <div class="row" style="display:flex;gap:.5em;justify-content:space-between"><button class="btn" data-act="hpnav" data-v="-1"${i?'':' disabled'}>◀ Previous question</button><button class="btn" data-act="hpnav" data-v="1"${i<HPQ.length-1?'':' disabled'}>Next question ▶</button></div>`;
 }
 /* practice: mobile orders */
 const MP0=0.30, MN=250, MX=90, MPH=MX/MN, MSE=sdOf(MP0,MN), MZ=(MPH-MP0)/MSE, MPV=1-Phi(MZ);
@@ -1232,52 +1269,65 @@ const SECS=[
    viz:exViz}
  ]},
  {tab:'Hypothesis test',t:'Testing a claim about p',steps:[
-  {t:'Is 0.46 unusual?',
+  {t:'Is 0.48 unusual?',
    body:()=>`<p>Mnemonic’s oat rate has held at 40% for three years, so ${T('p = 0.40')}.</p>
      <p>This week Sarah started a promotion: <b>oat milk upgrades are free</b>. She thinks more customers will choose oat now.</p>
-     <p>On the first day of the promotion, 69 of the 150 milk drinks are oat:</p>
+     <p>On the first day of the promotion, 72 of the 150 milk drinks are oat:</p>
      <div class="line">${PH} <span class="op">=</span> ${fr(HX,HN)} <span class="op">=</span> ${rb('ht_ph',f2(HPH))}</div>
      <p>That’s higher than 40%, but we know days vary. Even if nothing had changed, ${PH} wouldn’t land exactly on 0.40.</p>
-     <div class="key-idea">Is 0.46 just a normal day, or <b>convincing evidence</b> that the promotion worked? A <b>hypothesis test</b> answers that.</div>`,
+     <div class="key-idea">Is 72 out of 150 within the range of normal day-to-day variation, or is it evidence that the promotion <b>increased</b> the proportion of customers who choose oat milk?</div>`,
    viz:()=>htViz('intro')},
   {t:'Two competing claims',
    enter:()=>{ st.ht.ha='gt'; st.ht.ph=HPH; },
    body:()=>`<p>A test starts with two claims about ${T('p')}.</p>
-     <div class="def"><b>Null hypothesis</b> ${T('H_0')}: the default, “nothing has changed.” It always uses an equals sign.<br>
-       <b>Alternative hypothesis</b> ${T('H_A')}: what we’re trying to find evidence for.</div>
-     <p>Think of a court case: ${T('H_0')} is “innocent until proven guilty.” We only reject it if the evidence is strong enough.</p>
-     <p>For Sarah:</p>
-     <div class="line">${T('H_0')}: ${T('p = 0.40')} <span class="op">·</span> ${T('H_A')}: ${rb('ht_ha','p > 0.40')}</div>
+     <div class="def"><b>Null hypothesis</b> ${T('H_0')}: the default, or “status quo”<br>
+       <b class="hi">Alternative hypothesis</b> ${T('H_A')}: the claim we are testing</div>
+     <p>Think of a court case: ${T('H_0')} is “innocent until proven guilty.” We only reject it if the evidence is strong enough. ${T('H_0')} always uses an equals sign.</p>
      <p>The wording of the question picks the form of ${T('H_A')}:</p>
      <table class="mini"><thead><tr><th>${T('H_A')}</th><th>type</th><th>the question says</th></tr></thead><tbody>
        <tr><td>${T(raw`p>p_0`)}</td><td>right-sided</td><td>increased, higher, more than</td></tr>
        <tr><td>${T(raw`p<p_0`)}</td><td>left-sided</td><td>decreased, lower, less than</td></tr>
        <tr><td>${T(raw`p\ne p_0`)}</td><td>two-sided</td><td>changed, different</td></tr></tbody></table>
-     <p><b>Your turn.</b> What if Sarah only worried the share had <i>dropped</i>? What if she just asked whether it <i>changed</i>? ${rb('ht_ha2',`${T('p < 0.40')} and ${T(raw`p \ne 0.40`)}`,'Show answer')}</p>
-     <p class="note">Try the three buttons on the left. ${T('H_A')} decides which tail counts as evidence.</p>`,
+     <p>Sarah wants to know whether the promotion <b>increased</b> the oat share, and the status quo is the usual 40%. Click to reveal her hypotheses:</p>
+     <div class="line">${T('H_0')}: ${T('p =')} ${rb('ht_h0','0.40')} <span class="op">·</span> ${T('H_A')}: ${rb('ht_ha','p > 0.40')}</div>`,
    viz:()=>htViz('tails')},
+  {t:'Practice: hypotheses',
+   body:hpBody,
+   viz:hpViz},
+  {t:'Check the conditions',
+   body:()=>`<p>Before we trust a normal curve, we check three conditions. Since we’re assuming ${T('H_0')} is true, we use ${T('p_0')} (not ${PH}) for the counts. Click each to check it for Sarah:</p>
+     <table class="mini"><thead><tr><th>condition</th><th>for Sarah</th></tr></thead><tbody>
+       <tr><td><b>Random</b><br>the sample is random</td><td>${rb('ht_k1','✓ treat the 150 drinks as a random sample')}</td></tr>
+       <tr><td><b>Large counts</b><br>${T(raw`np_0\ge10`)} and ${T(raw`n(1-p_0)\ge10`)}</td><td>${rb('ht_k2',`${T(raw`150(0.40)=60`)} and ${T(raw`150(0.60)=90`)}, both ≥ 10 ✓`)}</td></tr>
+       <tr><td><b>10%</b><br>n is under 10% of the population</td><td>${rb('ht_k3','✓ 150 is far less than 10% of all the drinks Mnemonic sells')}</td></tr></tbody></table>
+     ${['ht_k1','ht_k2','ht_k3'].every(k=>st.rev[k])?`<div class="key-idea">All three hold, so if ${T('H_0')} is true, ${PH} follows a normal curve centered at 0.40. That’s the curve we’ll use.</div>`:''}`,
+   viz:()=>htViz('cond')},
   {t:'The test statistic',
-   enter:()=>{ st.ht.ha='gt'; st.ht.ph=HPH; },
-   body:()=>`<p>Next: how far is our sample from what ${T('H_0')} claims, measured in standard deviations? That’s a z-score, called the <b>test statistic</b>:</p>
-     ${D(raw`z=\frac{\hat p-p_0}{\sqrt{\dfrac{p_0(1-p_0)}{n}}}`)}
-     <p>Here ${T('p_0')} is the value in ${T('H_0')}. Unlike the confidence interval, the bottom uses ${T('p_0')}, not ${PH}. We’re asking what happens <i>if ${T('H_0')} is true</i>, so we pretend ${T('p = 0.40')}. That’s the same N(0.40, 0.04) from before.</p>
-     <div class="line">z <span class="op">=</span> ${T(raw`\frac{0.46-0.40}{\sqrt{0.4(0.6)/150}}`)} <span class="op">=</span> ${T(raw`\frac{0.46-0.40}{0.04}`)} <span class="op">=</span> ${rb('ht_z','1.50')}</div>
-     <p>So 0.46 is 1.5 standard deviations above 0.40. Drag the handle to see how z changes.</p>
-     <p class="note">Check first: random sample, ${T(raw`np_0=60\ge10`)}, ${T(raw`n(1-p_0)=90\ge10`)}, and n is under 10% of the population.</p>`,
+   enter:()=>{ st.ht.ha='gt'; st.ht.ph=HPH; st.ht.sw=[false,false,false]; },
+   body:()=>{ const w=st.ht.sw, c=(on,t)=>on?raw`{\color{#e08a00}${t}}`:t,
+       X=c(w[0],w[0]?raw`\hat p`:'x'), M=c(w[1],w[1]?'p_0':raw`\mu`), S=c(w[2],w[2]?raw`\sqrt{\dfrac{p_0(1-p_0)}{n}}`:raw`\sigma`);
+     const row=(i,lab,btn,why)=>`<div class="line"><button class="btn${w[i]?' on':''}" data-act="sw" data-v="${i}">${w[i]?'✓ ':''}${btn}</button><span>${w[i]?why:lab}</span></div>`;
+     return `<p>The test statistic is a z-score. Recall that a z-score tells us how many <b>standard deviations</b> a value is from the mean:</p>
+     ${D(raw`z=\frac{${X}-${M}}{${S}}`)}
+     <p>We just need to swap in the right things. Click each one:</p>
+     ${row(0,'The value we observed:',T('x')+' → '+PH,`Our observed value is the sample proportion, ${PH} = 0.48.`)}
+     ${row(1,'The mean if H₀ is true:',T(raw`\mu`)+' → '+T('p_0'),`If ${T('H_0')} is true, the mean of ${PH} is ${T('p_0')} = 0.40.`)}
+     ${row(2,'The standard deviation if H₀ is true:',T(raw`\sigma`)+' → '+T(raw`\sqrt{p_0(1-p_0)/n}`),`If ${T('H_0')} is true, the standard deviation of ${PH} is ${T(raw`\sqrt{\frac{p_0(1-p_0)}{n}}`)}. We use ${T('p_0')}, not ${PH}, because we pretend ${T('H_0')} is true.`)}
+     ${w.every(Boolean)?`<div class="line">z <span class="op">=</span> ${T(raw`\frac{0.48-0.40}{\sqrt{0.4(0.6)/150}}`)} <span class="op">=</span> ${T(raw`\frac{0.48-0.40}{0.04}`)} <span class="op">=</span> ${rb('ht_z','2.00')}</div>
+     <div class="key-idea">The test statistic tells us how many standard deviations our ${PH} is from ${T('p_0')}, assuming ${T('H_0')} is true. Here, 0.48 is 2 standard deviations above 0.40.</div>`:''}`; },
    viz:()=>htViz('z')},
   {t:'The p-value',
    enter:()=>{ st.ht.ha='gt'; st.ht.ph=HPH; },
-   body:()=>`<p>How surprising is z = 1.5?</p>
-     <div class="def"><b>P-value:</b> if ${T('H_0')} is true, the probability of getting a sample result <b>at least as extreme</b> as ours, in the direction of ${T('H_A')}.</div>
-     <p>Sarah’s ${T('H_A')} is right-sided, so we want the area to the right of 0.46. You may recognize it from section 3:</p>
-     <div class="line">p-value <span class="op">=</span> ${T(raw`P(\hat p>0.46)`)} <span class="op">=</span> ${rb('ht_p','0.0668')}</div>
-     <div class="cmd">normalcdf(<b>0.46</b>, <b>999</b>, <b>0.4</b>, <b>0.04</b>)</div>
+   body:()=>`<p>How surprising is z = 2?</p>
+     <div class="def"><b>P-value:</b> if ${T('H_0')} is true, the probability of getting a sample result <b>at least as extreme</b> as ours, in the direction of ${T('H_A')}. It assumes ${T('H_0')} is true, so it is <b>not</b> the probability that ${T('H_0')} is true.</div>
+     <p>Sarah’s ${T('H_A')} is right-sided, so we want the area to the right of 0.48. You may recognize it from section 3:</p>
+     <div class="line">p-value <span class="op">=</span> ${T(raw`P(\hat p>0.48)`)} <span class="op">=</span> ${rb('ht_p',f4(HPV))}</div>
+     <div class="cmd">normalcdf(<b>0.48</b>, <b>999</b>, <b>0.4</b>, <b>0.04</b>)</div>
      <table class="mini"><thead><tr><th>${T('H_A')}</th><th>p-value is…</th></tr></thead><tbody>
        <tr><td>${T(raw`p>p_0`)}</td><td>the area to the right</td></tr>
        <tr><td>${T(raw`p<p_0`)}</td><td>the area to the left</td></tr>
        <tr><td>${T(raw`p\ne p_0`)}</td><td>both tails: double the smaller one</td></tr></tbody></table>
-     <div class="key-idea">Small p-value → a result like ours would be rare if ${T('H_0')} were true → evidence against ${T('H_0')}.</div>
-     <p class="note">Drag the handle: the farther out it goes, the smaller the p-value. The p-value is <b>not</b> the probability that ${T('H_0')} is true. It assumes ${T('H_0')} is true.</p>`,
+     <div class="key-idea">Small p-value → a result like ours would be rare if ${T('H_0')} were true → evidence against ${T('H_0')}.</div>`,
    viz:()=>htViz('p')},
   {t:'The decision',
    enter:()=>{ st.ht.ha='gt'; st.ht.ph=HPH; st.ht.a=0.05; },
@@ -1285,15 +1335,14 @@ const SECS=[
      <div class="def"><b>p-value &lt; α:</b> reject ${T('H_0')}. The result is <b>statistically significant</b>.<br>
        <b>p-value &gt; α:</b> fail to reject ${T('H_0')}.</div>
      <p>Sarah uses ${T(raw`\alpha=0.05`)}:</p>
-     <div class="line">${rb('ht_d','0.0668 > 0.05, so we fail to reject H₀')}</div>
-     <p>Now switch α to 0.10 on the left. Same data, different decision! That’s why α is chosen <b>before</b> looking at the data.</p>`,
+     <div class="line">${rb('ht_d',`${f4(HPV)} < 0.05, so we reject H₀`)}</div>
+     <p>Now switch α to 0.01 on the left. Same data, different decision! That’s why α is chosen <b>before</b> looking at the data.</p>`,
    viz:()=>htViz('decide')},
   {t:'The conclusion',
    body:()=>`<p>The decision is about ${T('H_0')}. The <b>conclusion</b> is about Mnemonic’s customers, in plain words:</p>
      <div class="key-idea">Reject ${T('H_0')}: “There <b>is</b> sufficient evidence to conclude that…”<br>Fail to reject: “There is <b>not</b> sufficient evidence to conclude that…”</div>
-     <p>${rb('ht_c','There is not sufficient evidence to conclude that the proportion of Mnemonic’s drinks made with oat milk has increased above 40%.','Show Sarah’s conclusion','wide')}</p>
-     <p>Failing to reject doesn’t prove ${T('H_0')} true, just like “not guilty” doesn’t mean “innocent.” One day of data wasn’t enough to convince us. We never say we “accept” ${T('H_0')}.</p>
-     <p class="note">More data would help: if 46% held over 600 drinks instead of 150, z would be 3 and the p-value about 0.0013.</p>`,
+     <p>${rb('ht_c','There is sufficient evidence to conclude that the proportion of Mnemonic’s drinks made with oat milk has increased above 40%.','Show Sarah’s conclusion','wide')}</p>
+     <p>Notice the conclusion names the context (oat milk) and the direction in ${T('H_A')}. Had we failed to reject, that wouldn’t prove ${T('H_0')} true, just like “not guilty” doesn’t mean “innocent.” We never say we “accept” ${T('H_0')}.</p>`,
    viz:htRecap},
   {t:'On the TI-84',
    enter:()=>{ resetPlay('proptest'); },
@@ -1305,7 +1354,7 @@ const SECS=[
         <div class="line">p0: <code>0.4</code><br>x: <code>${HX}</code> (the number of oat drinks)<br>n: <code>${HN}</code><br>prop: <code>&gt;p0</code> (the sign in ${T('H_A')})</div></li>
       <li>Move down to <b>Calculate</b> and press ${key('enter')}.</li>
      </ol>
-     <p>${rb('ht_ti','z = 1.5, p = 0.0668, p̂ = 0.46. Same as by hand. The calculator stops at the p-value, so you still compare it to α and write the conclusion.','Show the answer','wide')}</p>
+     <p>${rb('ht_ti','z = 2, p = 0.0228, p̂ = 0.48. Same as by hand. The calculator stops at the p-value, so you still compare it to α and write the conclusion.','Show the answer','wide')}</p>
      <p class="note">Use it to check your work, but know the steps by hand.</p>`,
    viz:()=>playViz({nomodes:true})},
   {t:'Practice: mobile orders',
@@ -1464,6 +1513,13 @@ const ACT={
   ptail:v=>{ st.play.tail=v; renderViz(); },
   palt:v=>{ st.play.alt=v; renderViz(); },
   ha:v=>{ st.ht.ha=v; renderViz(); },
+  sw:v=>{ st.ht.sw[+v]=!st.ht.sw[+v]; renderBody(); renderViz(); },
+  hpsign:v=>{ const H=st.hp; H.sel[H.q]=v; H.res[H.q]=null; renderBody(); renderViz(); },
+  hpnav:v=>{ const H=st.hp; H.q=Math.max(0,Math.min(HPQ.length-1,H.q+ +v)); renderBody(); renderViz(); },
+  hpcheck:()=>{ const H=st.hp, i=H.q, q=HPQ[i], v=hpVal(H.val[i]), sg=H.sel[i];
+    if(v==null||!sg) H.res[i]=['Type p₀ and pick a sign for H<sub>A</sub> first.'];
+    else { const e=[]; if(Math.abs(v-q.p0)>1e-9) e.push('Not quite: check p₀. It’s the value from the claim that was true before, the status quo.'); if(sg!==q.ha) e.push('Not quite: check the sign. Look for the key word in the question (increased, decreased, different…).'); H.res[i]=e.length?e:'ok'; }
+    renderBody(); },
   alpha:v=>{ st.ht.a=+v; renderViz(); },
   pclear:()=>{ st.play.out=null; renderViz(); },
   prun:()=>{ runPlay(); renderViz(); },
@@ -1475,7 +1531,7 @@ document.addEventListener('click',e=>{
   const dot=t.closest('[data-step]'); if(dot){ go(st.sec,+dot.dataset.step); return; }
   const r=t.closest('[data-rid]'); if(r){ const id=r.dataset.rid, R=REG[id]; if(!R) return; st.rev[id]=!st.rev[id];
     r.classList.toggle('on',!!st.rev[id]); r.innerHTML=st.rev[id]?R.ans:R.q;
-    if(SECS[st.sec].steps.length&&/^(pr|qr|lo|hi|me)$/.test(id)) renderBody();
+    if(SECS[st.sec].steps.length&&/^(pr|qr|lo|hi|me|ht_k[123])$/.test(id)) renderBody();
     renderViz(); return; }
   const k=t.closest('[data-key]'); if(k){ pressKey(k.dataset.key,k); return; }
   const ins=t.closest('[data-ins]'); if(ins){ const a=document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.pf?document.activeElement:lastPF; if(a){ const p=a.selectionStart??a.value.length; a.value=a.value.slice(0,p)+ins.dataset.ins+a.value.slice(a.selectionEnd??p); st.play.f[a.dataset.pf]=a.value; a.focus(); const np=p+ins.dataset.ins.length; a.setSelectionRange(np,np); } return; }
@@ -1487,6 +1543,7 @@ document.addEventListener('mousedown',e=>{ if(e.target.closest('[data-ins]')) e.
 document.addEventListener('input',e=>{
   const t=e.target;
   if(t.dataset.pf){ st.play.f[t.dataset.pf]=t.value; return; }
+  if(t.dataset.hp){ const H=st.hp; H.val[H.q]=t.value; H.res[H.q]=null; const fb=$('#hpfb'); if(fb) fb.innerHTML=''; renderViz(true); return; }
   const id=t.dataset.in; if(!id) return; const v=+t.value; let out='';
   switch(id){
     case 'nsl': st.nsl=Math.round(25*Math.pow(40,v/1000)); out='n = '+st.nsl; { const el=$('[data-out="nslse"]'); if(el) el.textContent=f4(sdOf(P0,st.nsl)); } break;
@@ -1504,7 +1561,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{ if(e.target.dataset.in==='nsl') renderBody(); });
 document.addEventListener('keydown',e=>{
-  if(e.target.matches('input,textarea')){ if(e.key==='Enter'&&e.target.dataset.pf){ runPlay(); renderViz(); } return; }
+  if(e.target.matches('input,textarea')){ if(e.key==='Enter'&&e.target.dataset.pf){ runPlay(); renderViz(); } if(e.key==='Enter'&&e.target.dataset.hp) ACT.hpcheck(); return; }
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   if(e.key==='ArrowRight'){ goFlat(1); e.preventDefault(); } else if(e.key==='ArrowLeft'){ goFlat(-1); e.preventDefault(); }
 });
