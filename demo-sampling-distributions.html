@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ben_sacks | Sampling Distributions &amp; Confidence Intervals</title>
+<title>ben_sacks | Sampling Distributions, Confidence Intervals &amp; Hypothesis Tests</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400..900;1,8..60,400..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
@@ -163,6 +163,7 @@ table.mini code{font:700 .85em var(--mono)}
 .chart .curve{fill:none;stroke:var(--ink);stroke-width:2.4}
 .chart .area{fill:var(--accSoft);stroke:none}
 .chart .band{fill:color-mix(in srgb,var(--blue) 20%,transparent);stroke:none}
+.chart .band.top{fill:color-mix(in srgb,var(--blue) 30%,transparent);stroke:var(--blue);stroke-width:2}
 .chart .bigl{font:800 17px var(--mono);fill:var(--ink);text-anchor:middle;paint-order:stroke;stroke:var(--panel);stroke-width:5px}
 .chart .handle{fill:var(--acc);stroke:var(--panel);stroke-width:3;cursor:ew-resize}
 .chart [data-drag]{cursor:ew-resize}
@@ -296,7 +297,7 @@ table.mini code{font:700 .85em var(--mono)}
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><svg viewBox="-16 -16 32 32" aria-hidden="true"><path d="M-9 -8 H9 L6.6 13 H-6.6 Z" fill="var(--oat)"/><rect x="-11" y="-12" width="22" height="4.5" rx="1.5" fill="var(--muted)"/><path d="M-13 13 Q-7 4 0 6 Q7 8 13 0" fill="none" stroke="var(--acc)" stroke-width="2.4"/></svg>Sampling &amp; Confidence</div>
+    <div class="brand"><svg viewBox="-16 -16 32 32" aria-hidden="true"><path d="M-9 -8 H9 L6.6 13 H-6.6 Z" fill="var(--oat)"/><rect x="-11" y="-12" width="22" height="4.5" rx="1.5" fill="var(--muted)"/><path d="M-13 13 Q-7 4 0 6 Q7 8 13 0" fill="none" stroke="var(--acc)" stroke-width="2.4"/></svg>Sampling &amp; Inference</div>
     <nav class="tabs" id="tabs" aria-label="Sections"></nav>
     <div class="tools">
       <button class="btn" id="themeBtn" aria-label="Toggle light or dark mode">&#9790;</button>
@@ -413,7 +414,8 @@ const st={sec:0,step:0,theme:'dark',rev:{},hl:null,
   net:{z:null,C:0.95,n:200},
   alg:0,rup:1067,pg:0.5,
   ex:{C:0.95,me:0.03,p:0.5},
-  play:{mode:'normalcdf',f:{lower:'',upper:'',mu:'',sigma:'',area:'',x:'',n:'',cl:''},tail:'LEFT',out:null},
+  play:{mode:'normalcdf',f:{lower:'',upper:'',mu:'',sigma:'',area:'',x:'',n:'',cl:'',p0:''},tail:'LEFT',alt:'GT',out:null},
+  ht:{ph:0.46,a:0.05,ha:'gt'},
   showAll:false};
 let sim150=mkSim(150), simN=null, big=null;
 function bigSim(){ if(!big){ big=mkSim(150); simAdd(big,2500); } return big; }
@@ -508,9 +510,11 @@ function curveSVG(o){
   const tk=o.tk||0.05, dec=o.dec!=null?o.dec:2;
   for(let x=Math.ceil(x0/tk-1e-9)*tk;x<=x1+1e-9;x+=tk) s+=`<line class="gl" x1="${X(x)}" x2="${X(x)}" y1="${T}" y2="${base}"/><text class="tk" x="${X(x)}" y="${base+17}">${x.toFixed(dec)}</text>`;
   if(o.z) for(let k=-3;k<=3;k++){ const x=mu+k*sd; if(x<x0||x>x1) continue; s+=`<text class="tz" x="${X(x)}" y="${base+36}">z=${k}</text>`; }
-  (o.band?[o.band]:[]).forEach(([a,b])=>{ const lo=Math.max(a,x0),hi=Math.min(b,x1); let d=`M${X(lo)},${base}`; for(let i=0;i<=80;i++){ const x=lo+(hi-lo)*i/80; d+=`L${X(x)},${Y(x)}`; } s+=`<path class="band" d="${d}L${X(hi)},${base}Z"/>`; });
+  const drawBands=cls=>(o.bands||(o.band?[o.band]:[])).forEach(([a,b])=>{ const lo=Math.max(a,x0),hi=Math.min(b,x1); let d=`M${X(lo)},${base}`; for(let i=0;i<=80;i++){ const x=lo+(hi-lo)*i/80; d+=`L${X(x)},${Y(x)}`; } s+=`<path class="band${cls}" d="${d}L${X(hi)},${base}Z"/>`; });
+  if(!o.bandTop) drawBands('');
   (o.shade||[]).forEach(([a,b])=>{ const lo=Math.max(a,x0),hi=Math.min(b,x1); if(hi<=lo) return; let d=`M${X(lo)},${base}`;
     for(let i=0;i<=90;i++){ const x=lo+(hi-lo)*i/90; d+=`L${X(x).toFixed(1)},${Y(x).toFixed(1)}`; } s+=`<path class="area" d="${d}L${X(hi)},${base}Z"/>`; });
+  if(o.bandTop) drawBands(' top');
   let d=''; for(let i=0;i<=180;i++){ const x=x0+(x1-x0)*i/180; d+=(i?'L':'M')+X(x).toFixed(1)+','+Y(x).toFixed(1); }
   s+=`<path class="curve" data-k="curve" d="${d}"/><line class="ax" x1="${L}" x2="${W-R}" y1="${base}" y2="${base}"/>`;
   (o.labels||[]).forEach(l=>{ const x=Math.min(x1-(x1-x0)*.06,Math.max(x0+(x1-x0)*.06,l.x)); s+=`<text class="bigl" x="${X(x)}" y="${l.y!=null?l.y:base-ph*.32}">${l.t}</text>`; });
@@ -704,8 +708,9 @@ function pressKey(k,el){
 }
 
 /* ----- the calculator playground (practice) ----- */
-const PMODES=[['normalcdf','normalcdf'],['invNorm','invNorm'],['propz','1-PropZInt']];
-function resetPlay(mode){ const P=st.play; P.mode=mode; P.out=null; P.tail='LEFT'; Object.keys(P.f).forEach(k=>P.f[k]=''); }
+const PMODES=[['normalcdf','normalcdf'],['invNorm','invNorm'],['propz','1-PropZInt'],['proptest','1-PropZTest']];
+const ALTS=[['NE','≠p0'],['LT','<p0'],['GT','>p0']], ALTSYM={NE:'≠',LT:'<',GT:'>'};
+function resetPlay(mode){ const P=st.play; P.mode=mode; P.out=null; P.tail='LEFT'; P.alt='GT'; Object.keys(P.f).forEach(k=>P.f[k]=''); }
 function zViz(){
   const z=zstar(st.C), C=st.C, tl=(1-C)/2;
   return {cap:'Critical value z*',tail:'standard normal: μ = 0, σ = 1',
@@ -718,7 +723,9 @@ function playViz(opt){
   let body='';
   if(P.mode==='normalcdf') body=`<div class="tl c"><span class="inv">&nbsp;normalcdf&nbsp;</span></div>${inp('lower','lower:')}${inp('upper','upper:')}${inp('mu','μ:')}${inp('sigma','σ:')}<div class="tl"><span class="inv tsel" data-act="prun">Paste</span></div>`;
   else if(P.mode==='invNorm') body=`<div class="tl c"><span class="inv">&nbsp;invNorm&nbsp;</span></div>${inp('area','area:')}${inp('mu','μ:')}${inp('sigma','σ:')}<div class="tl">Tail: ${['LEFT','CENTER','RIGHT'].map(t=>`<span class="opt tsel${P.tail===t?' inv':''}" data-act="ptail" data-v="${t}">${t}</span>`).join(' ')}</div><div class="tl"><span class="inv tsel" data-act="prun">Paste</span></div>`;
+  else if(P.mode==='proptest') body=`<div class="tl c"><span class="inv">&nbsp;1-PropZTest&nbsp;</span></div>${inp('p0','p0:')}${inp('x','x:')}${inp('n','n:')}<div class="tl">prop: ${ALTS.map(a=>`<span class="opt tsel${P.alt===a[0]?' inv':''}" data-act="palt" data-v="${a[0]}">${a[1]}</span>`).join(' ')}</div><div class="tl"><span class="inv tsel" data-act="prun">Calculate</span></div>`;
   else body=`<div class="tl c"><span class="inv">&nbsp;1-PropZInt&nbsp;</span></div>${inp('x','x:')}${inp('n','n:')}${inp('cl','C-Level:')}<div class="tl"><span class="inv tsel" data-act="prun">Calculate</span></div>`;
+  const isCalc=P.mode==='propz'||P.mode==='proptest';
   const o=P.out;
   let res='';
   if(o&&o.err) res=`<div class="say"><b class="bad" style="color:var(--bad)">ERR:SYNTAX</b><div class="note">${o.err}</div></div>`;
@@ -730,8 +737,8 @@ function playViz(opt){
   if(opt.viz){ curve=opt.viz.body; ctl=opt.viz.ctl; }
   return {cap:'Your calculator',tail:'type in the values, then Paste',ctl,body:`${curve}${opt.nomodes?'':`<div class="pmodes">${seg('pmode',PMODES,P.mode)}</div>`}
     <div class="calcgrid" style="grid-template-columns:minmax(0,19em) minmax(0,1fr)"><div><div class="ti" style="padding:.7em;border-radius:1em;max-width:19em">${screen(body)}</div>
-    <div class="helpers"><button class="btn" data-ins="√(">√(</button><button class="btn" data-ins="*">×</button><button class="btn" data-ins="/">÷</button><button class="btn" data-ins="999">999</button><button class="btn" data-ins="-999">−999</button><button class="btn primary" data-act="prun">${P.mode==='propz'?'Calculate':'Paste + enter'}</button>${opt.nomodes?`<button class="btn" data-act="pclear"${o?'':' disabled'}>Clear output</button>`:''}</div></div>
-    <div class="calcside">${res||(opt.nomodes?'':`<div class="say note">Pick a command, fill in the lines (you can type √( or sqrt( for a square root), then press <b>${P.mode==='propz'?'Calculate':'Paste'}</b>.</div>`)}</div></div>`};
+    <div class="helpers"><button class="btn" data-ins="√(">√(</button><button class="btn" data-ins="*">×</button><button class="btn" data-ins="/">÷</button><button class="btn" data-ins="999">999</button><button class="btn" data-ins="-999">−999</button><button class="btn primary" data-act="prun">${isCalc?'Calculate':'Paste + enter'}</button>${opt.nomodes?`<button class="btn" data-act="pclear"${o?'':' disabled'}>Clear output</button>`:''}</div></div>
+    <div class="calcside">${res||(opt.nomodes?'':`<div class="say note">Pick a command, fill in the lines (you can type √( or sqrt( for a square root), then press <b>${isCalc?'Calculate':'Paste'}</b>.</div>`)}</div></div>`};
 }
 function runPlay(){
   const P=st.play, f=P.f, v=k=>{ try{ return evalExpr(f[k]); }catch(e){ throw new Error(`Check the “${k==='sigma'?'σ':k==='mu'?'μ':k==='cl'?'C-Level':k}” line.`); } };
@@ -746,6 +753,12 @@ function runPlay(){
       if(P.tail==='CENTER'){ const lo=inorm((1-a)/2,mu,sg),hi=inorm(1-(1-a)/2,mu,sg); out=`{${tiNum(lo)} ${tiNum(hi)}}`; shade=[[lo,hi]]; marks=[{x:lo,label:f4(lo),acc:1},{x:hi,label:f4(hi),acc:1}]; }
       else { const c=inorm(P.tail==='LEFT'?a:1-a,mu,sg); out=tiNum(c); shade=[P.tail==='LEFT'?[x0-1,c]:[c,x1+1]]; marks=[{x:c,label:f4(c),acc:1}]; }
       P.out={lines:[{t:`invNorm(${f.area},${f.mu},${f.sigma}${P.tail==='LEFT'?'':','+P.tail})`},{t:out,r:1}],chart:curveSVG({mu,sd:sg,x0,x1,tk,dec:dc,shade,marks,h:240,axis:''})}; }
+    else if(P.mode==='proptest'){ const p0=v('p0'),x=v('x'),n=v('n'); if(!(p0>0&&p0<1)) throw new Error('p0 has to be between 0 and 1.'); if(!(n>0&&x>=0&&x<=n)) throw new Error('Need 0 ≤ x ≤ n.');
+      const ph=x/n, se=Math.sqrt(p0*(1-p0)/n), z=(ph-p0)/se, al=P.alt, d=Math.abs(ph-p0);
+      const pv=al==='GT'?1-Phi(z):al==='LT'?Phi(z):2*(1-Phi(Math.abs(z))), x0=p0-4*se, x1=p0+4*se;
+      const shade=al==='GT'?[[ph,x1+1]]:al==='LT'?[[x0-1,ph]]:[[x0-1,p0-d],[p0+d,x1+1]];
+      P.out={lines:[{t:'1-PropZTest'},{t:` prop${ALTSYM[al]}${tiNum(p0)}`},{t:` z=${tiNum(z)}`},{t:` p=${tiNum(pv)}`},{t:` p̂=${tiNum(ph)}`},{t:` n=${n}`}],
+        chart:curveSVG({mu:p0,sd:se,x0,x1,tk:niceTick(x1-x0),dec:tickDec(x1-x0),shade,marks:[{x:ph,label:f3(ph),acc:1}],h:240,axis:'',labels:[{t:'p = '+f4(pv),x:al==='LT'?x0+(x1-x0)*.15:x1-(x1-x0)*.15,y:150}]})}; }
     else { const x=v('x'),n=v('n'),cl=v('cl'); if(!(n>0&&x>=0&&x<=n)) throw new Error('Need 0 ≤ x ≤ n.'); if(!(cl>0&&cl<1)) throw new Error('C-Level is a decimal like 0.95.');
       const ph=x/n, se=sdOf(ph,n), z=zstar(cl), lo=ph-z*se, hi=ph+z*se;
       P.out={lines:[{t:'1-PropZInt'},{t:` (${tiNum(lo)},${tiNum(hi)})`},{t:` p̂=${tiNum(ph)}`},{t:` n=${n}`}],chart:''}; }
@@ -868,6 +881,54 @@ function exViz(){
     body:D(raw`n=\frac{${f3(z)}^2(${f2(e.p)})(1-${f2(e.p)})}{${e.me}^2}=${n.toFixed(2)}`)+`<div class="big">round up → n = <b>${Math.ceil(n-1e-9).toLocaleString()}</b></div><div style="display:flex;flex-direction:column;gap:.35em;margin-top:.4em"><div class="lab">customers needed for each margin of error</div>${bars}</div>`,
     ctl:slider('exC',80,99,1,Math.round(e.C*100),'Confidence',Math.round(e.C*100)+'%')+slider('exM',1,10,1,Math.round(e.me*100),'Margin',`±${Math.round(e.me*100)}%`)+slider('exP',5,95,1,Math.round(e.p*100),'p̂ guess',f2(e.p))};
 }
+
+/* --- section 7: hypothesis test (is 0.46 unusual if p is still 0.40?) --- */
+const HX=69, HN=150, HPH=HX/HN;                 // promo day: 69 of 150 drinks were oat
+const HASYM={gt:'>',lt:'<',ne:raw`\ne`};
+function htCalc(){
+  const h=st.ht, ph=h.ph, z=(ph-P0)/SD0, d=Math.abs(ph-P0); let p,shade,cmd;
+  if(h.ha==='gt'){ p=1-Phi(z); shade=[[ph,2]]; cmd=`normalcdf(<b>${f3(ph)}</b>, <b>999</b>, 0.4, 0.04)`; }
+  else if(h.ha==='lt'){ p=Phi(z); shade=[[-1,ph]]; cmd=`normalcdf(<b>-999</b>, <b>${f3(ph)}</b>, 0.4, 0.04)`; }
+  else { p=2*(1-Phi(Math.abs(z))); shade=[[-1,P0-d],[P0+d,2]];
+    cmd=`2 × normalcdf(<b>${f3(Math.max(ph,2*P0-ph))}</b>, <b>999</b>, 0.4, 0.04)`; }
+  return {z,p,shade,cmd};
+}
+function htViz(what){
+  const h=st.ht, C=htCalc(), a=h.a, ph=h.ph, drag=what!=='intro';
+  const marks=[{x:ph,label:what==='intro'?'today: '+f2(ph):f3(ph),acc:1}];
+  if(drag) marks[0].h='a';
+  if(h.ha==='ne'&&(what==='p'||what==='decide')) marks.push({x:2*P0-ph,label:f3(2*P0-ph),acc:1});
+  let bands=null;
+  if(what==='decide'){ bands=h.ha==='gt'?[[inorm(1-a,P0,SD0),2]]:h.ha==='lt'?[[-1,inorm(a,P0,SD0)]]:[[-1,inorm(a/2,P0,SD0)],[inorm(1-a/2,P0,SD0),2]]; }
+  const shade=(what==='tails'||what==='p'||what==='decide')?C.shade:[];
+  const svg=curveSVG({mu:P0,sd:SD0,x0:0.24,x1:0.56,z:true,drag:drag?'ht':null,marks,shade,bands,bandTop:true,aria:'Sampling distribution of p-hat if the null hypothesis is true'});
+  const haT=raw`H_A:\ p\ ${HASYM[h.ha]}\ 0.40`;
+  const haSeg=seg('ha',[['gt','HA: p &gt; 0.40'],['lt','HA: p &lt; 0.40'],['ne','HA: p ≠ 0.40']],h.ha);
+  let big='',ctl='',cap='',tail='';
+  if(what==='intro'){ cap='If nothing has changed…'; tail='p̂ ~ N(0.40, 0.04)'; big=`<div class="big">Is a day with p̂ = <b>0.46</b> unusual when p = 0.40?</div>`; }
+  else if(what==='tails'){ cap='Which results count as evidence?'; tail='drag the gold handle'; big=`<div class="big">${T(raw`H_0:\ p=0.40`)} &nbsp; ${T(haT)}</div><div class="note" style="text-align:center">Shaded = results at least this extreme in the direction of ${T(raw`H_A`)}</div>`; ctl=haSeg; }
+  else if(what==='z'){ cap='The test statistic'; tail='drag the gold handle'; big=`<div class="big">${T(raw`z=\frac{${f3(ph)}-0.40}{0.04}`)} <span class="op">=</span> <b>${f2(C.z)}</b></div>`; ctl=`<span class="lab">${f2(Math.abs(C.z))} standard deviations ${C.z>=0?'above':'below'} 0.40</span>`; }
+  else if(what==='p'){ cap='The p-value is the shaded area'; tail='if H₀ is true'; big=`<div class="big">p-value <span class="op">=</span> <b>${f4(C.p)}</b></div><div class="cmd">${C.cmd}</div>`; ctl=haSeg; }
+  else { const rej=C.p<a;
+    cap='Compare the p-value to α'; tail=`α = ${a}`;
+    big=`<div class="big">p-value <b>${f4(C.p)}</b> <span class="op">${rej?'&lt;':'&gt;'}</span> α <b>${a}</b> &nbsp;→&nbsp; <b>${rej?'Reject H₀':'Fail to reject H₀'}</b></div>
+      <div class="legend"><span><i style="background:var(--blue);opacity:.5"></i>reject zone (area = α)</span><span><i style="background:var(--acc);opacity:.7"></i>p-value</span></div>`;
+    ctl=`<span class="lab">α</span>${seg('alpha',[[0.1,'0.10'],[0.05,'0.05'],[0.01,'0.01']],a)}<span class="sp"></span>${haSeg}`; }
+  return {cap,tail,body:svg+big,ctl};
+}
+function htRecap(){
+  const row=(s,w)=>`<tr><td><b>${s}</b></td><td>${w}</td></tr>`;
+  return {cap:'Sarah’s test at a glance',tail:'α = 0.05',body:`<table class="mini" style="margin:0 auto"><thead><tr><th>step</th><th>Sarah’s promotion</th></tr></thead><tbody>
+    ${row('1. Hypotheses',`${T(raw`H_0:\ p=0.40`)}<br>${T(raw`H_A:\ p>0.40`)}`)}
+    ${row('2. Test statistic',`${T(raw`z=\frac{0.46-0.40}{0.04}=1.5`)}`)}
+    ${row('3. P-value',`${T(raw`P(Z>1.5)=0.0668`)}`)}
+    ${row('4. Decision',`0.0668 &gt; 0.05, so fail to reject ${T('H_0')}`)}
+    ${row('5. Conclusion','Not sufficient evidence that the oat share has increased')}</tbody></table>`};
+}
+/* practice: mobile orders */
+const MP0=0.30, MN=250, MX=90, MPH=MX/MN, MSE=sdOf(MP0,MN), MZ=(MPH-MP0)/MSE, MPV=1-Phi(MZ);
+/* practice (in the assignment): bike-share docks */
+const BP0=0.18, BN=400, BX=58, BPH=BX/BN, BSE=sdOf(BP0,BN), BZ=(BPH-BP0)/BSE, BPV=Phi(BZ);
 
 /* ================================================================
    SECTIONS & STEPS
@@ -1169,6 +1230,97 @@ const SECS=[
      <li>Guesses for ${PH} farther from 0.5 need fewer customers.</li></ul>`,
    viz:exViz}
  ]},
+ {tab:'Hypothesis test',t:'Testing a claim about p',steps:[
+  {t:'Is 0.46 unusual?',
+   body:()=>`<p>Mnemonic’s oat rate has held at 40% for three years, so ${T('p = 0.40')}.</p>
+     <p>This week Sarah started a promotion: <b>oat milk upgrades are free</b>. She thinks more customers will choose oat now.</p>
+     <p>On the first day of the promotion, 69 of the 150 milk drinks are oat:</p>
+     <div class="line">${PH} <span class="op">=</span> ${fr(HX,HN)} <span class="op">=</span> ${rb('ht_ph',f2(HPH))}</div>
+     <p>That’s higher than 40%, but we know days vary. Even if nothing had changed, ${PH} wouldn’t land exactly on 0.40.</p>
+     <div class="key-idea">Is 0.46 just a normal day, or <b>convincing evidence</b> that the promotion worked? A <b>hypothesis test</b> answers that.</div>`,
+   viz:()=>htViz('intro')},
+  {t:'Two competing claims',
+   enter:()=>{ st.ht.ha='gt'; st.ht.ph=HPH; },
+   body:()=>`<p>A test starts with two claims about ${T('p')}.</p>
+     <div class="def"><b>Null hypothesis</b> ${T('H_0')}: the default, “nothing has changed.” It always uses an equals sign.<br>
+       <b>Alternative hypothesis</b> ${T('H_A')}: what we’re trying to find evidence for.</div>
+     <p>Think of a court case: ${T('H_0')} is “innocent until proven guilty.” We only reject it if the evidence is strong enough.</p>
+     <p>For Sarah:</p>
+     <div class="line">${T('H_0')}: ${T('p = 0.40')} <span class="op">·</span> ${T('H_A')}: ${rb('ht_ha','p > 0.40')}</div>
+     <p>The wording of the question picks the form of ${T('H_A')}:</p>
+     <table class="mini"><thead><tr><th>${T('H_A')}</th><th>type</th><th>the question says</th></tr></thead><tbody>
+       <tr><td>${T(raw`p>p_0`)}</td><td>right-sided</td><td>increased, higher, more than</td></tr>
+       <tr><td>${T(raw`p<p_0`)}</td><td>left-sided</td><td>decreased, lower, less than</td></tr>
+       <tr><td>${T(raw`p\ne p_0`)}</td><td>two-sided</td><td>changed, different</td></tr></tbody></table>
+     <p><b>Your turn.</b> What if Sarah only worried the share had <i>dropped</i>? What if she just asked whether it <i>changed</i>? ${rb('ht_ha2',`${T('p < 0.40')} and ${T(raw`p \ne 0.40`)}`,'Show answer')}</p>
+     <p class="note">Try the three buttons on the left. ${T('H_A')} decides which tail counts as evidence.</p>`,
+   viz:()=>htViz('tails')},
+  {t:'The test statistic',
+   enter:()=>{ st.ht.ha='gt'; st.ht.ph=HPH; },
+   body:()=>`<p>Next: how far is our sample from what ${T('H_0')} claims, measured in standard deviations? That’s a z-score, called the <b>test statistic</b>:</p>
+     ${D(raw`z=\frac{\hat p-p_0}{\sqrt{\dfrac{p_0(1-p_0)}{n}}}`)}
+     <p>Here ${T('p_0')} is the value in ${T('H_0')}. Unlike the confidence interval, the bottom uses ${T('p_0')}, not ${PH}. We’re asking what happens <i>if ${T('H_0')} is true</i>, so we pretend ${T('p = 0.40')}. That’s the same N(0.40, 0.04) from before.</p>
+     <div class="line">z <span class="op">=</span> ${T(raw`\frac{0.46-0.40}{\sqrt{0.4(0.6)/150}}`)} <span class="op">=</span> ${T(raw`\frac{0.46-0.40}{0.04}`)} <span class="op">=</span> ${rb('ht_z','1.50')}</div>
+     <p>So 0.46 is 1.5 standard deviations above 0.40. Drag the handle to see how z changes.</p>
+     <p class="note">Check first: random sample, ${T(raw`np_0=60\ge10`)}, ${T(raw`n(1-p_0)=90\ge10`)}, and n is under 10% of the population.</p>`,
+   viz:()=>htViz('z')},
+  {t:'The p-value',
+   enter:()=>{ st.ht.ha='gt'; st.ht.ph=HPH; },
+   body:()=>`<p>How surprising is z = 1.5?</p>
+     <div class="def"><b>P-value:</b> if ${T('H_0')} is true, the probability of getting a sample result <b>at least as extreme</b> as ours, in the direction of ${T('H_A')}.</div>
+     <p>Sarah’s ${T('H_A')} is right-sided, so we want the area to the right of 0.46. You may recognize it from section 3:</p>
+     <div class="line">p-value <span class="op">=</span> ${T(raw`P(\hat p>0.46)`)} <span class="op">=</span> ${rb('ht_p','0.0668')}</div>
+     <div class="cmd">normalcdf(<b>0.46</b>, <b>999</b>, <b>0.4</b>, <b>0.04</b>)</div>
+     <table class="mini"><thead><tr><th>${T('H_A')}</th><th>p-value is…</th></tr></thead><tbody>
+       <tr><td>${T(raw`p>p_0`)}</td><td>the area to the right</td></tr>
+       <tr><td>${T(raw`p<p_0`)}</td><td>the area to the left</td></tr>
+       <tr><td>${T(raw`p\ne p_0`)}</td><td>both tails: double the smaller one</td></tr></tbody></table>
+     <div class="key-idea">Small p-value → a result like ours would be rare if ${T('H_0')} were true → evidence against ${T('H_0')}.</div>
+     <p class="note">Drag the handle: the farther out it goes, the smaller the p-value. The p-value is <b>not</b> the probability that ${T('H_0')} is true. It assumes ${T('H_0')} is true.</p>`,
+   viz:()=>htViz('p')},
+  {t:'The decision',
+   enter:()=>{ st.ht.ha='gt'; st.ht.ph=HPH; st.ht.a=0.05; },
+   body:()=>`<p>How small is small enough? Before collecting data, we pick a cutoff called the <b>significance level</b> ${T(raw`\alpha`)}. Common choices are 0.10, 0.05, and 0.01.</p>
+     <div class="def"><b>p-value &lt; α:</b> reject ${T('H_0')}. The result is <b>statistically significant</b>.<br>
+       <b>p-value &gt; α:</b> fail to reject ${T('H_0')}.</div>
+     <p>Sarah uses ${T(raw`\alpha=0.05`)}:</p>
+     <div class="line">${rb('ht_d','0.0668 > 0.05, so we fail to reject H₀')}</div>
+     <p>Now switch α to 0.10 on the left. Same data, different decision! That’s why α is chosen <b>before</b> looking at the data.</p>`,
+   viz:()=>htViz('decide')},
+  {t:'The conclusion',
+   body:()=>`<p>The decision is about ${T('H_0')}. The <b>conclusion</b> is about Mnemonic’s customers, in plain words:</p>
+     <div class="key-idea">Reject ${T('H_0')}: “There <b>is</b> sufficient evidence to conclude that…”<br>Fail to reject: “There is <b>not</b> sufficient evidence to conclude that…”</div>
+     <p>${rb('ht_c','There is not sufficient evidence to conclude that the proportion of Mnemonic’s drinks made with oat milk has increased above 40%.','Show Sarah’s conclusion','wide')}</p>
+     <p>Failing to reject doesn’t prove ${T('H_0')} true, just like “not guilty” doesn’t mean “innocent.” One day of data wasn’t enough to convince us. We never say we “accept” ${T('H_0')}.</p>
+     <p class="note">More data would help: if 46% held over 600 drinks instead of 150, z would be 3 and the p-value about 0.0013.</p>`,
+   viz:htRecap},
+  {t:'On the TI-84',
+   enter:()=>{ resetPlay('proptest'); },
+   body:()=>`<p>The calculator can do steps 2 and 3 for you with <b>1-PropZTest</b>. Follow these keystrokes, then type the values into the calculator on the left.</p>
+     <ol class="ksteps">
+      <li>Press ${key('stat')}, then ${key('▶')} twice to reach <b>TESTS</b>.</li>
+      <li>Choose <b>5:1-PropZTest</b>.</li>
+      <li>Fill in the lines:
+        <div class="line">p0: <code>0.4</code><br>x: <code>${HX}</code> (the number of oat drinks)<br>n: <code>${HN}</code><br>prop: <code>&gt;p0</code> (the sign in ${T('H_A')})</div></li>
+      <li>Move down to <b>Calculate</b> and press ${key('enter')}.</li>
+     </ol>
+     <p>${rb('ht_ti','z = 1.5, p = 0.0668, p̂ = 0.46. Same as by hand. The calculator stops at the p-value, so you still compare it to α and write the conclusion.','Show the answer','wide')}</p>
+     <p class="note">Use it to check your work, but know the steps by hand.</p>`,
+   viz:()=>playViz({nomodes:true})},
+  {t:'Practice: mobile orders',
+   enter:()=>{ resetPlay('proptest'); },
+   body:()=>{ const s=(id,h)=>`<div class="sol">${rb(id,h,'Show solution','wide')}</div>`;
+     return `<div class="pq"><p>Historically <b>30%</b> of Mnemonic’s orders come through the mobile app. After an app redesign, Gia checks a random sample of <b>${MN}</b> orders and finds <b>${MX}</b> are mobile. Is there evidence that the mobile share has <b>increased</b>? Use ${T(raw`\alpha=0.05`)}.</p>
+     <ol type="a">
+      <li>State the hypotheses.${s('hp1',`${T('H_0')}: ${T('p = 0.30')} · ${T('H_A')}: ${T('p > 0.30')}`)}</li>
+      <li>Check the conditions.${s('hp2',`Random sample ✓. ${T(raw`np_0=250(0.3)=75\ge10`)} and ${T(raw`n(1-p_0)=250(0.7)=175\ge10`)} ✓. 250 orders is under 10% of all orders ✓.`)}</li>
+      <li>Find the test statistic.${s('hp3',`${T(raw`\hat p=\frac{90}{250}=${f2(MPH)}`)}<br>${T(raw`z=\frac{${f2(MPH)}-0.30}{\sqrt{0.3(0.7)/250}}=\frac{${f2(MPH)}-0.30}{${f4(MSE)}}=${f2(MZ)}`)}`)}</li>
+      <li>Find the p-value.${s('hp4',`normalcdf(${f2(MZ)}, 999) ≈ <b>${f4(MPV)}</b>`)}</li>
+      <li>Make a decision.${s('hp5',`${f4(MPV)} &lt; 0.05, so <b>reject ${T('H_0')}</b>.`)}</li>
+      <li>State your conclusion in context.${s('hp6',`There is sufficient evidence to conclude that the proportion of Mnemonic’s orders placed on the mobile app has increased above 30%.`)}</li>
+     </ol></div>`; },
+   viz:()=>playViz({nomodes:true})}
+ ]},
  {tab:'Practice',t:'Practice assignment',practice:true,steps:[
   {t:'Practice assignment',
    body:()=>practiceHTML(),
@@ -1206,6 +1358,14 @@ function practiceHTML(){
     <li>How many residents should the council survey to estimate the proportion within <b>4 percentage points</b> with <b>95%</b> confidence?${s('q3a',`${T(raw`n=\frac{1.96^2(0.61)(0.39)}{0.04^2}=${needN(.95,.04,.61).toFixed(2)}`)} → round up: <b>${Math.ceil(needN(.95,.04,.61))}</b> residents.`)}</li>
     <li>How many would it need for <b>90%</b> confidence with the same margin of error? Explain why this differs from part (a).${s('q3b',`${T(raw`n=\frac{1.645^2(0.61)(0.39)}{0.04^2}=${needN(.9,.04,.61).toFixed(2)}`)} → <b>${Math.ceil(needN(.9,.04,.61))}</b>. Lower confidence means a smaller ${T('z^*')}, so the same margin of error takes fewer people.`)}</li>
     <li>Suppose there had been no pilot survey. How many residents would the council need for part (a)? Why is it more?${s('q3c',`Use ${T(raw`\hat p=0.5`)}: ${T(raw`n=\frac{1.96^2(0.5)(0.5)}{0.04^2}=${needN(.95,.04,.5).toFixed(2)}`)} → <b>${Math.ceil(needN(.95,.04,.5))}</b>. 0.5 makes ${T(raw`\hat p(1-\hat p)`)} as large as possible, which is the safe choice when you have no estimate.`)}</li>
+   </ol></div>
+  <div class="pq"><p><b>4.</b> A city’s bike-share program reports that <b>18%</b> of trips end at a station with no open docks. After adding docks, a random sample of <b>${BN}</b> trips finds that <b>${BX}</b> ended at a full station. Is there evidence that the proportion has <b>decreased</b>? Use ${T(raw`\alpha=0.05`)}.</p>
+   <ol type="a">
+    <li>State the hypotheses.${s('q4a',`${T('H_0')}: ${T('p = 0.18')} · ${T('H_A')}: ${T('p < 0.18')} (left-sided, since the question says “decreased”).`)}</li>
+    <li>Find the test statistic.${s('q4b',`${T(raw`\hat p=\frac{58}{400}=${f3(BPH)}`)}<br>${T(raw`z=\frac{${f3(BPH)}-0.18}{\sqrt{0.18(0.82)/400}}=\frac{${f3(BPH)}-0.18}{${f4(BSE)}}=${f2(BZ)}`)}`)}</li>
+    <li>Find the p-value.${s('q4c',`Left-sided: normalcdf(−999, ${f2(BZ)}) ≈ <b>${f4(BPV)}</b>. Or 1-PropZTest with p0 = 0.18, x = 58, n = 400, prop &lt;p0.`)}</li>
+    <li>Make a decision and state your conclusion in context.${s('q4d',`${f4(BPV)} &lt; 0.05, so reject ${T('H_0')}. There is sufficient evidence to conclude that the proportion of trips ending at a full station has decreased below 18%.`)}</li>
+    <li>Would the decision change at ${T(raw`\alpha=0.01`)}?${s('q4e',`Yes. ${f4(BPV)} &gt; 0.01, so we would fail to reject ${T('H_0')}. The result is significant at 0.05 but not at 0.01.`)}</li>
    </ol></div>`;
 }
 function summaryHTML(){
@@ -1218,6 +1378,7 @@ function summaryHTML(){
    ${c('Confidence interval',`${D(raw`\hat p\pm z^*\sqrt{\frac{\hat p(1-\hat p)}{n}}`)}<p class="note">z* = invNorm(C, 0, 1, CENTER) · 90%: 1.645 · 95%: 1.960 · 99%: 2.576<br>Calculator: STAT → TESTS → A:1-PropZInt</p>`)}
    ${c('Interpretation',`<p>“We are C% confident that between ___ and ___ of all [population] [have the trait].”</p><p class="note">C% of intervals built this way contain p.</p>`)}
    ${c('Width',`<p>Higher C → wider. Bigger n → narrower. 4× the n → half the width.</p>`)}
+   ${c('Hypothesis test for p',`<p>1. ${T(raw`H_0:\ p=p_0`)} vs. ${T(raw`H_A:\ p>p_0,\ p<p_0,\ \text{or}\ p\ne p_0`)}</p>${D(raw`z=\frac{\hat p-p_0}{\sqrt{p_0(1-p_0)/n}}`)}<p>3. p-value: area right, left, or double the smaller tail.</p><p>4. p-value &lt; α → reject ${T('H_0')}; otherwise fail to reject.</p><p>5. Conclude in context.</p><p class="note">Conditions use ${T('p_0')}: ${T(raw`np_0\ge10`)}, ${T(raw`n(1-p_0)\ge10`)}. Calculator: STAT → TESTS → 5:1-PropZTest</p>`)}
    ${c('Sample size',`${D(raw`n=\frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`)}<p class="note">No estimate? Use p̂ = 0.5. Always round <b>up</b>.</p>`)}
   </div>`;
 }
@@ -1300,9 +1461,12 @@ const ACT={
   rup:v=>{ st.rup=Math.max(1064,Math.min(1071,st.rup+ +v)); renderViz(); },
   pmode:v=>{ st.play.mode=v; st.play.out=null; renderViz(); },
   ptail:v=>{ st.play.tail=v; renderViz(); },
+  palt:v=>{ st.play.alt=v; renderViz(); },
+  ha:v=>{ st.ht.ha=v; renderViz(); },
+  alpha:v=>{ st.ht.a=+v; renderViz(); },
   pclear:()=>{ st.play.out=null; renderViz(); },
   prun:()=>{ runPlay(); renderViz(); },
-  allsol:()=>{ st.showAll=!st.showAll; ['q1a','q1b','q1c','q1d','q2a','q2b','q2c','q2d','q2e','q2f','q3a','q3b','q3c'].forEach(k=>st.rev[k]=st.showAll); renderBody(); }
+  allsol:()=>{ st.showAll=!st.showAll; ['q1a','q1b','q1c','q1d','q2a','q2b','q2c','q2d','q2e','q2f','q3a','q3b','q3c','q4a','q4b','q4c','q4d','q4e'].forEach(k=>st.rev[k]=st.showAll); renderBody(); }
 };
 document.addEventListener('click',e=>{
   const t=e.target;
@@ -1352,6 +1516,7 @@ function dragTo(clientX){
   const x0=+svg.dataset.x0, x1=+svg.dataset.x1, L=svg.dataset.l?+svg.dataset.l:CG.L, R=svg.dataset.r?+svg.dataset.r:CG.R, W=640;
   let v=x0+(svgX(svg,clientX)-L)/(W-L-R)*(x1-x0);
   if(drag.kind==='cut'){ v=Math.round(Math.min(x1,Math.max(x0,v))*200)/200; if(drag.h==='lo') st.cut.lo=v; else st.cut.a=v; }
+  else if(drag.kind==='ht'){ st.ht.ph=Math.round(Math.min(x1,Math.max(x0,v))*200)/200; }
   else if(drag.kind==='pg'){ st.pg=Math.round(Math.min(.99,Math.max(.01,v))*100)/100; }
   renderViz(true);
 }
