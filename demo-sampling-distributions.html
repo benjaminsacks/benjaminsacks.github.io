@@ -172,6 +172,7 @@ table.mini code{font:700 .85em var(--mono)}
 .chart .hit{stroke:var(--muted);stroke-width:2}
 .chart .miss{stroke:var(--bad);stroke-width:2.6}
 .chart .pd.miss{fill:var(--bad)}
+.chart .tp{fill:var(--acc);stroke:var(--accInk);stroke-width:1.5}
 .chart .fish{fill:var(--accInk)}
 .chart .pq{fill:none;stroke:var(--ink);stroke-width:2.4}
 .chart [data-k].hot{filter:drop-shadow(0 0 4px var(--acc))}
@@ -216,10 +217,10 @@ table.mini code{font:700 .85em var(--mono)}
 /* TI-84 Plus CE */
 .calcgrid{display:grid;grid-template-columns:minmax(0,17.5em) minmax(0,1fr);gap:1em;align-items:start}
 .ti{background:#1b1b1b;border:1px solid #444;border-radius:1.2em 1.2em 2.2em 2.2em;padding:.9em .8em 1.1em;container-type:inline-size;width:100%;max-width:17.5em}
-.ti-scr{background:#fbfbf8;color:#111;aspect-ratio:4/3;border:.35em solid #0b0b0b;border-radius:.3em;overflow:hidden;font-family:'Arial Narrow',Arial,Helvetica,sans-serif;display:flex;flex-direction:column}
+.ti-scr{background:#fbfbf8;color:#111;aspect-ratio:4/3;border:.35em solid #0b0b0b;border-radius:.3em;overflow:hidden;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace;display:flex;flex-direction:column}
 .ti-hdr{display:flex;justify-content:space-between;align-items:center;font-size:3.6cqw;font-weight:700;color:#555;padding:.35em .5em .2em;border-bottom:1px solid #ddd;letter-spacing:.02em}
 .ti-hdr i{display:inline-block;width:1.1em;height:1.6em;border:1.5px solid #3a9b38;background:linear-gradient(#fff 30%,#4cb04a 30%);border-radius:1px}
-.ti-body{flex:1;padding:.2em .5em;font-size:5.4cqw;line-height:1.3;overflow:hidden}
+.ti-body{flex:1;padding:.2em .5em;font-size:4.6cqw;line-height:1.3;overflow:hidden}
 .tl{white-space:pre-wrap;word-break:break-all;min-height:1.3em}
 .tl.r{text-align:right}
 .tl.c{text-align:center}
@@ -263,6 +264,7 @@ table.mini code{font:700 .85em var(--mono)}
 .calcside .row{display:flex;gap:.4em;flex-wrap:wrap}
 .helpers{display:flex;gap:.3em;flex-wrap:wrap;margin-top:.5em;justify-content:center}
 .helpers .btn{font-size:.72em;padding:.25em .55em}
+.ksteps{margin:.4em 0;padding-left:1.5em}.ksteps li{margin:.45em 0}.ksteps .line{display:block;margin:.3em 0;font-family:var(--mono);font-size:.9em}
 .pmodes{display:flex;gap:.3em;flex-wrap:wrap;justify-content:center;margin-bottom:.4em}
 
 /* practice + summary */
@@ -424,6 +426,7 @@ function rb(id,ans,q='?',cls=''){ REG[id]={ans,q}; const on=!!st.rev[id]; return
 const fr=(a,b)=>`<span class="frac">${a}<span class="fbar"></span>${b}</span>`;
 const hl=(k,h)=>`<span class="hlw" data-hl="${k}">${h}</span>`;
 const key=t=>`<span class="k">${t}</span>`;
+const key2=()=>`<span class="k" style="background:#8ec2f5;border-color:#8ec2f5;color:#111">2nd</span>`;
 const seg=(act,opts,cur)=>`<span class="seg">${opts.map(o=>`<button class="btn${String(o[0])===String(cur)?' on':''}" data-act="${act}" data-v="${o[0]}">${o[1]}</button>`).join('')}</span>`;
 const slider=(id,min,max,stp,val,lab,out)=>`<label class="sl"><span class="lab">${lab}</span><input type="range" data-in="${id}" min="${min}" max="${max}" step="${stp}" value="${val}" aria-label="${lab}"><b data-out="${id}">${out}</b></label>`;
 const older=h=>`<div class="aside"><span class="tag83">TI-83 / TI-84 Plus (not CE)</span>${h}</div>`;
@@ -533,6 +536,7 @@ function nlineSVG(o){
   s+=`<text class="at" x="${W/2}" y="${H-5}">${o.axis||'proportion of all customers who would order a pistachio latte'}</text></svg>`;
   return s;
 }
+const truept=(x,y)=>`<circle class="tp" cx="${x}" cy="${y}" r="7"/>`;
 const fish=(x,y)=>`<g transform="translate(${x} ${y})"><path class="fish" d="M-11 0 C-6 -7 5 -7 9 0 C5 7 -6 7 -11 0 Z M9 0 L16 -6 L16 6 Z"/><circle cx="-5" cy="-1.5" r="1.4" fill="var(--panel)"/></g>`;
 
 /* ----- the "flip": p-hat within ME of p  <=>  p within ME of p-hat ----- */
@@ -542,11 +546,11 @@ function flipSVG(c){
   let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="The same distance works in both directions">`;
   for(let x=x0;x<=x1+1e-9;x+=0.05) s+=`<line class="gl" x1="${X(x)}" x2="${X(x)}" y1="30" y2="${base}"/><text class="tk" x="${X(x)}" y="${base+17}">${f2(x)}</text>`;
   const band=(y,ctr)=>`<line class="${cls}" style="stroke-width:6;stroke-linecap:round" x1="${X(ctr-c.me)}" x2="${X(ctr+c.me)}" y1="${y}" y2="${y}"/><line class="cap" x1="${X(ctr-c.me)}" x2="${X(ctr-c.me)}" y1="${y-11}" y2="${y+11}"/><line class="cap" x1="${X(ctr+c.me)}" x2="${X(ctr+c.me)}" y1="${y-11}" y2="${y+11}"/>`;
-  const pDot=y=>`${fish(X(SECRET),y+24)}`;
+  const pDot=y=>`${truept(X(SECRET),y+24)}<text class="ml acc" x="${X(SECRET)+14}" y="${y+28}" style="text-anchor:start">p</text>`;
   const hDot=y=>`<circle class="pd" cx="${X(c.ph)}" cy="${y}" r="7"/><text class="ml" x="${X(c.ph)}" y="${y-14}" style="fill:var(--blue)">p̂</text>`;
   s+=`<text class="ml" x="${L}" y="${yA-34}" style="text-anchor:start">1. Go 1.96σ out from the true p. Does that reach p̂?  ${v}</text>`+band(yA,SECRET)+pDot(yA)+hDot(yA);
   s+=`<text class="ml" x="${L}" y="${yB-34}" style="text-anchor:start">2. Go 1.96σ out from p̂. Does that reach the true p?  ${v}</text>`+band(yB,c.ph)+pDot(yB)+hDot(yB);
-  s+=`<line class="ax" x1="${L}" x2="${W-R}" y1="${base}" y2="${base}"/><text class="at" x="${W/2}" y="${H-5}">the fish is the true p (pretend we know it: ${SECRET})</text></svg>`;
+  s+=`<line class="ax" x1="${L}" x2="${W-R}" y1="${base}" y2="${base}"/><text class="at" x="${W/2}" y="${H-5}">the gold dot is the true p (pretend we know it: ${SECRET})</text></svg>`;
   return s;
 }
 
@@ -556,7 +560,7 @@ function forestSVG(runs,o={}){
   const W=640,rows=runs.length,rh=o.rh||4.4,top=34,H=top+Math.max(rows,o.minRows||0)*rh+44,L=24,R=24,base=H-40,x0=o.x0||0.1,x1=o.x1||0.5,X=x=>L+(Math.min(x1,Math.max(x0,x))-x0)/(x1-x0)*(W-L-R);
   let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Many surveys, each with its own interval">`;
   for(let x=x0;x<=x1+1e-9;x+=0.05) s+=`<line class="gl" x1="${X(x)}" x2="${X(x)}" y1="${top}" y2="${base}"/><text class="tk" x="${X(x)}" y="${base+17}">${f2(x)}</text>`;
-  s+=`<line class="mk" x1="${X(SECRET)}" x2="${X(SECRET)}" y1="${top-6}" y2="${base}"/>${fish(X(SECRET),top-16)}<text class="ml acc" x="${X(SECRET)+20}" y="${top-12}" style="text-anchor:start">true p = ${SECRET}</text>`;
+  s+=`<line class="mk" x1="${X(SECRET)}" x2="${X(SECRET)}" y1="${top-6}" y2="${base}"/>${o.fish?fish(X(SECRET),top-16):truept(X(SECRET),top-16)}<text class="ml acc" x="${X(SECRET)+20}" y="${top-12}" style="text-anchor:start">true p = ${SECRET}</text>`;
   runs.forEach((c,i)=>{ const y=top+rh*(i+.5);
     s+=`<line class="${c.hit?'hit':'miss'}" style="stroke-width:${Math.max(1.4,rh*.55)}" x1="${X(c.lo)}" x2="${X(c.hi)}" y1="${y}" y2="${y}"/><circle class="pd${c.hit?'':' miss'}" cx="${X(c.ph)}" cy="${y}" r="${Math.max(1.6,rh*.42)}"/>`; });
   s+=`<line class="ax" x1="${L}" x2="${W-R}" y1="${base}" y2="${base}"/><text class="at" x="${W/2}" y="${H-5}">${o.axis||'each row is one survey’s interval (newest on top)'}</text></svg>`;
@@ -701,7 +705,15 @@ function pressKey(k,el){
 
 /* ----- the calculator playground (practice) ----- */
 const PMODES=[['normalcdf','normalcdf'],['invNorm','invNorm'],['propz','1-PropZInt']];
-function playViz(){
+function resetPlay(mode){ const P=st.play; P.mode=mode; P.out=null; P.tail='LEFT'; Object.keys(P.f).forEach(k=>P.f[k]=''); }
+function zViz(){
+  const z=zstar(st.C), C=st.C, tl=(1-C)/2;
+  return {cap:'Critical value z*',tail:'standard normal: μ = 0, σ = 1',
+    body:curveSVG({mu:0,sd:1,x0:-3.5,x1:3.5,tk:1,dec:0,shade:[[-z,z]],marks:[{x:-z,label:'−'+f3(z),acc:1},{x:z,label:f3(z),acc:1}],labels:[{t:Math.round(C*100)+'%',x:0},{t:f3(tl),x:-z-.6,y:180},{t:f3(tl),x:z+.6,y:180}],axis:'z',h:250}),
+    ctl:slider('C',80,99,1,Math.round(C*100),'Confidence',Math.round(C*100)+'%')};
+}
+function playViz(opt){
+  opt=opt||{};
   const P=st.play, f=P.f, inp=(k,l)=>`<div class="tl">${l}<input data-pf="${k}" value="${esc(f[k])}" spellcheck="false" autocomplete="off" inputmode="text" aria-label="${l}"></div>`;
   let body='';
   if(P.mode==='normalcdf') body=`<div class="tl c"><span class="inv">&nbsp;normalcdf&nbsp;</span></div>${inp('lower','lower:')}${inp('upper','upper:')}${inp('mu','μ:')}${inp('sigma','σ:')}<div class="tl"><span class="inv tsel" data-act="prun">Paste</span></div>`;
@@ -710,11 +722,16 @@ function playViz(){
   const o=P.out;
   let res='';
   if(o&&o.err) res=`<div class="say"><b class="bad" style="color:var(--bad)">ERR:SYNTAX</b><div class="note">${o.err}</div></div>`;
-  else if(o) res=`<div class="ti-scr" style="aspect-ratio:auto;min-height:5.5em;container-type:inline-size"><div class="ti-body" style="font-size:min(4.6cqw,18px)">${o.lines.map(l=>`<div class="tl${l.r?' r':''}">${esc(l.t)}</div>`).join('')}</div></div>${o.chart||''}`;
-  return {cap:'Your calculator',tail:'type in the values, then Paste',body:`<div class="pmodes">${seg('pmode',PMODES,P.mode)}</div>
+  else if(o) res=`<div class="ti-scr" style="aspect-ratio:auto;min-height:5.5em;container-type:inline-size"><div class="ti-body" style="font-size:min(4.6cqw,18px)">${o.lines.map(l=>`<div class="tl${l.r?' r':''}">${esc(l.t)}</div>`).join('')}</div></div>${opt.cut||opt.inv||opt.viz?'':o.chart||''}`;
+  let curve='', ctl;
+  if(opt.cut){ const I=cutInfo();
+    curve=curveSVG({mu:P0,sd:SD0,x0:0.24,x1:0.56,drag:'cut',shade:I.shade,marks:I.marks}); ctl=`<span class="lab">Find</span>${seg('cutmode',[['lt','less than'],['gt','greater than'],['btw','between']],st.cut.mode)}`; }
+  if(opt.inv){ const V=invViz(true,true); curve=V.body; ctl=V.ctl; }
+  if(opt.viz){ curve=opt.viz.body; ctl=opt.viz.ctl; }
+  return {cap:'Your calculator',tail:'type in the values, then Paste',ctl,body:`${curve}${opt.nomodes?'':`<div class="pmodes">${seg('pmode',PMODES,P.mode)}</div>`}
     <div class="calcgrid" style="grid-template-columns:minmax(0,19em) minmax(0,1fr)"><div><div class="ti" style="padding:.7em;border-radius:1em;max-width:19em">${screen(body)}</div>
-    <div class="helpers"><button class="btn" data-ins="√(">√(</button><button class="btn" data-ins="*">×</button><button class="btn" data-ins="/">÷</button><button class="btn" data-ins="999">999</button><button class="btn" data-ins="-999">−999</button><button class="btn primary" data-act="prun">${P.mode==='propz'?'Calculate':'Paste + enter'}</button></div></div>
-    <div class="calcside">${res||`<div class="say note">Pick a command, fill in the lines (you can type √( or sqrt( for a square root), then press <b>${P.mode==='propz'?'Calculate':'Paste'}</b>.</div>`}</div></div>`};
+    <div class="helpers"><button class="btn" data-ins="√(">√(</button><button class="btn" data-ins="*">×</button><button class="btn" data-ins="/">÷</button><button class="btn" data-ins="999">999</button><button class="btn" data-ins="-999">−999</button><button class="btn primary" data-act="prun">${P.mode==='propz'?'Calculate':'Paste + enter'}</button>${opt.nomodes?`<button class="btn" data-act="pclear"${o?'':' disabled'}>Clear output</button>`:''}</div></div>
+    <div class="calcside">${res||(opt.nomodes?'':`<div class="say note">Pick a command, fill in the lines (you can type √( or sqrt( for a square root), then press <b>${P.mode==='propz'?'Calculate':'Paste'}</b>.</div>`)}</div></div>`};
 }
 function runPlay(){
   const P=st.play, f=P.f, v=k=>{ try{ return evalExpr(f[k]); }catch(e){ throw new Error(`Check the “${k==='sigma'?'σ':k==='mu'?'μ':k==='cl'?'C-Level':k}” line.`); } };
@@ -783,7 +800,7 @@ function cutInfo(){
 function cutViz(withCmd){
   const I=cutInfo();
   return {cap:'Area under the curve = probability',tail:'drag the gold handle',
-    body:curveSVG({mu:P0,sd:SD0,x0:0.24,x1:0.56,drag:'cut',shade:I.shade,marks:I.marks,labels:[{t:f4(I.p),x:I.shade[0][0]<0.24?Math.min(I.marks[0].x-0.03,0.36):I.shade[0][1]>0.56?Math.max(I.marks[0].x+0.03,0.44):(I.shade[0][0]+I.shade[0][1])/2}],z:true})+
+    body:curveSVG({mu:P0,sd:SD0,x0:0.24,x1:0.56,drag:'cut',shade:I.shade,marks:I.marks,labels:[{t:f4(I.p),x:I.shade[0][0]<0.24?Math.min(I.marks[0].x-0.03,0.36):I.shade[0][1]>0.56?Math.max(I.marks[0].x+0.03,0.44):(I.shade[0][0]+I.shade[0][1])/2}]})+
       `<div class="big">${T(I.txt)} = <b>${f4(I.p)}</b></div>${withCmd?`<div class="cmd">${I.cmd}</div>`:''}`,
     ctl:`<span class="lab">Find</span>${seg('cutmode',[['lt','less than'],['gt','greater than'],['btw','between']],st.cut.mode)}`};
 }
@@ -796,10 +813,11 @@ function invInfo(){
   const lo=inorm((1-a)/2,P0,SD0), hi=inorm(1-(1-a)/2,P0,SD0);
   return {shade:[[lo,hi]],marks:[{x:lo,label:f4(lo),acc:1},{x:hi,label:f4(hi),acc:1}],cmd:`invNorm(<b>${f2(a)}</b>, 0.4, 0.04, <b>CENTER</b>) = {<b>${f4(lo)}</b>, <b>${f4(hi)}</b>}`,lab:[{t:f2(a),x:P0}]};
 }
-function invViz(tailCtl){
+function invViz(tailCtl,hide){
   const I=invInfo(), v=st.inv;
+  if(hide){ I.marks=I.marks.map(m=>({...m,label:''})); I.lab=[]; I.cmd=''; }
   return {cap:'From an area to a cutoff',tail:`p̂ ~ N(0.40, 0.04)`,
-    body:curveSVG({mu:P0,sd:SD0,x0:0.24,x1:0.56,shade:I.shade,marks:I.marks,labels:I.lab,z:true})+`<div class="cmd">${I.cmd}</div>`,
+    body:curveSVG({mu:P0,sd:SD0,x0:0.24,x1:0.56,shade:I.shade,marks:I.marks,labels:I.lab,z:true})+(hide?'':`<div class="cmd">${I.cmd}</div>`),
     ctl:(tailCtl?`<span class="lab">Tail</span>${seg('tail',[['LEFT','LEFT'],['CENTER','CENTER'],['RIGHT','RIGHT']],v.tail)}`:'')+slider('area',1,99,1,Math.round(v.area*100),'Area',f2(v.area))};
 }
 
@@ -811,7 +829,7 @@ function netViz(which){
   const runs=netRuns(), hit=runs.filter(r=>r.hit).length, w=runs.reduce((a,r)=>a+2*r.me,0)/runs.length;
   const ctl=which==='C'?slider('netC',80,99,1,Math.round(st.net.C*100),'Confidence',Math.round(st.net.C*100)+'%'):slider('netN',0,1000,1,nToPos(st.net.n),'Customers asked','n = '+st.net.n);
   return {cap:'100 surveys, 100 nets',tail:`n = ${st.net.n} · ${Math.round(st.net.C*100)}% confidence`,
-    body:forestSVG(runs,{rh:3.6,axis:'each row is one survey’s interval'})+`<div class="readout"><span>z* = <b>${f3(zstar(st.net.C))}</b></span><span>average width: <b>${f3(w)}</b></span><span>caught the fish: <b>${hit} of 100</b></span></div>`,
+    body:forestSVG(runs,{fish:true,rh:3.6,axis:'each row is one survey’s interval'})+`<div class="readout"><span>z* = <b>${f3(zstar(st.net.C))}</b></span><span>average width: <b>${f3(w)}</b></span><span>caught the fish: <b>${hit} of 100</b></span></div>`,
     ctl:ctl+`<button class="btn" data-act="newnet">New surveys</button>`};
 }
 const posToN=v=>Math.round(25*Math.pow(80,v/1000)), nToPos=n=>Math.round(1000*Math.log(n/25)/Math.log(80));   // 25 to 2,000
@@ -820,9 +838,9 @@ const posToN=v=>Math.round(25*Math.pow(80,v/1000)), nToPos=n=>Math.round(1000*Ma
 const ALG=[
   [raw`ME = z^*\sqrt{\frac{\hat p(1-\hat p)}{\color{#e3b505}{n}}}`,'start with the margin of error'],
   [raw`\frac{ME}{z^*} = \sqrt{\frac{\hat p(1-\hat p)}{\color{#e3b505}{n}}}`,'divide both sides by z*'],
-  [raw`\left(\frac{ME}{z^*}\right)^2 = \frac{\hat p(1-\hat p)}{\color{#e3b505}{n}}`,'square both sides'],
-  [raw`\color{#e3b505}{n}\left(\frac{ME}{z^*}\right)^2 = \hat p(1-\hat p)`,'multiply both sides by n'],
-  [raw`\color{#e3b505}{n} = \hat p(1-\hat p)\left(\frac{z^*}{ME}\right)^2`,'divide by (ME/z*)², which flips the fraction']];
+  [raw`\frac{ME^2}{(z^*)^2} = \frac{\hat p(1-\hat p)}{\color{#e3b505}{n}}`,'square both sides'],
+  [raw`\color{#e3b505}{n}\cdot\frac{ME^2}{(z^*)^2} = \hat p(1-\hat p)`,'multiply both sides by n'],
+  [raw`\color{#e3b505}{n} = \frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`,'multiply by (z*)² and divide by ME²']];
 function algViz(){
   const k=st.alg;
   const rows=ALG.slice(0,k+1).map(([t,why],i)=>`<div style="display:grid;grid-template-columns:minmax(0,1fr) 11em;gap:.8em;align-items:center;opacity:${i===k?1:.6}"><div class="eq" style="margin:.2em 0;${i===ALG.length-1&&k===i?'outline:2px solid var(--acc)':''}">${tex(t,true)}</div><div class="note" style="margin:0">${i?why:why}</div></div>`).join('');
@@ -847,7 +865,7 @@ function exViz(){
   const mes=[0.01,0.02,0.03,0.04,0.05], mx=needN(e.C,0.01,e.p);
   const bars=mes.map(m=>{ const v=Math.ceil(needN(e.C,m,e.p)-1e-9); return `<div style="display:grid;grid-template-columns:4.5em minmax(0,1fr) 5em;gap:.6em;align-items:center;font:700 .8em var(--mono)"><span>±${Math.round(m*100)}%</span><span style="background:var(--soft);height:1.1em"><span style="display:block;height:100%;width:${Math.max(.5,v/mx*100)}%;background:${Math.abs(m-e.me)<1e-9?'var(--acc)':'var(--milk)'}"></span></span><span style="text-align:right;color:var(--accInk)">${v.toLocaleString()}</span></div>`; }).join('');
   return {cap:'How many customers?',tail:`${Math.round(e.C*100)}% confidence · p̂ = ${f2(e.p)}`,
-    body:D(raw`n=${f2(e.p)}(1-${f2(e.p)})\left(\frac{${f3(z)}}{${e.me}}\right)^2=${n.toFixed(2)}`)+`<div class="big">round up → n = <b>${Math.ceil(n-1e-9).toLocaleString()}</b></div><div style="display:flex;flex-direction:column;gap:.35em;margin-top:.4em"><div class="lab">customers needed for each margin of error</div>${bars}</div>`,
+    body:D(raw`n=\frac{${f3(z)}^2(${f2(e.p)})(1-${f2(e.p)})}{${e.me}^2}=${n.toFixed(2)}`)+`<div class="big">round up → n = <b>${Math.ceil(n-1e-9).toLocaleString()}</b></div><div style="display:flex;flex-direction:column;gap:.35em;margin-top:.4em"><div class="lab">customers needed for each margin of error</div>${bars}</div>`,
     ctl:slider('exC',80,99,1,Math.round(e.C*100),'Confidence',Math.round(e.C*100)+'%')+slider('exM',1,10,1,Math.round(e.me*100),'Margin',`±${Math.round(e.me*100)}%`)+slider('exP',5,95,1,Math.round(e.p*100),'p̂ guess',f2(e.p))};
 }
 
@@ -946,18 +964,10 @@ const SECS=[
      ctl:slider('nsl',0,1000,1,Math.round(1000*Math.log(st.nsl/25)/Math.log(40)),'Drinks per day','n = '+st.nsl)+`<button class="btn" data-act="nset" data-v="150">150</button><button class="btn" data-act="nset" data-v="600">600</button>`}; }}
  ]},
  {tab:'normalcdf',t:'Probabilities from a sampling distribution',steps:[
-  {t:'Area is probability',
-   body:()=>{ const B=bigSim(); let k=0; for(let j=0;j<=150;j++) if(j/150>0.46+1e-9) k+=B.c[j];
-     return `<p>Since ${T(raw`\hat p \sim N(0.40,\ 0.04)`)}, we can find the probability of seeing a particular kind of day.</p>
-     <p>For example: what’s the probability that <b>more than 46%</b> of tomorrow’s drinks are oat?</p>
-     <p>Here are 10 years of simulated days. The days above 0.46 are highlighted: ${k} of 2,500, or ${rb('emp',pct(k/2500))}.</p>
-     <p>The normal model gets nearly the same answer from the <b>shaded area under the curve</b>.</p>`; },
-   viz:()=>({cap:'10 years of days',tail:'shaded: p̂ > 0.46',body:histSVG(bigSim(),{curve:{mu:P0,sd:SD0},hot:x=>x>0.46+1e-9,area:[0.46,1],marks:[{x:0.46,label:'0.46',acc:1}]})})},
   {t:'Drag the cutoff',
    enter:()=>{ st.cut.mode='gt'; st.cut.a=0.46; },
-   body:()=>`<p>The total area under the curve is 1 (100% of days). The area over any stretch of the number line is the probability that ${PH} lands there.</p>
-     <p>Drag the gold handle, and switch between <b>less than</b>, <b>greater than</b>, and <b>between</b>.</p>
-     <p class="note">The z-scores under the axis count how many σ’s you are from the center: ${T(raw`z=\frac{\hat p-p}{\sigma_{\hat p}}`)}.</p>`,
+   body:()=>`<p>Since ${T(raw`\hat p \sim N(0.40,\ 0.04)`)}, we can find the probability of seeing a particular kind of day. For example: what’s the probability that <b>more than 46%</b> of tomorrow’s drinks are oat?</p>
+     <p>The total area under the curve is 1 (100% of days). The area over any stretch of the number line is the probability that ${PH} lands there. Drag the gold handle, and switch between <b>less than</b>, <b>greater than</b>, and <b>between</b>, to see how the shaded area changes.</p>`,
    viz:()=>cutViz(false)},
   {t:'normalcdf',
    body:()=>`<p>On the calculator, areas under a normal curve come from</p>
@@ -966,32 +976,32 @@ const SECS=[
      <table class="mini"><thead><tr><th>to find</th><th>lower</th><th>upper</th></tr></thead><tbody>
        <tr><td>${T(raw`P(\hat p < a)`)}</td><td class="c"><code>-999</code></td><td class="c"><code>a</code></td></tr>
        <tr><td>${T(raw`P(\hat p > a)`)}</td><td class="c"><code>a</code></td><td class="c"><code>999</code></td></tr>
-       <tr><td>${T(raw`P(a < \hat p < b)`)}</td><td class="c"><code>a</code></td><td class="c"><code>b</code></td></tr></tbody></table>
-     <p class="note">Drag the handle and watch the command change.</p>`,
+       <tr><td>${T(raw`P(a < \hat p < b)`)}</td><td class="c"><code>a</code></td><td class="c"><code>b</code></td></tr></tbody></table>`,
    viz:()=>cutViz(true)},
   {t:'On the TI-84',
-   body:()=>`<p>Let’s find ${T(raw`P(\hat p > 0.46)`)} on the TI-84 Plus CE.</p>
-     <div class="line">normalcdf(0.46, 999, 0.4, ${T(N150)})</div>
-     <p>You can type σ as the whole square root, ${'<code>'+SIG+'</code>'}, instead of working it out first.</p>
-     <p>Follow the glowing keys on the calculator.</p>
-     <p>${rb('a46','≈ 0.0668. On about 6.7% of days, more than 46% of drinks are oat.','Show the answer','wide')}</p>`,
-   viz:()=>({cap:'TI-84 Plus CE',tail:'normalcdf',body:calcViz('ncdf46',curveSVG({mu:P0,sd:SD0,x0:0.26,x1:0.54,shade:[[0.46,1]],marks:[{x:0.46,label:'0.46',acc:1}],labels:[{t:'0.0668',x:0.5}],h:230,axis:''}))})},
-  {t:'Practice: a slow oat day',
-   body:()=>`<p>Use the calculator on the left.</p>
-     <div class="pq"><p>What is the probability that <b>fewer than 35%</b> of a day’s 150 drinks are oat?</p>
+   enter:()=>{ resetPlay('normalcdf'); st.cut.mode='gt'; st.cut.a=0.46; },
+   body:()=>`<p>Let’s find ${T(raw`P(\hat p > 0.46)`)} on the TI-84 Plus CE. Follow these keystrokes, then type the values into the calculator on the left.</p>
+     <ol class="ksteps">
+      <li>Press ${key2()}, then ${key('vars')} (<b>distr</b>).</li>
+      <li>Choose <b>2:normalcdf(</b>.</li>
+      <li>Fill in the four lines:
+        <div class="line">lower: <code>0.46</code><br>upper: <code>999</code><br>μ: <code>0.4</code><br>σ: <code>${SIG}</code></div></li>
+      <li>Move down to <b>Paste</b> and press ${key('enter')}.</li>
+      <li>Press ${key('enter')} again to calculate.</li>
+     </ol>
+     <p>${rb('a46','≈ 0.0668. On about 6.7% of days, more than 46% of drinks are oat.','Show the answer','wide')}</p>
+     <div class="pq"><p><b>Your turn.</b> What is the probability that <b>fewer than 35%</b> of a day’s 150 drinks are oat?</p>
      <div class="sol">${rb('pr1',`<div>${T(raw`P(\hat p<0.35)`)}: normalcdf(−999, 0.35, 0.4, ${SIG}) ≈ <b>0.1056</b>. About 1 day in 10.</div>`,'Show solution','wide')}</div></div>`,
-   enter:()=>{ st.play.mode='normalcdf'; },
-   viz:playViz},
+   viz:()=>playViz({nomodes:true,cut:true})},
   {t:'Practice: running out of oat milk',
    body:()=>`<div class="pq"><p>Each oat drink uses <b>4 oz</b> of oat milk, and a carton holds <b>32 oz</b>. Gia stocks <b>8 cartons</b> each morning.</p>
      <ol type="a">
       <li>How many oat drinks can they make before running out?<div class="sol">${rb('rm1','8 cartons × 32 oz = 256 oz, and 256 ÷ 4 = <b>64 drinks</b>.','Show solution','wide')}</div></li>
       <li>What proportion of the day’s 150 drinks is that?<div class="sol">${rb('rm2',`${T(raw`\frac{64}{150}`)} ≈ <b>0.4267</b>`,'Show solution','wide')}</div></li>
       <li>What is the probability they run out of oat milk on a given day?<div class="sol">${rb('rm3',`They run out if more than 64 drinks are oat: ${T(raw`P(\hat p>0.4267)`)}.<br>normalcdf(64/150, 999, 0.4, ${SIG}) ≈ <b>0.2525</b>. They run out on about 1 day in 4!`,'Show solution','wide')}</div></li>
-     </ol></div>
-     <p class="note">One day in four is a lot of disappointed customers. In the next section we’ll figure out how many cartons they should stock.</p>`,
-   enter:()=>{ st.play.mode='normalcdf'; },
-   viz:playViz}
+     </ol></div>`,
+   enter:()=>{ resetPlay('normalcdf'); st.cut.mode='gt'; st.cut.a=64/150; },
+   viz:()=>playViz({nomodes:true,cut:true})}
  ]},
  {tab:'invNorm',t:'Working backwards: from a probability to a cutoff',steps:[
   {t:'Flip the question',
@@ -999,7 +1009,7 @@ const SECS=[
    body:()=>`<p>So far we’ve gone from a <b>value</b> of ${PH} to a <b>probability</b>.</p>
      <p>Now let’s go the other way. Gia doesn’t want to run out of oat milk on more than <b>5%</b> of days. She needs to know:</p>
      <p style="font-weight:700">What oat percentage is so high that only 5% of days go above it?</p>
-     <p>Slide the area and watch the cutoff move. We know the area. We want the value.</p>`,
+     <p>Slide the area to see where the cutoff lands.</p>`,
    viz:()=>invViz(false)},
   {t:'invNorm and the tail',
    body:()=>`<p>The calculator goes from an area to a cutoff with</p>
@@ -1007,35 +1017,42 @@ const SECS=[
      <table class="mini"><thead><tr><th>Tail</th><th>the area is…</th><th>you get</th></tr></thead><tbody>
        <tr><td><code>LEFT</code></td><td>to the left of the cutoff</td><td>one cutoff</td></tr>
        <tr><td><code>RIGHT</code></td><td>to the right of the cutoff</td><td>one cutoff</td></tr>
-       <tr><td><code>CENTER</code></td><td>in the middle</td><td>two cutoffs</td></tr></tbody></table>
-     <p class="note">Switch the tail and slide the area. Notice LEFT with 0.95 and RIGHT with 0.05 land on the same cutoff.</p>`,
+       <tr><td><code>CENTER</code></td><td>in the middle</td><td>two cutoffs</td></tr></tbody></table>`,
    viz:()=>invViz(true)},
   {t:'On the TI-84',
+   enter:()=>{ resetPlay('invNorm'); st.inv.tail='RIGHT'; st.inv.area=0.05; },
    body:()=>`<p>Let’s find the cutoff with 5% of days above it:</p>
      <div class="line">invNorm(0.05, 0.4, ${T(N150)}, RIGHT)</div>
-     <p>Follow the glowing keys.</p>
+     <ol class="ksteps">
+      <li>Press ${key2()}, then ${key('vars')} (<b>distr</b>).</li>
+      <li>Choose <b>3:invNorm(</b>.</li>
+      <li>Fill in the lines:
+        <div class="line">area: <code>0.05</code><br>μ: <code>0.4</code><br>σ: <code>${SIG}</code><br>Tail: <code>RIGHT</code></div></li>
+      <li>Move down to <b>Paste</b> and press ${key('enter')}.</li>
+      <li>Press ${key('enter')} again to calculate.</li>
+     </ol>
      <p>Now turn it into cartons:</p>
      <div class="line">${rb('ct1','0.4658')} × 150 drinks <span class="op">=</span> ${rb('ct2','69.9 → 70 oat drinks')}</div>
      <div class="line">70 × 4 oz <span class="op">=</span> ${rb('ct3','280 oz')} <span class="op">÷</span> 32 oz <span class="op">=</span> ${rb('ct4','8.75 → 9 cartons')}</div>
      <p class="note">Round up: 8 cartons wouldn’t be enough.</p>`,
-   viz:()=>({cap:'TI-84 Plus CE',tail:'invNorm',body:calcViz('inv05',curveSVG({mu:P0,sd:SD0,x0:0.26,x1:0.54,shade:[[inorm(.95,P0,SD0),1]],marks:[{x:inorm(.95,P0,SD0),label:'0.4658',acc:1}],labels:[{t:'0.05',x:0.5}],h:230,axis:''}))})},
+   viz:()=>playViz({nomodes:true,inv:true})},
   {t:'The middle 95%',
-   enter:()=>{ st.inv.tail='CENTER'; st.inv.area=0.95; },
+   enter:()=>{ resetPlay('invNorm'); st.inv.tail='CENTER'; st.inv.area=0.95; },
    body:()=>`<p>CENTER is handy for “typical” days. Where do the <b>middle 95%</b> of days fall?</p>
      <div class="line">invNorm(0.95, 0.4, ${T(N150)}, CENTER) <span class="op">=</span> ${rb('m95','{0.3216, 0.4784}')}</div>
      <p>On 95% of days, between ${rb('m95b','32.2% and 47.8%')} of drinks are oat (about 48 to 72 drinks).</p>
      <p>Both cutoffs are about 1.96 standard deviations from the center: ${T(raw`0.40 \pm 1.96(0.04)`)}. Remember that 1.96. It comes back in the next section.</p>
      ${older(`invNorm has no Tail option: it always uses the area to the <b>left</b>. For the middle 95%, leave 2.5% in each tail:<br><code>invNorm(0.025, 0.4, 0.04)</code> = 0.3216 and <code>invNorm(0.975, 0.4, 0.04)</code> = 0.4784.`)}`,
-   viz:()=>invViz(true)},
+   viz:()=>playViz({nomodes:true,inv:true})},
   {t:'Practice',
-   body:()=>`<p>Use the calculator on the left. ${T(raw`\hat p\sim N(0.40,\ 0.04)`)}.</p>
+   body:()=>`<p>Remember ${T(raw`\hat p\sim N(0.40,\ 0.04)`)}.</p>
      <div class="pq"><ol type="a">
       <li>Between what two values do the <b>middle 90%</b> of days’ ${PH} fall?<div class="sol">${rb('iv1',`invNorm(0.90, 0.4, ${SIG}, CENTER) ≈ <b>{0.3342, 0.4658}</b>`,'Show solution','wide')}</div></li>
       <li>The slowest <b>10%</b> of oat days fall below what proportion?<div class="sol">${rb('iv2',`invNorm(0.10, 0.4, ${SIG}, LEFT) ≈ <b>0.3487</b>, about 52 oat drinks.`,'Show solution','wide')}</div></li>
       <li>How many cartons should Gia stock to run out on only <b>1%</b> of days?<div class="sol">${rb('iv3',`invNorm(0.01, 0.4, ${SIG}, RIGHT) ≈ 0.4931. 0.4931 × 150 ≈ 74 drinks. 74 × 4 = 296 oz, and 296 ÷ 32 = 9.25 → <b>10 cartons</b>.`,'Show solution','wide')}</div></li>
      </ol></div>`,
-   enter:()=>{ st.play.mode='invNorm'; },
-   viz:playViz}
+   enter:()=>{ resetPlay('invNorm'); st.inv.tail='CENTER'; st.inv.area=0.9; },
+   viz:()=>playViz({nomodes:true,inv:true})}
  ]},
  {tab:'CIs',t:'Confidence intervals',steps:[
   {t:'When p is unknown',
@@ -1047,29 +1064,24 @@ const SECS=[
    viz:()=>({cap:'One survey',tail:`n = ${CN}`,body:nlineSVG({ph:st.rev.ph?CPH:null,unknown:true})})},
   {t:'Wiggle room',
    body:()=>`<p>Would you bet that <i>exactly</i> 29% of all customers want a pistachio latte? Probably not. A different 200 customers would give a different ${PH}.</p>
-     <p>So we add some wiggle room: ${PH} plus or minus something. Drag the slider.</p>
-     <p>Say ±0.02, giving (0.27, 0.31). But where did 0.02 come from? I just made it up.</p>
-     <div class="key-idea">The statistics way: come up with a <b>process</b> for choosing the wiggle room, so we know how often it works.</div>`,
+     <p>So we add some wiggle room: ${PH} plus or minus something, say ±0.02, giving (0.27, 0.31). Drag the slider to change it.</p>
+     <div class="key-idea">Our goal is to come up with a <b>process</b> for choosing the wiggle room, so we know how often the interval would capture the true proportion.</div>`,
    viz:()=>({cap:'Point estimate ± wiggle room',tail:`± ${f2(st.wig)}`,body:nlineSVG({ph:CPH,lo:CPH-st.wig,hi:CPH+st.wig,ends:true,unknown:true}),ctl:slider('wig',0,10,1,Math.round(st.wig*100),'Wiggle room','± '+f2(st.wig))})},
   {t:'A better way to wiggle',
    enter:()=>{ if(!st.flip) newFlip(); },
    body:()=>`<p>From the last section: for 95% of samples, ${PH} lands within <b>1.96σ</b> of ${T('p')}.</p>
-     <p>Flip that around. If ${PH} is within 1.96σ of ${T('p')}, then ${T('p')} is within 1.96σ of ${PH}. It’s the same distance either way.</p>
-     <p>So if we reach 1.96σ out from ${PH} in both directions, we’ll catch ${T('p')} for 95% of samples.</p>
-     <p class="note">Click <b>New survey</b> a few times. The two answers always match.</p>`,
+     <p>Flip that around: if ${PH} is within 1.96σ of ${T('p')}, then ${T('p')} is within 1.96σ of ${PH}. It’s the same distance either way.</p>
+     <p>So if we reach 1.96σ out from ${PH} in both directions, we’ll catch ${T('p')} for 95% of samples. Click <b>New survey</b> a few times: the two answers always match.</p>`,
    viz:()=>({cap:'The same distance, both directions',tail:'pretend we know p',body:flipSVG(st.flip),ctl:`<button class="btn primary" data-act="flip">New survey</button>`})},
   {t:'Confidence and z*',
+   enter:()=>{ resetPlay('invNorm'); },
    body:()=>`<p>That “95%” is the <b>confidence level</b>, ${T('C')}: how often our process should succeed.</p>
      <p>The 1.96 is the <b>critical value</b>, ${T('z^*')}: the z-score that leaves the middle ${T('C')} of the standard normal curve between ${T('-z^*')} and ${T('z^*')}.</p>
-     <p>That’s an invNorm problem with μ = 0 and σ = 1:</p>
+     <p>That’s an invNorm problem with μ = 0 and σ = 1. Try it on the calculator:</p>
      <div class="cmd">invNorm(<b>C</b>, 0, 1, CENTER)</div>
      <table class="mini"><thead><tr><th>C</th><th>90%</th><th>95%</th><th>99%</th></tr></thead><tbody><tr><td>${T('z^*')}</td><td>${rb('z90','1.645')}</td><td>${rb('z95','1.960')}</td><td>${rb('z99','2.576')}</td></tr></tbody></table>
      ${older(`No Tail option, so give invNorm the area to the left of ${T('z^*')}: <code>invNorm(1 − (1 − C)/2)</code>. For 95%: invNorm(1 − 0.05/2) = invNorm(0.975) = 1.96.`)}`,
-   viz:()=>{ const z=zstar(st.C), C=st.C, tl=(1-C)/2;
-     return {cap:'Critical value z*',tail:'standard normal: μ = 0, σ = 1',
-       body:curveSVG({mu:0,sd:1,x0:-3.5,x1:3.5,tk:1,dec:0,shade:[[-z,z]],marks:[{x:-z,label:'−'+f3(z),acc:1},{x:z,label:f3(z),acc:1}],labels:[{t:Math.round(C*100)+'%',x:0},{t:f3(tl),x:-z-.6,y:180},{t:f3(tl),x:z+.6,y:180}],axis:'z',h:250})+
-       screen(scrHome([{t:`invNorm(${+C.toFixed(2)},0,1,CENTER)`},{t:`{${tiNum(-z)} ${tiNum(z)}}`,r:1}],'cur')).replace('class="ti-scr"','class="ti-scr" style="max-width:21em;margin:0 auto;width:100%;aspect-ratio:auto;container-type:inline-size;height:auto"'),
-       ctl:slider('C',80,99,1,Math.round(C*100),'Confidence',Math.round(C*100)+'%')}; }},
+   viz:()=>playViz({nomodes:true,viz:zViz()})},
   {t:'Standard error',
    body:()=>`<p>Next we need σ. The spread of ${PH} is</p>
      ${D(raw`\sigma_{\hat p}=\sqrt{\frac{p(1-p)}{n}}`)}
@@ -1083,22 +1095,27 @@ const SECS=[
      <div class="line">ME <span class="op">=</span> 1.96 <span class="op">×</span> ${f4(CSE)} <span class="op">=</span> ${rb('me',f4(CME))}</div>
      ${D(raw`\hat p \pm ME`)}
      <div class="line">0.29 <span class="op">±</span> ${f4(CME)} <span class="op">=</span> ( ${rb('lo',f4(CPH-CME))} , ${rb('hi',f4(CPH+CME))} )</div>
-     ${st.rev.lo&&st.rev.hi?`<div class="key-idea">We are 95% confident that between ${pct(CPH-CME)} and ${pct(CPH+CME)} of all Mnemonic customers would order a pistachio latte.</div>`:`<p class="note">Reveal both ends to see the conclusion.</p>`}
+     ${st.rev.lo&&st.rev.hi?`<div class="key-idea">We are 95% confident that between ${pct(CPH-CME)} and ${pct(CPH+CME)} of all Mnemonic customers would order a pistachio latte.</div>`:''}
      <p class="note">Check first: at least 10 yes and 10 no in the sample (58 and 142 ✓).</p>`,
    viz:()=>{ const me=st.rev.me, ends=st.rev.lo&&st.rev.hi; return {cap:'95% confidence interval',tail:`p̂ ± ME`,body:nlineSVG({ph:CPH,lo:me?CPH-CME:null,hi:CPH+CME,me:!!me,ends,unknown:true})}; }},
   {t:'1-PropZInt',
-   body:()=>`<p>The calculator does all of that in one go with <b>1-PropZInt</b>, in the STAT → TESTS menu.</p>
-     <p>It asks for ${T('x')} (the number of “yes”), ${T('n')}, and the confidence level as a decimal.</p>
-     <p>Follow the glowing keys.</p>
+   enter:()=>{ resetPlay('propz'); },
+   body:()=>`<p>The calculator does all of that in one go with <b>1-PropZInt</b>. Follow these keystrokes, then type the values into the calculator on the left.</p>
+     <ol class="ksteps">
+      <li>Press ${key('stat')}, then ${key('▶')} twice to reach <b>TESTS</b>.</li>
+      <li>Choose <b>A:1-PropZInt</b> (press ${key('alpha')} then ${key('math')}, or scroll down).</li>
+      <li>Fill in the lines:
+        <div class="line">x: <code>${CX}</code> (the number of “yes”)<br>n: <code>${CN}</code><br>C-Level: <code>0.95</code></div></li>
+      <li>Move down to <b>Calculate</b> and press ${key('enter')}.</li>
+     </ol>
      <p class="note">Use 1-PropZInt to check your work, but know how to build the interval by hand. Exams ask for ${T('z^*')}, SE, and ME separately.</p>`,
-   viz:()=>({cap:'TI-84 Plus CE',tail:'1-PropZInt',body:calcViz('pz',nlineSVG({ph:CPH,lo:CPH-CME,hi:CPH+CME,ends:true,h:170,axis:''}))})},
+   viz:()=>playViz({nomodes:true,viz:{body:nlineSVG({ph:CPH,lo:CPH-CME,hi:CPH+CME,ends:true,h:170,axis:''})}})},
   {t:'What does 95% confident mean?',
    enter:()=>{ if(!st.cap.runs.length) capAdd(1); },
    body:()=>{ const R=st.cap.runs, h=R.filter(r=>r.hit).length;
-     return `<p>Here’s something only a demo can do: <b>pretend we know the truth</b>. Say exactly ${SECRET*100}% of all customers would order a pistachio latte. That’s the fish.</p>
-     <p>Each click runs a brand-new survey of 200 customers and builds its 95% interval.</p>
+     return `<p>Here’s something only a demo can do: <b>pretend we know the truth</b>. Say exactly ${SECRET*100}% of all customers would order a pistachio latte. Each click runs a brand-new survey of 200 customers and builds its 95% interval.</p>
      <div class="big">caught: <b>${h}</b> of ${R.length} (${R.length?pct(h/R.length):'–'})</div>
-     <p>About 95% of the intervals catch ${T('p')}. The ones that miss come from the <b>more extreme</b> ${PH}’s, out in the tails of the sampling distribution (top).</p>
+     <p>About 95% of the intervals catch ${T('p')}. The misses come from the <b>more extreme</b> ${PH}’s, out in the tails of the sampling distribution (top).</p>
      <div class="key-idea">95% confidence is about the <b>process</b>: about 95% of intervals built this way contain ${T('p')}. Any one interval either does or doesn’t, and in real life we never get to find out which.</div>`; },
    viz:()=>({cap:'Survey after survey',tail:`n = ${CN} · 95%`,body:capCurveSVG(st.cap.runs)+forestSVG(st.cap.runs.slice(0,40),{rh:6.5,minRows:40}),
      ctl:`<span class="lab">Run</span><button class="btn primary" data-act="cap" data-v="1">+1 survey</button><button class="btn primary" data-act="cap" data-v="20">+20</button><button class="btn primary" data-act="cap" data-v="100">+100</button><span class="sp"></span><button class="btn" data-act="capclear">Reset</button>`})},
@@ -1106,7 +1123,7 @@ const SECS=[
    enter:()=>{ st.net.n=200; },
    body:()=>`<p>Think of the interval as a <b>net</b> and ${T('p')} as a <b>fish</b>.</p>
      <p>You’re more confident you’ll catch the fish with a bigger net than a smaller one. But a bigger net tells you less about exactly where the fish is.</p>
-     <p>Slide the confidence level.</p>
+     <p>Slide the confidence level to see the net change size.</p>
      <div class="key-idea">Higher C → bigger ${T('z^*')} → bigger ME → wider interval</div>
      <table class="mini"><thead><tr><th>C</th><th>${T('z^*')}</th><th>pistachio interval</th></tr></thead><tbody>
       ${[0.9,0.95,0.99].map(C=>{ const me=zstar(C)*CSE; return `<tr><td>${Math.round(C*100)}%</td><td>${f3(zstar(C))}</td><td>0.29 ± ${f4(me)}</td></tr>`; }).join('')}</tbody></table>`,
@@ -1121,28 +1138,27 @@ const SECS=[
  ]},
  {tab:'Sample size',t:'Choosing a sample size',steps:[
   {t:'Plan before you survey',
-   body:()=>`<p>Gia and Sarah want to run a bigger pistachio survey. This time they want the margin of error to be at most <b>3 percentage points</b> (ME = 0.03) at <b>95%</b> confidence.</p>
-     <p>How many customers should they ask?</p>
-     <p>The margin of error formula has ${T('n')} in it, so we can solve it for ${T('n')}. Step through the algebra on the left.</p>
-     ${st.alg>=ALG.length-1?D(raw`n=\hat p(1-\hat p)\left(\frac{z^*}{ME}\right)^2`):''}`,
+   body:()=>`<p>Gia and Sarah want to run a bigger pistachio survey. This time they want the margin of error to be at most <b>3 percentage points</b> (ME = 0.03) at <b>95%</b> confidence. How many customers should they ask?</p>
+     <p>The margin of error formula has ${T('n')} in it, so we can solve it for ${T('n')}. Click <b>Next algebra step</b> on the left to see how.</p>
+     ${st.alg>=ALG.length-1?D(raw`n=\frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`):''}`,
    viz:algViz},
   {t:'Example: with an earlier estimate',
    body:()=>`<p>From their first survey, ${PH} = 0.29. Use it as the best guess.</p>
-     <div class="line">n <span class="op">=</span> ${T(raw`0.29(1-0.29)\left(\frac{1.96}{0.03}\right)^2`)} <span class="op">=</span> ${rb('n1',needN(.95,.03,.29).toFixed(2))}</div>
-     <p>You can’t survey 0.84 of a customer, so round up: ${rb('n1u','n = 879 customers')}</p>
-     <p class="note">Drag the dot on the curve to see how the guess for ${PH} changes ${T(raw`\hat p(1-\hat p)`)}, and with it the sample size.</p>`,
+     <div class="line">n <span class="op">=</span> ${T(raw`\frac{1.96^2(0.29)(1-0.29)}{0.03^2}`)} <span class="op">=</span> ${rb('n1',needN(.95,.03,.29).toFixed(2))}</div>
+     <p>You can’t survey part of a customer, so round up: ${rb('n1u','n = 879 customers')}</p>
+     <p>Drag the dot on the curve to see how the guess for ${PH} changes ${T(raw`\hat p(1-\hat p)`)}, and with it the sample size.</p>`,
    enter:()=>{ st.pg=0.29; },
-   viz:()=>({cap:'The p̂(1 − p̂) part of the formula',tail:`95% confidence, ME = 0.03`,body:pqSVG(st.pg)+`<div class="big">n = ${f2(st.pg)}(1 − ${f2(st.pg)})(1.96 / 0.03)² = <b>${needN(.95,.03,st.pg).toFixed(2)}</b> → <b>${Math.ceil(needN(.95,.03,st.pg)-1e-9)}</b></div>`})},
+   viz:()=>({cap:'The p̂(1 − p̂) part of the formula',tail:`95% confidence, ME = 0.03`,body:pqSVG(st.pg)+`<div class="big">n = 1.96²(${f2(st.pg)})(1 − ${f2(st.pg)}) / 0.03² = <b>${needN(.95,.03,st.pg).toFixed(2)}</b> → <b>${Math.ceil(needN(.95,.03,st.pg)-1e-9)}</b></div>`})},
   {t:'Example: no earlier estimate',
    enter:()=>{ st.pg=0.5; },
    body:()=>`<p>They’re also curious what proportion of customers would sign up for a <b>monthly coffee subscription</b>. They’ve never asked, so there’s no ${PH} to plug in.</p>
-     <p>Use ${T(raw`\hat p=0.5`)}. Drag the dot: ${T(raw`\hat p(1-\hat p)`)} is biggest at 0.5, so it gives the <b>largest</b> n. That sample is big enough no matter what the true proportion turns out to be.</p>
-     <div class="line">n <span class="op">=</span> ${T(raw`0.5(1-0.5)\left(\frac{1.96}{0.03}\right)^2`)} <span class="op">=</span> ${rb('n2',needN(.95,.03,.5).toFixed(2))}</div>`,
+     <p>Use ${T(raw`\hat p=0.5`)}. Drag the dot to see why: ${T(raw`\hat p(1-\hat p)`)} is biggest at 0.5, so it gives the <b>largest</b> n, which is big enough no matter what the true proportion is.</p>
+     <div class="line">n <span class="op">=</span> ${T(raw`\frac{1.96^2(0.5)(1-0.5)}{0.03^2}`)} <span class="op">=</span> ${rb('n2',needN(.95,.03,.5).toFixed(2))}</div>`,
    viz:()=>({cap:'Why 0.5 is the safe guess',tail:`95% confidence, ME = 0.03`,body:pqSVG(st.pg)+`<div class="big">n = <b>${needN(.95,.03,st.pg).toFixed(2)}</b></div>`})},
   {t:'Always round up',
    enter:()=>{ st.rup=1067; },
    body:()=>`<p>1067.07 would normally round <i>down</i> to 1067. Let’s check whether 1067 customers is enough.</p>
-     <p>Click through n on the left. With n = 1067 the margin of error is ${rb('r67',(Z95*Math.sqrt(.25/1067)).toFixed(6)+', a hair over 0.03 ✗')}. With n = 1068 it’s ${rb('r68',(Z95*Math.sqrt(.25/1068)).toFixed(6)+' ✓')}.</p>
+     <p>Click <b>n − 1</b> and <b>n + 1</b> on the left. With n = 1067 the margin of error is ${rb('r67',(Z95*Math.sqrt(.25/1067)).toFixed(6)+', a hair over 0.03 ✗')}. With n = 1068 it’s ${rb('r68',(Z95*Math.sqrt(.25/1068)).toFixed(6)+' ✓')}.</p>
      <div class="key-idea">The formula gives the <b>smallest</b> n that works. Any fewer customers and the margin of error is bigger than promised, so <b>always round up</b>: n = 1068.</div>`,
    viz:rupViz},
   {t:'Explore',
@@ -1187,9 +1203,9 @@ function practiceHTML(){
    </ol></div>
   <div class="pq"><p><b>3.</b> A city council wants to estimate the proportion of residents who support building a new off-leash dog park. A small pilot survey found <b>61%</b> in favor.</p>
    <ol type="a">
-    <li>How many residents should the council survey to estimate the proportion within <b>4 percentage points</b> with <b>95%</b> confidence?${s('q3a',`${T(raw`n=0.61(0.39)\left(\frac{1.96}{0.04}\right)^2=${needN(.95,.04,.61).toFixed(2)}`)} → round up: <b>${Math.ceil(needN(.95,.04,.61))}</b> residents.`)}</li>
-    <li>How many would it need for <b>90%</b> confidence with the same margin of error? Explain why this differs from part (a).${s('q3b',`${T(raw`n=0.61(0.39)\left(\frac{1.645}{0.04}\right)^2=${needN(.9,.04,.61).toFixed(2)}`)} → <b>${Math.ceil(needN(.9,.04,.61))}</b>. Lower confidence means a smaller ${T('z^*')}, so the same margin of error takes fewer people.`)}</li>
-    <li>Suppose there had been no pilot survey. How many residents would the council need for part (a)? Why is it more?${s('q3c',`Use ${T(raw`\hat p=0.5`)}: ${T(raw`n=0.5(0.5)\left(\frac{1.96}{0.04}\right)^2=${needN(.95,.04,.5).toFixed(2)}`)} → <b>${Math.ceil(needN(.95,.04,.5))}</b>. 0.5 makes ${T(raw`\hat p(1-\hat p)`)} as large as possible, which is the safe choice when you have no estimate.`)}</li>
+    <li>How many residents should the council survey to estimate the proportion within <b>4 percentage points</b> with <b>95%</b> confidence?${s('q3a',`${T(raw`n=\frac{1.96^2(0.61)(0.39)}{0.04^2}=${needN(.95,.04,.61).toFixed(2)}`)} → round up: <b>${Math.ceil(needN(.95,.04,.61))}</b> residents.`)}</li>
+    <li>How many would it need for <b>90%</b> confidence with the same margin of error? Explain why this differs from part (a).${s('q3b',`${T(raw`n=\frac{1.645^2(0.61)(0.39)}{0.04^2}=${needN(.9,.04,.61).toFixed(2)}`)} → <b>${Math.ceil(needN(.9,.04,.61))}</b>. Lower confidence means a smaller ${T('z^*')}, so the same margin of error takes fewer people.`)}</li>
+    <li>Suppose there had been no pilot survey. How many residents would the council need for part (a)? Why is it more?${s('q3c',`Use ${T(raw`\hat p=0.5`)}: ${T(raw`n=\frac{1.96^2(0.5)(0.5)}{0.04^2}=${needN(.95,.04,.5).toFixed(2)}`)} → <b>${Math.ceil(needN(.95,.04,.5))}</b>. 0.5 makes ${T(raw`\hat p(1-\hat p)`)} as large as possible, which is the safe choice when you have no estimate.`)}</li>
    </ol></div>`;
 }
 function summaryHTML(){
@@ -1202,7 +1218,7 @@ function summaryHTML(){
    ${c('Confidence interval',`${D(raw`\hat p\pm z^*\sqrt{\frac{\hat p(1-\hat p)}{n}}`)}<p class="note">z* = invNorm(C, 0, 1, CENTER) · 90%: 1.645 · 95%: 1.960 · 99%: 2.576<br>Calculator: STAT → TESTS → A:1-PropZInt</p>`)}
    ${c('Interpretation',`<p>“We are C% confident that between ___ and ___ of all [population] [have the trait].”</p><p class="note">C% of intervals built this way contain p.</p>`)}
    ${c('Width',`<p>Higher C → wider. Bigger n → narrower. 4× the n → half the width.</p>`)}
-   ${c('Sample size',`${D(raw`n=\hat p(1-\hat p)\left(\frac{z^*}{ME}\right)^2`)}<p class="note">No estimate? Use p̂ = 0.5. Always round <b>up</b>.</p>`)}
+   ${c('Sample size',`${D(raw`n=\frac{(z^*)^2\,\hat p(1-\hat p)}{ME^2}`)}<p class="note">No estimate? Use p̂ = 0.5. Always round <b>up</b>.</p>`)}
   </div>`;
 }
 
@@ -1284,6 +1300,7 @@ const ACT={
   rup:v=>{ st.rup=Math.max(1064,Math.min(1071,st.rup+ +v)); renderViz(); },
   pmode:v=>{ st.play.mode=v; st.play.out=null; renderViz(); },
   ptail:v=>{ st.play.tail=v; renderViz(); },
+  pclear:()=>{ st.play.out=null; renderViz(); },
   prun:()=>{ runPlay(); renderViz(); },
   allsol:()=>{ st.showAll=!st.showAll; ['q1a','q1b','q1c','q1d','q2a','q2b','q2c','q2d','q2e','q2f','q3a','q3b','q3c'].forEach(k=>st.rev[k]=st.showAll); renderBody(); }
 };
